@@ -9,7 +9,8 @@
 
 > **【2026-08-23 更新】** 下述 §2/§3 为 2026-08-21 初评快照，已部分过时。最新状态：`firmware/`
 > 已**可编译**（`bash build.sh` 零警告，text 60268 / data 3000 / bss 2188）；**W1 两大函数 C 级还原已完成**
-> （07 state_machine 18 case / 08 modbus_dispatch 51 分支，`stub.c` 已删；07/08 对金标准地址全覆盖无臆造）；
+> （07 state_machine 18 case / 08 modbus_dispatch 51 分支，`stub.c` 保留于根、只载 freq_adjust_sync + func_0x0000aed0；
+> 07/08 对金标准地址全覆盖无臆造）；
 > 可读性重构 3 组提交已落地（全局变量 g_ / reg.h 位宽 / consts.h 常量表）。剩余见 §3 各更新行。
 
 ## 1. 现状总评
@@ -55,7 +56,7 @@
 | # | 工作项 | 说明 | 依赖 |
 |---|---|---|---|
 | W1 | 两大函数 C 级还原 | state_machine / modbus_dispatch 从伪代码转为可编译 C | — |
-| **W1 进度** | ✅ **已完成**（2026-08-22） | 07 state_machine 18 case / 08 modbus_dispatch 51 分支真实 C 还原；`stub.c` 删除；编译进 ELF@0x41B4 / 0x86E4；07/08 对金标准（_disasm）地址**全覆盖无臆造** | — |
+| **W1 进度** | ✅ **已完成**（2026-08-22） | 07 state_machine 18 case / 08 modbus_dispatch 51 分支真实 C 还原（迁入 src/07、src/08_modbus_dispatch）；`stub.c` 保留于根（freq_adjust_sync 0xAB48 + func_0x0000aed0）；编译进 ELF@0x41B4 / 0x86E4；07/08 对金标准（_disasm）地址**全覆盖无臆造** | — |
 | **W7 进度** | 部分完成（2026-08-23） | 数据层三验全 PASS（读宽 / modbus 分支 / strpool）；07 地址 125/125 全覆盖；08 C-only=0；06 一致。剩余：case2-7 + 01-06/09-13 控制流**语义**精读（金标准是对 IAR 机器码，GCC 产物 opcode 不同，无法逐条对、只能语义级） | W1/W2 |
 | W2 | 数据段全量导出 | **清单已导出**（`DATA_SEGMENT_2026-08-21.md`：字符串/查表/指针表/SRAM 全局）；剩余：RAM 初始镜像、位域定义、全部 DAT 落地 | — |
 | W3 | 全局变量符号化 | 120+ 个 DAT_ 重命名 + 类型 + 初始值 | W2 |

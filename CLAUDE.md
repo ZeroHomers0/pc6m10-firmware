@@ -43,7 +43,8 @@ decompiled/
 ├── 01_startup.c … 13_gpio_init.c  ← 反编译源码（13 模块存档版，函数入口地址在注释）
 ├── firmware/                      ← 可编译工程（src/ 16 模块 + inc/ + build.sh + lpc1765.ld）
 │   ├── src/                       ←   16 个 .c（01-13 + 08_modbus_dispatch + crc16_table + strpool）
-│   └── inc/                       ←   types.h / globals.h / reg.h / consts.h
+│   ├── inc/                       ←   types.h / globals.h / reg.h / consts.h
+│   └── stub.c                     ←   根残留：func_0x0000aed0 骨架 + freq_adjust_sync 实现
 ├── 07_state_machine_asm.txt       ← state_machine 全量反汇编（10061 条）
 ├── 08_modbus_dispatch_asm.txt     ← modbus_dispatch 全量反汇编（5161 条）
 ├── docs/                          ← 根目录迁移的过程文档（原样）
@@ -86,8 +87,9 @@ decompiled/
 
 **目标B 可编译已达成**（2026-08-22）：`firmware/` 工程 `bash build.sh` 零警告产出 `firmware.hex/bin/elf`
 （text 60268 / data 3000 / bss 2188）。**W1 已完成**——07/08 两大函数已转为真实 C 级还原
-（state_machine 0x458C 18 case 写码 / modbus_dispatch 0xB642 51 写分支），`stub.c` 已删除；
-freq_adjust_sync 独立编译于 0x1A2。可读性重构 3 组提交已落地（全局变量语义化 g_ / reg.h 位宽 / consts.h 常量表）。
+（state_machine 0x458C 18 case 写码 / modbus_dispatch 0xB642 51 写分支）；`stub.c` **保留**于 firmware/ 根
+（承载不可入 src 联编的 `func_0x0000aed0` 骨架 + `freq_adjust_sync` 0xAB48 完整实现，链接于 0x1A2），
+不再提供 07/08 占位。可读性重构 3 组提交已落地（全局变量语义化 g_ / reg.h 位宽 / consts.h 常量表）。
 仓库无 remotes（纯本地），默认分支为 `master`（无 `main`）。
 
 - 完整清单：`WORK_GUIDE_2026-08-21.md` 的 **W1-W8**。

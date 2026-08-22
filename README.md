@@ -84,7 +84,8 @@ decompiled/
 ├── 01_startup.c … 13_gpio_init.c  ← 反编译源码（13 模块存档版）
 ├── firmware/                      ← 可编译工程（build.sh → firmware.elf/hex/bin；src/ 16 模块 + inc/ + lpc1765.ld）
 │   ├── src/                       ←   16 个 .c（01-13 + 08_modbus_dispatch + crc16_table + strpool）
-│   └── inc/                       ←   types.h / globals.h / reg.h / consts.h
+│   ├── inc/                       ←   types.h / globals.h / reg.h / consts.h
+│   └── stub.c                     ←   根残留：func_0x0000aed0 骨架 + freq_adjust_sync 实现
 ├── 07_state_machine_asm.txt       ← state_machine 全量反汇编（10061 条）
 ├── 08_modbus_dispatch_asm.txt     ← modbus_dispatch 全量反汇编（5161 条）
 ├── docs/                          ← 根目录迁移的过程文档
