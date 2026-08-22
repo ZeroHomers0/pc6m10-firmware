@@ -18,17 +18,20 @@ PYTHONUTF8=1 python run_tests.py crc16     # 只跑名字含 crc16 的
 
 | 测试 | 被测函数 | 结果 | 验证内容 |
 |---|---|---|---|
-| `test_crc16_semantics.py` | `crc16` (0xAF64) | ✅ 9/9 | ① CRC 表==原始 bin 0x11034/0x11134（S9 修复）；② `len-1` 先减后终检语义；③ 真实 Modbus 帧字节序 |
+| `test_crc16_semantics.py` | `crc16` (0xAF64) | ✅ 8/8 | ① CRC 表==原始 bin 0x11034/0x11134（S9 修复）；② 处理**全部 len 字节**（=标准 Modbus CRC）；③ 与独立 poly 0xA001 参考法等效 |
 | `test_modbus_regmap.py` | `modbus_read_reg`(0xAF94)/`modbus_write_multi`(0xB2E0) | ✅ 5/5 | ① 读写同 reg 映射同地址；② 位宽一致；③ 保留区(0x1A-1F/24-25)读返回0/写落 g_scratch |
 | `test_param_sync.py` | `param_sync_live_to_eeprom` (0x35F2) | ✅ 6/6 | ① 符号真存在于 globals.c；② EEPROM reg 无冲突；③ 仅不等才写；④ 16 位分高低两次写 |
 | `test_unicorn_crc16.py` | 编译 crc16 | ✅ 3/3 | **真实执行**（Unicorn 加载 firmware.elf）：编译产物 crc16 == Python 模型 |
 | `test_unicorn_modbus_dispatch.py` | 编译 modbus_dispatch | ✅ 11/11 | **真实执行**：合法读帧→读分支发7字节 + 响应CRC自洽；CRC错帧→0x83/0x04异常；站址不匹配→不发。**抓到 W7 真 bug**（见下） |
 | `test_unicorn_param_sync.py` | 编译 param_sync | ✅ 2/2 | **真实执行**：live≠shadow 触发 i2c_write_reg + 写后 shadow=live（hook i2c_write_reg 拦截 GPIO） |
 | `test_unicorn_modbus_write_multi.py` | `modbus_write_multi` (0xB2E0) | ✅ 12/12 | **A/B 差分**：同一 RAM 种子下原始 bin vs 编译 elf 真执行比价，reg 0x00/01/02/03/1A/1F/26/2E/2F/3C/3D 写字节/半字/字至对应全局，末态一致 |
+| `test_unicorn_modbus_read_reg.py` | `modbus_read_reg` (0xAF94) | ✅ 65/65 | **A/B 差分**：reg 0x00..0x3F 全覆盖，返回值 + *out_val + 参数区末态一致 |
 | `test_unicorn_closed_loop.py` | `closed_loop_integral` (0x108B0) | ✅ 10/10 | **A/B 差分**：三路通道×死区三段×分段除数，负误差路径、两钳位间公式、上下钳。**抓到 W7 真 bug**（符号/无符号，见下） |
+| `test_unicorn_closed_loop_wrapper.py` | `closed_loop_wrapper` (0x10F0A) | ✅ 4/4 | **A/B 差分**：计数器重算分支 + 0xFFFFFFFF 回绕→不重算返回缓存 |
+| `test_unicorn_crc16_ab.py` | `crc16` (0xAF64) | ✅ 6/6 | **A/B 差分**：len 3/6/7/9/11，处理全部 len 字节。**抓到 W7 真 bug**（len-1，见上） |
 
 > 首轮模型测试曾用**旧排**：`crc16_semantics`(9) + `modbus_regmap`(5) + `param_sync`(6)；
-> 迁到固件外层后与 unicorn 执行测试归档，现 8 模块全绿见上表（另 3 个不依赖 unicorn）。
+> 迁到固件外层后与 unicorn 执行测试归档，现 **11 个模块全绿**（3 个不依赖 unicorn + 8 个 unicorn 执行/A/B）。
 
 ## Unicorn 真实执行（已可用，2026-08-23）
 
@@ -40,15 +43,27 @@ PYTHONUTF8=1 python run_tests.py crc16     # 只跑名字含 crc16 的
 - 可执行**编译产物**的最硬验证。外设 GPIO RMW（FIO/定时器）不可直接仿真 → 用
   `UC_HOOK_CODE` 拦 i2c_write_reg 等入口点跳过硬时序、记录调用参数。
 
-## 关键发现：crc16 的 `len-1` 语义（重要）
+## 关键发现（W7 真 bug，已修复）：crc16 的 `len-1` 是**反编译 bug**，非原固件行为
 
-`crc16()` 循环是 `while((len=(len-1)&0xff)!=0)`：**先减后终检**，只处理 `len-1` 字节、
-丢弃第 len 个字节。这是 0xAF64 原始机器码的忠实还原（0xaf86 `sub r4,#1` → `uxtb` → `bne`
-循环体）。调用方 `modbus_dispatch` 传 `crc16(FRAME, rx_len-2)`（0xB642 `subs r0,#2` → `uxtb r1`
-→ `bl`）。因此校验一个数据体 N 字节的帧时，固件实际只覆盖 **N-1** 个字节。
+早前（2026-08-23 首轮模型测试）曾把 `crc16()` 循环还原成 `while((len=(len-1)&0xff)!=0)`
+（"先减后终检"，只处理 `len-1` 字节），并在 README 里当成"原固件怪癖"。**这是错的**——
+A/B 差分执行（`test_unicorn_crc16_ab.py`）证明原固件 0xAF64 处理**全部 `len` 字节**（标准
+Modbus CRC）。
 
-**测试基准用原始二进制真值**，不用教科书 Modbus CRC——这正是为了把"原固件行为"从
-"反编译 bug"里区分出来。
+**错判根因**：原码循环体/终检在 0xAF84：
+```asm
+movs r0, r4      ; <-- 唯一置 Z 的指令，测试【减前】计数器 r4
+sub.w r6, r4, #1 ; 无 S 后缀，【不置位】
+uxtb r4, r6      ; (len-1)&0xff，后减
+bne 0xaf70       ; Z 来自 movs → while(计数器!=0) 精确执行 len 次
+```
+误把 `sub.w r4,#1`（实际不带 S、不置位）当成置位指令，导致 I 码回放成 len-1。A/B + 指令级
+回放（hook 计数：len=3 时 0xAF70 循环体执行 3 次）已双确证。**已修复** `08_uart3_modbus.c`：
+循环改为 `while(len != 0) { ...; len = (uint8_t)(len-1); }`。修复后 `crc16_ab` 6/6、
+`crc16_semantics` 8/8、`modbus_dispatch` 11/11 全绿。
+
+**教训**：模型测试只能证明"反编译 C == 我手抄的参考模型"，两者可能**一起错**；只有 A/B
+差分（直接以原始二进制为金标准执行）才能抓出这类"模型自身就错"的 W7 bug。
 
 ## 关键发现（W7 真 bug）：modbus_read_reg 返回值恒 0
 

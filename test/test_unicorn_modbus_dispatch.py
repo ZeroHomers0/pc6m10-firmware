@@ -12,8 +12,8 @@
 #
 # 寄存器寻址约定（本固件特有）：帧体为 [addr,func,0x10,reg_lo,count_hi,count_lo,CRC]，
 #   frame[2]==0x10 是 reg 高字节、frame[3]=reg 低字节 → 即 Modbus 寄存区 0x1001..0x103F。
-# 注意：请求/响应 CRC 均按固件 crc16 的 len-1 先减后终检语义计算（见 README「关键发现」），
-#   不是教科书 Modbus CRC。基准是原始二进制真值，非教材。
+# 注意：请求/响应 CRC 均按固件 crc16 语义计算（处理全部 len 字节 = 标准 Modbus CRC，
+#   2026-08-23 A/B 差分实证，非 len-1）。基准是原始二进制真值，非教材。
 # 若 unicorn 不可用 → SKIP。
 # =============================================================================
 import os, sys
@@ -28,22 +28,18 @@ from unicorn.arm_const import *
 
 FRAME, RX_LEN, RX_STATE, SLAVE_ADDR, TXBUF = 0x100022A4, 0x10001792, 0x10001790, 0x100016FF, 0x1000236C
 
-# ── 固件 crc16（len-1 先减后终检）模型，仅用于断言自洽，非教材 ──
+# ── 固件 crc16 模型（处理全部 len 字节 = 标准 Modbus CRC），仅用于断言自洽 ──
 def _load_tables():
     b = open(os.path.join(ROOT, 'LPC1765.bin'), 'rb').read()
     return b[0x11034:0x11034+256], b[0x11134:0x11134+256]
 
 def crc16_fw(data, length):
     hi, lo = _load_tables()
-    ch = 0xff; cl = 0xff; i = 0
-    length &= 0xff
-    while True:
-        length = (length - 1) & 0xff
-        if length == 0:
-            break
+    ch = 0xff; cl = 0xff
+    for i in range(length):
         t = data[i] ^ cl
         cl = hi[t] ^ ch
-        ch = lo[t]; i += 1
+        ch = lo[t]
     return (cl | (ch << 8)) & 0xffff
 
 def load():
@@ -100,7 +96,7 @@ def main():
     # ── 场景1：合法读请求 站1 读 0x1001(#1) 数量1 ──
     #   本固件地址/计数编码特例：帧体 = [addr,func,reg_hi=0x10,reg_lo, cnt_lo, cnt_hi]
     #   reg=frame[3]=0x01(0x1001)；cnt=frame[4]|frame[5]<<8 小端 → frame[4]=0x01,frame[5]=0x00 → cnt=1
-    #   crc16(FRAME,v-2=6) 只处理5字节 [01 03 10 01 01] = 0x11D8
+    #   crc16(FRAME,v-2=6) 处理全部6字节 [01 03 10 01 01 00] = 0x5A11
     req = bytes([0x01, 0x03, 0x10, 0x01, 0x01, 0x00])
     req_crc = crc16_fw(req, 6)
     frame = req + bytes([req_crc & 0xff, req_crc >> 8])
@@ -110,7 +106,7 @@ def main():
     send_frame(frame)
 
     check("读请求帧 CRC 自洽（0x%04X）" % req_crc,
-          req_crc == 0x11D8, f"0x{req_crc:04X}")
+          req_crc == 0x5A11, f"0x{req_crc:04X}")
     check("读分支调用 uart3_tx_byte，发送 7 字节", tx_count == [7],
           f"tx_count={[hex(x) for x in tx_count]}")
     # 响应 TXBUF[0..6] = [addr,0x03,字节数,数据hi,数据lo,crcl,crch]
@@ -120,23 +116,15 @@ def main():
     check("响应[2]=字节数 0x02（1字=2节）", txb[2] == 0x02, f"{hex(txb[2])}")
     check("响应[3..4]=数据字（大端 0x0056=g_gain_sel）", (txb[3] << 8 | txb[4]) == 0x0056,
           f"数据=0x{txb[3]:02X}{txb[4]:02X}")
-    # 响应 CRC：固件 crc16(tx, 3+cnt*2=5) 处理4字节 tx[0..3] → 应为 tx[5]tx[6]
+    # 响应 CRC：固件 crc16(tx, 3+cnt*2=5) 处理全部5字节 tx[0..4] → 应为 tx[5]tx[6]
     if len(tx_count) == 1 and tx_count[0] == 7:
         rsp_crc = crc16_fw(txb, 5)
         check("响应 CRC 自洽（固件语义）",
               (rsp_crc & 0xff) == txb[5] and (rsp_crc >> 8) == txb[6],
               f"算0x{rsp_crc:04X} tx[5]={hex(txb[5])} tx[6]={hex(txb[6])}")
 
-    # ── 场景2：合法请求但 CRC 错（用标准 Modbus CRC 糊弄）→ 应走 CRC 异常分支 ──
-    def crc16_std(data):
-        c = 0xFFFF
-        for byte in data:
-            c ^= byte
-            for _ in range(8):
-                if c & 1: c = (c >> 1) ^ 0xA001
-                else: c >>= 1
-        return c
-    bad = req + bytes([crc16_std(req) & 0xff, crc16_std(req) >> 8])
+    # ── 场景2：合法帧体但 CRC 最后一字节错 → 应走 CRC 异常分支 ──
+    bad = req + bytes([(req_crc & 0xff) ^ 0xFF, req_crc >> 8])   # 故意破坏 CRC 低字节
     send_frame(bad)
     check("CRC 错帧 → uart3_tx_byte(5) 异常响应", tx_count == [5],
           f"tx_count={[hex(x) for x in tx_count]}")

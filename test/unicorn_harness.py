@@ -159,3 +159,13 @@ def differential(func_orig, func_new, args, seed, region=(0x10001000, 0x10003F00
     same = (ret_o == ret_n) and (post_o == post_n)
     return ret_o, ret_n, same, post_o, post_n
 
+
+def seed_addr_value(emu, lo, hi):
+    """把 [lo,hi) 每个 4 字节字写成 = 其地址值（小端），使每个全局都有唯一非零值。
+    可直接发现「原机码与编译码读到不同地址/不同位宽/不同值」的映射错位——A/B 下最严苛。"""
+    import struct
+    buf = bytearray()
+    for a in range(lo, hi, 4):
+        buf += struct.pack('<I', a)
+    emu.mem_write(lo, bytes(buf))
+

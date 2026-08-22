@@ -204,7 +204,12 @@ void UART3_IRQHandler(void)
 
 /* 0x0000AF64 —— Modbus CRC16（查表，初值 0xFFFF，低位在前）
  *   状态：crc_hi=高字节、crc_lo=低字节，tbl_idx = 数据字节 ^ crc_lo；
- *   查表内嵌 crc16_hi_tbl/crc16_lo_tbl（原 flash 0x11034/0x11134） */
+ *   查表内嵌 crc16_hi_tbl/crc16_lo_tbl（原 flash 0x11034/0x11134）。
+ *
+ *   ※ 循环语义（A/B 差分 2026-08-23 实证，非 len-1！）：原码 0xAF84
+ *     `movs r0,r4`(查 Z) → `sub.w r6,r4,#1`(**无 S 后缀，不置位**) → `uxtb r4,r6`(后减)。
+ *     bne 用的 Z 来自 movs 测试【减前】计数器 —— 故 while(计数器!=0) 精确执行 len 次，
+ *     处理全部 len 字节（标准 Modbus CRC）。旧读法把 sub.w 当置位 → 误判成 len-1，为本人 bug。 */
 uint16_t crc16(uint8_t *data,uint16_t len)
 {
   uint8_t tbl_idx;
@@ -213,11 +218,12 @@ uint16_t crc16(uint8_t *data,uint16_t len)
 
   crc_hi = 0xff;
   crc_lo = 0xff;
-  while ((len = (len - 1) & 0xff) != 0) {
+  while (len != 0) {
     tbl_idx = *data ^ crc_lo;
     crc_lo = crc16_hi_tbl[tbl_idx] ^ crc_hi;
     crc_hi = crc16_lo_tbl[tbl_idx];
     data = data + 1;
+    len = (uint16_t)(uint8_t)(len - 1);       /* uxtb 字节减；len>=256 处回绕语义保持一致 */
   }
   return crc_lo | crc_hi << 8;
 }

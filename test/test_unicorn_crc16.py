@@ -3,7 +3,8 @@
 # test_unicorn_crc16.py — 真正执行编译产物 crc16，对照 Python 模型
 #
 # 用 Unicorn 加载 firmware.elf，在仿真 SRAM 中写入构造数据，调用编译的
-# crc16@0x91ac，对比"真实编译产物执行结果"与"Python 模型（从 .c 复现）"。
+# crc16（地址 lookup('crc16')，随源码变化），对比"真实编译产物执行结果"
+# 与"Python 模型（从 .c 复现，处理全部 len 字节）"。
 # 这是对反编译 C 编译成机器码后的【执行级】等价验证，胜于纯模型测试。
 #
 # 若 unicorn 不可用 → 报 SKIP（不判失败）。
@@ -21,15 +22,12 @@ def load_model_tables():
     return b[0x11034:0x11034+256], b[0x11134:0x11134+256]
 
 def crc16_py(data, length, hi, lo):
-    ch = 0xff; cl = 0xff; i = 0
-    length &= 0xff
-    while True:
-        length = (length - 1) & 0xff
-        if length == 0:
-            break
+    # 标准 Modbus CRC：处理全部 length 字节（A/B 实证原始 crc16 非 len-1）
+    ch = 0xff; cl = 0xff
+    for i in range(length):
         t = data[i] ^ cl
         cl = hi[t] ^ ch
-        ch = lo[t]; i += 1
+        ch = lo[t]
     return (cl | (ch << 8)) & 0xffff
 
 def main():
@@ -55,9 +53,9 @@ def main():
         print(f"  [{st}] {name}" + (f"  {detail}" if detail else ""))
 
     testcases = [
-        (b"123456789", 9),   # 标准向量
-        (bytes([0x01,0x03,0x00,0x00,0x00,0x01]), 6),  # Modbus 读请求帧体
-        (bytes([0x01,0x03,0x00,0x00,0x00,0x01]), 7),  # 多传1 → 覆盖6节
+        (b"123456789", 9),   # 标准 CRC-16/MODBUS 检核值 0x4B37
+        (bytes([0x01,0x03,0x00,0x00,0x00,0x01]), 6),   # Modbus 读请求帧体（6 字节）
+        (bytes([0x01,0x03,0x00,0x00,0x00,0x01,0x00]), 7),  # 7 字节帧体（含填充）
     ]
     for data, length in testcases:
         # 写数据到仿真内存
