@@ -1,0 +1,24 @@
+# =============================================================================
+# .gitignore — LPC1765FBD100 decompiled 逆向工程项目
+# 原则：提交「资产/源码/文档/脚本」，排除「构建产物 / Ghidra 临时工程 / 可重建镜像」
+# =============================================================================
+
+# —— 构建产物（firmware/build.sh 生成，可重建）——
+firmware/*.o
+firmware/src/*.o
+firmware/*.hex
+firmware/*.elf
+firmware/*.map
+firmware/*.bin
+
+# —— 可重建的提取镜像（由 LPC1765.bin + 解压/生成脚本重建；如要留档请注释这两行）——
+docs/_data_image.bin
+firmware/data_image.bin
+
+# —— Ghidra 临时分析工程（勿入库，可随时重开）——
+tools/_ghidra_proj/
+
+# —— 常见垃圾 ——
+*.pyc
+__pycache__/
+*.csv

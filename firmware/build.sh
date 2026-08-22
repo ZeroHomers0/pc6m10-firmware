@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# =============================================================================
+# firmware/build.sh — 目标B 骨架构建（等价于 make，无需 make 在 PATH）
+# 用法：bash build.sh
+# 产出：firmware.elf / firmware.hex / firmware.bin / firmware.map
+# =============================================================================
+set -e
+cd "$(dirname "$0")"
+
+TC="/c/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin"
+CC="$TC/arm-none-eabi-gcc"
+OBJCOPY="$TC/arm-none-eabi-objcopy"
+
+CPU="-mcpu=cortex-m3 -mthumb -mfloat-abi=soft"
+CFLAGS="$CPU -Os -ffreestanding -fno-builtin -Wall -I. -Iinc"
+CFLAGS="$CFLAGS -Wno-unused-but-set-variable -Wno-unused-variable -Wno-pointer-sign"
+CFLAGS="$CFLAGS -Wno-parentheses"
+# -Wno-parentheses：反编译 Ghidra 风格 `a + b & 0xff`（& 优先级已低于 +，语义即
+#   (a+b)&0xff）遍布各模块，括号仅为样式建议，不隐含真实错误 → 全局抑制。
+
+rm -f *.o src/*.o firmware.elf firmware.hex firmware.bin firmware.map
+
+echo "== 编译 =="
+"$CC" $CFLAGS -c -o startup.o startup.s
+"$CC" $CFLAGS -c -o data_image.o data_image.s
+"$CC" $CFLAGS -c -o globals.o globals.c
+"$CC" $CFLAGS -c -o stub.o stub.c
+for f in src/*.c; do
+  echo "  $f"
+  "$CC" $CFLAGS -c -o "${f%.c}.o" "$f"
+done
+
+echo "== 链接 =="
+"$CC" $CPU -T lpc1765.ld -nostdlib -o firmware.elf *.o src/*.o \
+    -lgcc -Wl,--gc-sections -Wl,-Map,firmware.map
+
+echo "== 产物 =="
+"$OBJCOPY" -O ihex firmware.elf firmware.hex
+"$OBJCOPY" -O binary firmware.elf firmware.bin
+"$TC/arm-none-eabi-size" firmware.elf
+echo "OK: firmware.elf / firmware.hex / firmware.bin"

@@ -1,0 +1,114 @@
+# CLAUDE.md — LPC1765FBD100 固件逆向工程
+
+> 本文件是本项目的**自包含索引**。任何 AI 在任意对话中接手本项目，先读本文件即可快速恢复上下文并继续。
+> 配套文档：`PROJECT_SUMMARY_2026-08-21.md`（全史）、`README.md`（模块布局）、`APPLICATION_GUIDE_2026-08-21.md`（应用指南）、`DATA_SEGMENT_2026-08-21.md`（数据段清单）、`WORK_GUIDE_2026-08-21.md`（工作指导）。
+
+## 项目是什么
+
+对 NXP **LPC1765**（Cortex-M3，256KB flash）固件 `LPC1765.bin` 的**静态逆向工程**。
+目标设备：**PC6M-10 三相晶闸管（SCR）移相触发功率控制板**（SINE POWER / ST33C 变频电源，恒压/恒流/开环三模式）。
+已完成：105 个函数全部反编译、协议/架构全解析、硬件与菜单映射印证。
+长期目标：还原为**可编译、可修改**的等价源码（当前未达成，见"未完成"）。
+
+## 沟通约定（重要）
+
+- **全程中文交流**（用户使用中文，所有回复必须中文）。
+- 需要查固件细节时用 Ghidra MCP 工具（`mcp__ghidra__*`：`decompile_function` / `disassemble_function` / `get_function_xrefs` / `list_strings` 等）。
+- 用户说"记下来/记录" = 把结论写入本目录文档或记忆。
+- 硬件印证依据 = `docs/doc/` 下的 doc 硬件文档（唯一来源，无独立芯片清单）。其中 `PC6M-10-BOM-更新版.xlsx` 的 BOM 列表已用于芯片级印证（HARDWARE_VERIFICATION §六）。
+- 反编译保真约定：保留 Ghidra 原样与 `DAT_0000xxxx`/`PTR_xxxx` 符号；`<...>` 为理解注释。
+
+## 环境
+
+| 项 | 值 |
+|---|---|
+| 本目录 | `D:\code\LPC1765FBD100\decompiled`（自包含项目档案） |
+| 原始固件 | `LPC1765.bin`（同目录副本，262144B） |
+| Ghidra 工程 | `D:\code\LPC1765FBD100\LPC1765FBD100.gpr` |
+| Ghidra 安装 | `D:\code\LPC1765FBD100\ghidra_12.1.3_PUBLIC_20260817` |
+| MCP 服务 | `GhidraMCP-release-1-4`（本地，**读取超时 5s、单线程**） |
+| 根目录 | `D:\code\LPC1765FBD100\`（含 `doc/` 硬件文档原件、Ghidra 工具） |
+
+## 目录结构
+
+```
+decompiled/
+├── CLAUDE.md                      ← 本文件（入口）
+├── PROJECT_SUMMARY_2026-08-21.md  ← 项目全史（开始→过程→结果）
+├── README.md                      ← 模块布局 + 内存映射速查 + 功能结论
+├── APPLICATION_GUIDE_2026-08-21.md ← 应用指南（逆向结论怎么用：Modbus/菜单/诊断/定制/实测）
+├── DATA_SEGMENT_2026-08-21.md     ← 数据段清单（字符串/查表/指针表/SRAM 全局，目标A②+W2 地基）
+├── WORK_GUIDE_2026-08-21.md       ← 评估 + W1-W8 未完成清单 + 目标A/B路线
+├── LPC1765.bin                    ← 原始固件
+├── 01_startup.c … 13_gpio_init.c  ← 反编译源码（13 模块，函数入口地址在注释）
+├── 07_state_machine_asm.txt       ← state_machine 全量反汇编（10061 条）
+├── 08_modbus_dispatch_asm.txt     ← modbus_dispatch 全量反汇编（5161 条）
+├── docs/                          ← 根目录迁移的过程文档（原样）
+│   ├── PROGRESS_2026-08-20.md     ←   防丢失主文档（63 寄存器表/61 组同步全图）
+│   ├── PLAN.md                    ←   进度计划 + 关键符号速查
+│   ├── HARDWARE_VERIFICATION_2026-08-20.md
+│   ├── MENU_PARAMETER_MAPPING.md
+│   ├── i2c_param_sync.md / uart3_protocol.md / state_machine_analysis.md
+│   ├── *disasm.txt / *flow.txt    ←   早期指令级转储（历史产物）
+│   ├── 配置.png
+│   └── doc/                       ← doc 硬件文档原件（BOM/原理图/U38接线表/面板手册，8 个文件）
+└── tools/                         ← Ghidra 辅助脚本（.java/.py）
+```
+
+## 硬件事实（已确证）
+
+- **触发 GPIO**：G1-G6 = P0.17/15/18、P2.9/19/16；12 脉波 P2.8/7/6/5、P0.8/7（12° 脉宽 / 60° 双脉冲）。
+- **显示**：12864 图形 LCD（P1 口），TIMER1 ISR 动态扫描（6 区域逐行）。
+- **认证链路**：P2.1(出)/P2.2(入)/P2.3(时钟)/P2.4(复位) 经 **ADuM1201** 隔离 1-Wire 挑战-应答，失败重试 5 次锁机。
+- **EEPROM @0x53** = AT24C02C（256B 被动参数存储）；I2C 为 **GPIO 位带模拟**（SDA=P0.10、SCL=P0.11）。
+- **UART3** = RS485（ADM2483 隔离模块），Modbus RTU 从站。
+- **继电器/LED**（2026-08-21 复核）：P0.20=RLY3 备用（reg61 远程使能）/ P0.21=RLY2 报警 / P0.22=RLY1 运行；P1.20-23 状态 LED；P1.22=触发/运行指示。
+- **过零输入**：EINT1/2/3 = P2.11/12/13（下降沿）。P0.9 = 24V 交流方波输入。
+- **电源树**：PE5420 → KBP310/MB6S → LM2575S-5.0 → AZ1117H-3.3。
+
+## 已完成的结论（速查）
+
+- **105 个函数全部处理**：103 个 C 反编译；`state_machine`(0x458C) 与 `modbus_dispatch`(0xB642) 因超 MCP 5s 上限改走全量反汇编 + 精读还原。
+- **Modbus**：功能码 0x03/0x06/0x10，CRC16 poly 0xA001（双 256 表 @0x11034/0x11134），reg 1..63 全解析（读/写不对称、别名：reg24/25、reg27-29、reg40、reg61、reg62）。
+- **参数系统**：61 组 live↔shadow↔EEPROM 同步（`param_sync` 0x35F2）；双银行 magic 校验（'U'=0x55 / 'f'=0x66）；4 组增益槽。
+- **SCR 触发**：EINT3 每输入过零编程 `TIMER2.MR0`（触发角 = 180°-当前角，软起动 phase 0→4→5，PID 三路闭环）→ TIMER1 240 步扫描生成 6 窗口触发脉冲。
+- **保护**：0x1000EDF4 位标志（bit4 过压/bit5 过流/bit3 缺相/bit9 缺相严重级；只置不清锁存），停机斜坡。
+- **菜单**：14 位状态标志→事件码 1..0xE；运行中每 120s/300s 参数同步。全量映射见 `docs/MENU_PARAMETER_MAPPING.md`。
+- **数据段清单**（目标A②）：`DATA_SEGMENT_2026-08-21.md` 已导出——内存布局/向量表/字符串池 GBK 全表/CRC16 双表+反编译代码/波特率系数表/PID 分段除数/触发常数/switch 跳转表 0xDA6/UART3 指针表 0xB00C-0xB094 全映射/SRAM 全局清单。
+- **交叉引用**（目标A③）：13 个 .c 模块头注均加"交叉引用"段指向 docs；发现 3 处引脚/编号差异（EINT1/2/3 实为 P2.11/12/13、LCD CS/RS/E、继电器编号），已 ⚠ 标注待复核。
+- **两大函数注释补完**（目标A①）：state_machine 事件码→菜单页分发链（0x100048D8→0x10001744/45/46→参数 RAM）、modbus_dispatch 51 写分支结构（reg 0x10xx/范围校验/8 字节响应）已写入 07/08 模块。
+- **理解度**：主控制路径 100%，整体 ~95%。
+
+## 未完成 / 下一步
+
+**目标B 骨架已达成**（2026-08-21）：`firmware/` 工程 `bash build.sh` 零警告产出 `firmware.hex/bin/elf`
+（构建/布局/验证见 `firmware/README.md`）。12 个模块真实编译 + 07 用 stub.c（state_machine/modbus_dispatch
+伪代码不可编译）；freq_adjust_sync(0xAB48) 完整实现迁入 stub.c。W2 数据段（IAR 压缩 .data 解压、
+SRAM 初始镜像 `docs/_data_image.bin`、位域）已全部落地。
+
+- 完整清单：`WORK_GUIDE_2026-08-21.md` 的 **W1-W8**。
+- 下一步（目标B 阶段4+）：W1 两大函数 C 级还原（替换 stub）→ W7 行为等价验证（对照反汇编）→ W8 硬件实测
+  （示波器抓 12° 触发脉冲、reg44/45 标定）。
+- 目标 A（仅文档化）三项收尾已完成（②数据段清单 / ③交叉引用 / ①两大函数注释），≈100%。
+
+## 关键技术限制（踩过的坑）
+
+1. **Ghidra MCP 5s 超时**：超大函数（>几千条指令）`decompile_function` 会超时。
+   对策：用 `disassemble_function` 全量落盘 + Python 脚本分析（BL 目标/调用图/协议逻辑）+ 人工精读还原。
+2. **Windows 控制台中文乱码**：Bash 中 Python 打印中文标签乱码（GBK/UTF-8）；数据正确。落盘用 Write 工具（UTF-8）。
+3. **BL 目标正则**：须用 `\bbl\s+0x[0-9a-f]+`，避免把 `0x` 里的 `0` 当目标捕获。
+4. **旧结论纠错史**：①"无输出外设"错误（实为 TIMER2@0x40090000 编程 SCR 触发角，旧扫描漏 0x40090000）；②"reg62 特殊值{3,63,63}"误读（63 来自 reg≤0x3F 校验、3 是异常码）→ reg62=起始相位/输出下限；③ I2C 是位带模拟非硬件 I2C0。
+
+## 常用内存映射
+
+```
+0x2009C000  FIO 池（+0x18 FIO0SET +0x1C FIO0CLR +0x20 FIO0DIR
+            +0x38 FIO1SET +0x3C FIO1CLR +0x40 FIO1DIR
+            +0x54 FIO2PIN +0x58 FIO2SET +0x5C FIO2CLR +0x80 FIO3DIR）
+0x40004000  TIMER0（系统节拍）  0x40008000 TIMER1（LCD 扫描）
+0x40090000  TIMER2（SCR 触发角定时）  0x4009C000 UART3
+0x4002C000  PINSEL（+0x10 PINSEL1）  0x400FC000 SCB（+0xC4 PCONP
+            +0x140 EXTINT +0x148 EXTMODE +0x14C EXTPOLAR）
+0xE000E100  NVIC ISER（= -0x1FFF1F00）
+0x1000xxxx  反编译 DAT 全局区（RAM 镜像/内部 SRAM）
+```
