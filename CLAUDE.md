@@ -95,9 +95,17 @@ decompiled/
 - 完整清单：`WORK_GUIDE_2026-08-21.md` 的 **W1-W8**。
 - W7 行为等价验证（2026-08-23）：数据层三验全 PASS（SRAM 访问宽度 / modbus 51 写分支 / strpool 字符串映射）；
   手工还原函数 07/08 对金标准**地址双向全覆盖无臆造**（07:125/125/125、08:C-only=0）；06 地址与参数银行布局一致。
-  剩余：case2-7 控制流语义精读 + 01-06/09-13 逐函数精读（Ghidra 模块 ref 标注不全，需人工精读）。
+- **A/B 差分执行级测试全绿（2026-08-23，已合入 master）**：`test/unicorn_harness.py` 用 Unicorn 真实执行
+  【原始 LPC1765.bin】vs【firmware.elf】，同一 RAM 种子下比返回值+内存末态，原始二进制即金标准（无需手抄模型）。
+  覆盖全部 A/B 安全叶函数（纯 RAM+flash，无外设 RMW）：`modbus_read_reg`(0xAF94)65/65、`crc16`(0xAF64)6/6、
+  `modbus_write_multi`(0xB2E0)12/12、`closed_loop_integral`(0x108B0)10/10、`closed_loop_wrapper`(0x10F0A)4/4。
+  测试套件 `test/run_tests.py` 11 模块全绿。**抓到并修复 W7 真 bug×2**：
+  ① crc16 `len-1` 语义（原固件处理**全部** len 字节；误读 `sub.w r4,#1` 带 S 置位 → 0xAF84 实为 `movs r0,r4` 置 Z、
+  sub.w 无 S 不置位、uxtb 后减）；② closed_loop 误差链符号/无符号（应 SDIV 符号除）。
+  **教训**：模型测试能"反编译 C == 手抄模型"双错一致，A/B 才能抓；后续纯逻辑函数首选 A/B 而非模型。
+  剩余：case2-7 控制流语义精读 + 01-06/09-13 逐函数精读（非 A/B 可达，需人工/Ghidra）。
 - 下一步：W7 控制流精读 → W8 硬件实测（第Ⅰ段 SWD 冒烟 blink → 第Ⅱ段示波器抓 12° 触发脉冲 + reg44/45 标定）。
-  上机风险分层评估见记忆 `firmware-hardware-risk-assessment`。
+  上机风险分层评估见记忆 `firmware-hardware-risk-assessment`（点亮 70-85%、带载 SCR 40-60%）。
 - 目标 A（仅文档化）三项收尾已完成（②数据段清单 / ③交叉引用 / ①两大函数注释），≈100%。
 
 ## 关键技术限制（踩过的坑）
