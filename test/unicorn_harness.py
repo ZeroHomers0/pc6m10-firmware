@@ -19,7 +19,8 @@ from unicorn import *
 from unicorn.arm_const import *
 
 HERE   = os.path.dirname(os.path.abspath(__file__))
-FW     = os.path.join(HERE, '..', 'firmware.elf')
+# test/ 已移到固件外层（decompiled/test）；固件产物在 ../../firmware/firmware.elf
+FW     = os.path.join(HERE, '..', 'firmware', 'firmware.elf')
 
 # 段布局（来自 ELF 解析，2026-08-23）
 FLASH_BASE  = 0x0
@@ -111,3 +112,50 @@ def call(e, func_addr, args=None, ret_spec='r0'):
     if ret_spec == 'r1':
         return e.reg_read(UC_ARM_REG_R1)
     return e.reg_read(UC_ARM_REG_R0)
+
+
+# ── 原始固件加载（A/B 差分基准用）───────────────────────────────────────────────
+# 原始 LPC1765.bin 是 0x0 起 flash 的裸镜像；指向同一 SRAM（0x1000xxxx/0x2007C000）。
+ORIG_BIN = os.path.join(HERE, '..', 'LPC1765.bin')
+
+def load_original(bin_path=ORIG_BIN):
+    """加载原始 LPC1765.bin 到 flash 0x0，映射同样的 SRAM0/SRAM1、设同样 SP。
+    原始固件的指针全局（DAT_0000b4c4 等）存于 flash 0xb4c4，运行期从 flash 读目标地址，
+    与编译版（指针存 SRAM1）.data 的区别不影响目标 SRAM 写入。"""
+    e = Uc(UC_ARCH_ARM, UC_MODE_THUMB)
+    e.mem_map(FLASH_BASE, FLASH_MAP, UC_PROT_ALL)
+    d = open(bin_path, 'rb').read()
+    e.mem_write(FLASH_BASE, d)                 # 赤裸 flash 镜像
+    e.mem_map(SRAM0_BASE, SRAM0_LEN, UC_PROT_ALL)   # 清零（原固件运行期初始化）
+    e.mem_map(SRAM1_BASE, SRAM1_LEN, UC_PROT_ALL)
+    e.reg_write(UC_ARM_REG_SP, ESTACK)
+    e.reg_write(UC_ARM_REG_LR, 0x03000000)
+    return e
+
+
+def differential(func_orig, func_new, args, seed, region=(0x10001000, 0x10003F00)):
+    """A/B 差分等价测试：同一 RAM 种子下分别跑【原始固件】与【编译固件】的同功能函数，
+    比较返回值 + region 内存末态是否一致。不一致 → 反编译重构与原机码语义背离（W7 抓 bug）。
+    region 默认覆盖参数/全局区 0x10001000-0x10003F00（避开盘区 0x10005xxx+）。
+    返回值：(ret_orig, ret_new, same, out_orig, out_new)。
+    注意：本函数对纯 RAM 读写/算数的【叶函数】有效；若函数有子调用或触外设需另行 hook。"""
+    def runner(loader, fn, args):
+        e = loader()
+        seed(e)                                # 每种 RAM 种子独立
+        lo, hi = region
+        pre_new = bytes(e.mem_read(lo, hi - lo))
+        # 按 AAPCS 传 args（r0-r3），与 call() 一致
+        regs = [UC_ARM_REG_R0, UC_ARM_REG_R1, UC_ARM_REG_R2, UC_ARM_REG_R3]
+        if args:
+            for i, v in enumerate(args[:4]):
+                e.reg_write(regs[i], v)
+        e.reg_write(UC_ARM_REG_LR, 0xFF000000)
+        e.emu_start(fn | 1, 0xFF000000)        # Cortex-M3 = Thumb；起始地址|1 进入 Thumb 真执行
+        ret = e.reg_read(UC_ARM_REG_R0)
+        post = bytes(e.mem_read(lo, hi - lo))
+        return ret, post
+    ret_o, post_o = runner(load_original, func_orig, args)
+    ret_n, post_n = runner(load_firmware, func_new, args)
+    same = (ret_o == ret_n) and (post_o == post_n)
+    return ret_o, ret_n, same, post_o, post_n
+

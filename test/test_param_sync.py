@@ -19,7 +19,7 @@
 # =============================================================================
 import re, os, sys
 
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC  = os.path.join(ROOT, 'firmware', 'src', '06_param_system.c')
 GLOB = os.path.join(ROOT, 'firmware', 'globals.c')
 try:

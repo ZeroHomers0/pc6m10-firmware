@@ -20,7 +20,7 @@
 # =============================================================================
 import sys, os
 
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BIN  = os.path.join(ROOT, 'LPC1765.bin')
 try:
     sys.stdout.reconfigure(encoding='utf-8')

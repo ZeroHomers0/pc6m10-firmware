@@ -131,18 +131,24 @@ int closed_loop_integral(int setpoint,int feedback,uint32_t coef_a,uint32_t coef
   *DAT_00010f54 = 1;
   p_pid_out = g_pid_integral;                /* 位置增量输出 0x10002130 */
   *g_pid_integral =
-       /* 位置式 PID 分子：三项分别对应比例/积分/微分贡献（系数见各 DAT 槽） */
-       (*DAT_00010f6c * *DAT_00010f58 * 10 * (*DAT_00010f60 + *DAT_00010f64 * -2 + *DAT_00010f70) +
-       *DAT_00010f68 * *DAT_00010f58 * 2 * *DAT_00010f60 +
-       (*DAT_00010f60 - *DAT_00010f64) * *DAT_00010f5c * *p_pid * *DAT_00010f58 * 2) /
-       *DAT_00010f40;                      /* 除以本次选定的除数（误差分段表） */
+       /* 位置式 PID 分子：三项分别对应比例/积分/微分贡献（系数见各 DAT 槽）。
+        * 原机码对该误差链按【带符号】算术：误差/上次/上上次误差为带符号量（int32），
+        * 末段用 Cortex-M3 SDIV 做符号除法。若按无符号算，负误差 0xFFFFFE70 被当正数，
+        * 分子回环成大正数 → 输出/钳位方向与金标准背离（W7 差分测试 已证实）。
+        * 故对参与公式的各误差槽按 int32 取读、末段除按 int32；钳位比较也按符号。 */
+       (int32_t)((int32_t)*DAT_00010f6c * (int32_t)*DAT_00010f58 * 10 *
+                 ((int32_t)*DAT_00010f60 + (int32_t)*DAT_00010f64 * -2 + (int32_t)*DAT_00010f70) +
+                 (int32_t)*DAT_00010f68 * (int32_t)*DAT_00010f58 * 2 * (int32_t)*DAT_00010f60 +
+                 ((int32_t)*DAT_00010f60 - (int32_t)*DAT_00010f64) * (int32_t)*DAT_00010f5c *
+                   (int32_t)*p_pid * (int32_t)*DAT_00010f58 * 2) /
+       (int32_t)*DAT_00010f40;              /* 除以本次选定的除数（误差分段表，SDIV） */
   p_pid = DAT_00010f78;                    /* p_pid → 累加器 0x10002120 */
-  *DAT_00010f78 = *DAT_00010f78 + *p_pid_out;      /* 位置式累加 */
-  if (DAT_00010f7c < *p_pid) {
-    *DAT_00010f78 = DAT_00010f7c;               /* 上限钳位 0x00116520 */
+  *DAT_00010f78 = *DAT_00010f78 + *p_pid_out;      /* 位置式累加（补码加，位结果一致） */
+  if ((int32_t)DAT_00010f7c < (int32_t)*p_pid) {   /* 上限钳位 0x00116520（符号比较） */
+    *DAT_00010f78 = DAT_00010f7c;
   }
-  if (*DAT_00010f78 < DAT_00010f80) {
-    *DAT_00010f78 = DAT_00010f80;               /* 下限钳位 0x0005CC60 */
+  if ((int32_t)*DAT_00010f78 < (int32_t)DAT_00010f80) {   /* 下限钳位 0x0005CC60（符号比较） */
+    *DAT_00010f78 = DAT_00010f80;
   }
   return *DAT_00010f78;
 }

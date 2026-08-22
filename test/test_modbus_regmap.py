@@ -15,7 +15,7 @@
 # =============================================================================
 import re, os, sys
 
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MOD  = os.path.join(ROOT, 'firmware', 'src', '08_uart3_modbus.c')
 GLOB = os.path.join(ROOT, 'firmware', 'globals.c')
 try:

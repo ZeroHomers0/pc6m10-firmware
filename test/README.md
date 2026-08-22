@@ -1,4 +1,4 @@
-# firmware/test — host 虚拟数据测试
+# test/ — host 虚拟数据测试（已移到固件外层 decompiled/test）
 
 > 用**构造的虚拟数据**对反编译固件的**纯逻辑函数**做行为等价验证，
 > 不依赖真实硬件、不烧录。以**原始二进制 + 反汇编金标准**为基准，
@@ -7,7 +7,7 @@
 ## 运行
 
 ```bash
-cd firmware/test
+cd decompiled/test
 PYTHONUTF8=1 python run_tests.py           # 跑全部 test_*.py
 PYTHONUTF8=1 python run_tests.py crc16     # 只跑名字含 crc16 的
 ```
@@ -24,6 +24,11 @@ PYTHONUTF8=1 python run_tests.py crc16     # 只跑名字含 crc16 的
 | `test_unicorn_crc16.py` | 编译 crc16 | ✅ 3/3 | **真实执行**（Unicorn 加载 firmware.elf）：编译产物 crc16 == Python 模型 |
 | `test_unicorn_modbus_dispatch.py` | 编译 modbus_dispatch | ✅ 11/11 | **真实执行**：合法读帧→读分支发7字节 + 响应CRC自洽；CRC错帧→0x83/0x04异常；站址不匹配→不发。**抓到 W7 真 bug**（见下） |
 | `test_unicorn_param_sync.py` | 编译 param_sync | ✅ 2/2 | **真实执行**：live≠shadow 触发 i2c_write_reg + 写后 shadow=live（hook i2c_write_reg 拦截 GPIO） |
+| `test_unicorn_modbus_write_multi.py` | `modbus_write_multi` (0xB2E0) | ✅ 12/12 | **A/B 差分**：同一 RAM 种子下原始 bin vs 编译 elf 真执行比价，reg 0x00/01/02/03/1A/1F/26/2E/2F/3C/3D 写字节/半字/字至对应全局，末态一致 |
+| `test_unicorn_closed_loop.py` | `closed_loop_integral` (0x108B0) | ✅ 10/10 | **A/B 差分**：三路通道×死区三段×分段除数，负误差路径、两钳位间公式、上下钳。**抓到 W7 真 bug**（符号/无符号，见下） |
+
+> 首轮模型测试曾用**旧排**：`crc16_semantics`(9) + `modbus_regmap`(5) + `param_sync`(6)；
+> 迁到固件外层后与 unicorn 执行测试归档，现 8 模块全绿见上表（另 3 个不依赖 unicorn）。
 
 ## Unicorn 真实执行（已可用，2026-08-23）
 
@@ -65,12 +70,40 @@ v = (uint32_t)*(uint16_t*)0x100017A4;   // 回读 out_val，对应 ldrh
 修复后重编译，测试读响应 `数据=0x0056`（= 写入 g_gain_sel 的已知值），与原机码一致。
 这是 Unicorn **执行级**测试才抓得到的一类 bug（纯模型/静态比对难以察觉「返回值恒 0」的语义差）。
 
+## 关键发现（W7 真 bug）：closed_loop 误差链符号/无符号
+
+A/B 差分测试（见下）对 `closed_loop_integral` (0x108B0) 喂 `(setpoint=100,feedback=500)`（负误差路径）：
+- **原始固件**：误差 `0xFFFFFE70`（= −400，带符号），分子用 **SDIV** 符号除 → 输出 `−6400`(0xFFFFE700)，
+  累加后触发**下限**钳位 → `0x5CC60`。
+- **我的反编译 C**（初版）：把误差链当 **uint32**（无符号），`0xFFFFFE70` 被当正数，分子回环成大正数 →
+  输出 `0x01B4CF1B`（≈2867万）→ 命中**上限**钳位 → `0x116520`。
+
+两者终态完全不同，A/B 差分（`same=False`）**当场抓到**。对照原始反汇编证实：误差寄存器
+（0x1000210C 等）是**带符号量**（int32），PID 分子/末段除/钳位比较均按符号进行。已修复
+`12_closed_loop.c`（公式与钳位改 int32 取读/比较，见 12 模块内联注释）。修复后该分支 `same=True`，
+且新增「落两钳位之间」`0xE4E1C` 与「触发上钳」`0x116520` 两用例，直接比对公式、不被钳位掩盖。
+
+## A/B 差分测试 `differential()`（最强等价验证）
+
+`unicorn_harness.differential(func_orig, func_new, args, seed, region)`：
+同一 RAM 种子下**分别真执行**【原始固件】(LPC1765.bin, 0x108B0/0xB2E0) 与【编译固件】(firmware.elf)
+的同功能函数，比较**返回值 + region 内存末态**。原始二进制就是金标准——无需手抄参考模型。
+`seed` 会先把 region [0x10001000,0x10003F00) 清零消除 `.fw_image` 初始差异，再设被测 RAM。
+
+```python
+ret_o, ret_n, same, post_o, post_n = differential(FUNC_orig, lookup('closed_loop_integral'), args, seed)
+```
+
+地址须以**原始布局**为准（`lp1765.ld` 把全局钉在原址），A/B 才能对比同一 RAM。若编译版把某全局
+落在别处，差分立即失配 → 抓到「地址映射错位」类 bug。这是 W7 里「原始 vs 反编译」的最直接证明。
+
 ## 方法与局限
 
 - **纯逻辑函数**（无外设 RMW、无硬实时时序）既可模型测试（从 .c 提取），也可 unicorn 真实执行。
-- crc16 / modbus_read_reg / modbus_write_multi / param_sync 都是纯 SW 逻辑 → 两路皆可测。
+- crc16 / modbus_read_reg / modbus_write_multi / param_sync / closed_loop 都是纯 SW 逻辑 → 两路皆可测。
 - **外设硬时序**（TIMER 触发角、FIO 位带写、GPIO 协议时序）无法在 unicorn 仿真——这些是
   上机行为风险的来源，靠 W7 静态对照 + W8 硬件实测覆盖，**静态/仿真证明不了**。
 - 现有两类测试互补：
   - **模型测试**从 .c 源码提取行为表 + 构造虚拟数据 + 断言不变量（快、覆盖全部参数）。
-  - **unicorn 执行测试**真正跑编译的 Thumb 产物，验证"反编译 C→编译→机器码→执行"闭环。
+  - **unicorn 执行测试**真正跑编译的 Thumb 产物，验证"反编译 C→编译→机器码→执行"闭环；
+    其中 **A/B 差分**直接以原始固件为基准，是三者中最强的等价证明。
