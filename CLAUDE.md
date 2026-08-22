@@ -40,7 +40,10 @@ decompiled/
 ├── DATA_SEGMENT_2026-08-21.md     ← 数据段清单（字符串/查表/指针表/SRAM 全局，目标A②+W2 地基）
 ├── WORK_GUIDE_2026-08-21.md       ← 评估 + W1-W8 未完成清单 + 目标A/B路线
 ├── LPC1765.bin                    ← 原始固件
-├── 01_startup.c … 13_gpio_init.c  ← 反编译源码（13 模块，函数入口地址在注释）
+├── 01_startup.c … 13_gpio_init.c  ← 反编译源码（13 模块存档版，函数入口地址在注释）
+├── firmware/                      ← 可编译工程（src/ 16 模块 + inc/ + build.sh + lpc1765.ld）
+│   ├── src/                       ←   16 个 .c（01-13 + 08_modbus_dispatch + crc16_table + strpool）
+│   └── inc/                       ←   types.h / globals.h / reg.h / consts.h
 ├── 07_state_machine_asm.txt       ← state_machine 全量反汇编（10061 条）
 ├── 08_modbus_dispatch_asm.txt     ← modbus_dispatch 全量反汇编（5161 条）
 ├── docs/                          ← 根目录迁移的过程文档（原样）
@@ -81,14 +84,18 @@ decompiled/
 
 ## 未完成 / 下一步
 
-**目标B 骨架已达成**（2026-08-21）：`firmware/` 工程 `bash build.sh` 零警告产出 `firmware.hex/bin/elf`
-（构建/布局/验证见 `firmware/README.md`）。12 个模块真实编译 + 07 用 stub.c（state_machine/modbus_dispatch
-伪代码不可编译）；freq_adjust_sync(0xAB48) 完整实现迁入 stub.c。W2 数据段（IAR 压缩 .data 解压、
-SRAM 初始镜像 `docs/_data_image.bin`、位域）已全部落地。
+**目标B 可编译已达成**（2026-08-22）：`firmware/` 工程 `bash build.sh` 零警告产出 `firmware.hex/bin/elf`
+（text 60268 / data 3000 / bss 2188）。**W1 已完成**——07/08 两大函数已转为真实 C 级还原
+（state_machine 0x458C 18 case 写码 / modbus_dispatch 0xB642 51 写分支），`stub.c` 已删除；
+freq_adjust_sync 独立编译于 0x1A2。可读性重构 3 组提交已落地（全局变量语义化 g_ / reg.h 位宽 / consts.h 常量表）。
+仓库无 remotes（纯本地），默认分支为 `master`（无 `main`）。
 
 - 完整清单：`WORK_GUIDE_2026-08-21.md` 的 **W1-W8**。
-- 下一步（目标B 阶段4+）：W1 两大函数 C 级还原（替换 stub）→ W7 行为等价验证（对照反汇编）→ W8 硬件实测
-  （示波器抓 12° 触发脉冲、reg44/45 标定）。
+- W7 行为等价验证（2026-08-23）：数据层三验全 PASS（SRAM 访问宽度 / modbus 51 写分支 / strpool 字符串映射）；
+  手工还原函数 07/08 对金标准**地址双向全覆盖无臆造**（07:125/125/125、08:C-only=0）；06 地址与参数银行布局一致。
+  剩余：case2-7 控制流语义精读 + 01-06/09-13 逐函数精读（Ghidra 模块 ref 标注不全，需人工精读）。
+- 下一步：W7 控制流精读 → W8 硬件实测（第Ⅰ段 SWD 冒烟 blink → 第Ⅱ段示波器抓 12° 触发脉冲 + reg44/45 标定）。
+  上机风险分层评估见记忆 `firmware-hardware-risk-assessment`。
 - 目标 A（仅文档化）三项收尾已完成（②数据段清单 / ③交叉引用 / ①两大函数注释），≈100%。
 
 ## 关键技术限制（踩过的坑）

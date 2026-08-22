@@ -26,8 +26,11 @@
 | `04_i2c.c` | 9 | I2C 位带模拟（SDA=P0.10、SCL=P0.11、EEPROM 芯片@0x53，byte 寻址 AT24C02C） |
 | `05_adc.c` | 4 | ADC0 多通道采集 |
 | `06_param_system.c` | 2 | `load_config`（银行 A/B 魔数校验、默认值、shadow→live 拷贝、增益对选择）、`param_sync_live_to_eeprom`（逐参数比对写回） |
-| `07_state_machine.c` | 2 | `freq_adjust_sync` + `state_machine`（主菜单状态机，**反汇编精读版**，已补事件码→菜单页分发链） |
-| `08_uart3_modbus.c` | 7+1 | UART3 初始化/收发/CRC16/读写寄存器 + `modbus_dispatch`（帧解析分发，**反汇编精读版**，已补 51 写分支结构） |
+| `07_state_machine.c` | 2+3 | `freq_adjust_sync` + `state_machine`（主菜单状态机，**C 级还原**，18 case 写码；入口 0x458C 事件码→菜单页分发链）+ static 辅助 `sm3_draw_item/sm4_draw_value/sm6_delay_loop` |
+| `08_uart3_modbus.c` | 8 | UART3 初始化/收发/CRC16/读写寄存器（`uart3_init/uart3_tx_byte/uart3_rx_timeout_monitor/crc16/modbus_read_reg/modbus_write_multi`） |
+| `08_modbus_dispatch.c` | 1 | `modbus_dispatch`（帧解析分发，**C 级还原**，51 写分支结构；入口 0xB642） |
+| `crc16_table.c` | — | CRC16 双表内嵌 `const` 数组（`crc16_hi_tbl/crc16_lo_tbl`，原 flash 0x11034/0x11134，bug#S9 修复） |
+| `strpool.c` | 1 | 字符串池 GBK blob + `strpool_map`（flash 地址→映射，W7a） |
 | `09_output_stage.c` | 16 | 引脚配置、定时器、外部中断、`output_stage`（SCR 移相触发核心：软起停/闭环/保护） |
 | `10_relay_led.c` | 5 | 继电器/LED 输出（P0.20/P0.21/P1.20/P1.21/P1.23） |
 | `11_auth.c` | 3 | 1-Wire 认证（24 位挑战/16 位应答，P2.1/2/3/4） |
@@ -78,7 +81,10 @@ decompiled/
 ├── DATA_SEGMENT_2026-08-21.md     ← 数据段清单（目标A② / W2 地基）
 ├── WORK_GUIDE_2026-08-21.md       ← 工作指导（W1-W8 / 目标 A/B）
 ├── LPC1765.bin                    ← 原始固件
-├── 01_startup.c … 13_gpio_init.c  ← 反编译源码（13 模块）
+├── 01_startup.c … 13_gpio_init.c  ← 反编译源码（13 模块存档版）
+├── firmware/                      ← 可编译工程（build.sh → firmware.elf/hex/bin；src/ 16 模块 + inc/ + lpc1765.ld）
+│   ├── src/                       ←   16 个 .c（01-13 + 08_modbus_dispatch + crc16_table + strpool）
+│   └── inc/                       ←   types.h / globals.h / reg.h / consts.h
 ├── 07_state_machine_asm.txt       ← state_machine 全量反汇编（10061 条）
 ├── 08_modbus_dispatch_asm.txt     ← modbus_dispatch 全量反汇编（5161 条）
 ├── docs/                          ← 根目录迁移的过程文档
