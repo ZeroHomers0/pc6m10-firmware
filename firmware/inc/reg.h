@@ -69,11 +69,11 @@ typedef struct {
 #define U3THR           REG8(UART3_BASE + 0x00)
 #define U3DLL           REG8(UART3_BASE + 0x00)
 #define U3DLM           REG8(UART3_BASE + 0x04)
-#define U3IER           REG32(UART3_BASE + 0x04)
-#define U3IIR           REG32(UART3_BASE + 0x08)
-#define U3FCR           REG32(UART3_BASE + 0x08)
+#define U3IER           REG32(UART3_BASE + 0x04)   /* DLAB=0 时读改写此 8 位(反汇编 word 置位) */
+#define U3IIR           REG8(UART3_BASE + 0x08)    /* 反汇编 ldrb：只读 8 位 */
+#define U3FCR           REG8(UART3_BASE + 0x08)    /* 反汇编 strb：只写 8 位 */
 #define U3LCR           REG8(UART3_BASE + 0x0C)
-#define U3LSR           REG32(UART3_BASE + 0x14)
+#define U3LSR           REG8(UART3_BASE + 0x14)    /* 反汇编 ldrb：只读 8 位 */
 
 /* ================= ADC0 0x40034000 =================
  * +0x00 ADCR +0x04 ADGDR +0x08 ADGSR +0x0C ADSTAT
