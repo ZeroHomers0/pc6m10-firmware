@@ -12,7 +12,7 @@
  *
  * output_stage（主循环每节拍调用）——SCR 移相触发的核心：
  *   运行状态 0x1000EDA8（==1 跳过处理）；每 9 拍执行一次
- *   触发角：180°(0xB4) - 当前角；周期基量 0x2C88、角度系数 0x18BD(6333)/100
+ *   触发角：180°(0xB4) - 当前角；周期基量 TRIG_PERIOD、角度系数 ANGLE_SCALE(6333)/100
  *   软起/软停斜坡（状态机 0x1000EE24/0x1000F268/0x1000F780：0=停、4=运行、5=稳定）
  *   闭环：closed_loop_wrapper(PID) 计算输出角；上下限钳位 0x1000F2C8/0x1000F2D0
  *   保护：过压(0x1000EDE4..) / 过流(0x1000EDF8..) / 缺相(0x1000EE04..)，
@@ -44,6 +44,7 @@
 #include "inc/types.h"
 #include "inc/reg.h"
 #include "inc/globals.h"
+#include "inc/consts.h"
 
 /* 跨模块前向声明：nvic_enable_irq 定义在 13_gpio_init.c:19；
    closed_loop_wrapper 定义在 12_closed_loop.c（undefined4, 4 参） */
@@ -350,17 +351,17 @@ void output_stage(void)
           *DAT_0000ee34 = 0;
           *DAT_0000ee38 = 0;
           *DAT_0000ee3c = 0;
-          *DAT_0000ee40 = 0x1771;                     /* 软起累加初始 6001 */
+          *DAT_0000ee40 = SOFT_START_INIT;                     /* 软起累加初始 6001 */
         }
         if (*DAT_0000ee24 == 4) {
           *DAT_0000ee1c = *DAT_0000ede0;
           word_ptr = DAT_0000ee48;
-          *DAT_0000ee48 =                             /* 触发步进 = (0x2C88-角*6333/100)/50/除数 */
-               (int)(((ulonglong)(0x2c88 - (uint)(*DAT_0000edb4 * 0x18bd) / 100) / 0x32) /
+          *DAT_0000ee48 =                             /* 触发步进 = (TRIG_PERIOD-角*6333/100)/50/除数 */
+               (int)(((ulonglong)(TRIG_PERIOD - (uint)(*DAT_0000edb4 * ANGLE_SCALE) / 100) / 0x32) /
                     (ulonglong)*DAT_0000ee44);
           *DAT_0000ee4c = *DAT_0000ee4c + *word_ptr;
           if (*DAT_0000ee50 == '\0') {
-            *DAT_0000ee54 = (uint)(*DAT_0000edb4 * 0x18bd) / 100 + *DAT_0000ee4c;
+            *DAT_0000ee54 = (uint)(*DAT_0000edb4 * ANGLE_SCALE) / 100 + *DAT_0000ee4c;
             *DAT_0000ee58 = 1;
           }
           if (*DAT_0000ee50 == '\x01') {
@@ -475,12 +476,12 @@ void output_stage(void)
           pid_out = closed_loop_wrapper(*DAT_0000f27c,*DAT_0000f288,*g_act_gain_a,*g_act_gain_b);
           *DAT_0000f2c4 = pid_out;
         }
-        if (((uint)(*DAT_0000f2c8 * 0x18bd) < *DAT_0000f2c4 ||
-             *DAT_0000f2c8 * 0x18bd - *DAT_0000f2c4 == 0) && (*DAT_0000f2cc == '\0')) {
-          *DAT_0000f2c4 = *DAT_0000f2c8 * 0x18bd;     /* 输出上限钳位 */
+        if (((uint)(*DAT_0000f2c8 * ANGLE_SCALE) < *DAT_0000f2c4 ||
+             *DAT_0000f2c8 * ANGLE_SCALE - *DAT_0000f2c4 == 0) && (*DAT_0000f2cc == '\0')) {
+          *DAT_0000f2c4 = *DAT_0000f2c8 * ANGLE_SCALE;     /* 输出上限钳位 */
         }
-        if ((*DAT_0000f2c4 <= (uint)(*DAT_0000f2d0 * 0x18bd)) && (*DAT_0000f2cc == '\0')) {
-          *DAT_0000f2c4 = *DAT_0000f2d0 * 0x18bd;     /* 输出下限钳位 */
+        if ((*DAT_0000f2c4 <= (uint)(*DAT_0000f2d0 * ANGLE_SCALE)) && (*DAT_0000f2cc == '\0')) {
+          *DAT_0000f2c4 = *DAT_0000f2d0 * ANGLE_SCALE;     /* 输出下限钳位 */
         }
       }
       if (*g_gain_sel == '\x01') {
@@ -496,17 +497,17 @@ void output_stage(void)
           *DAT_0000f2e4 = 0;
           *DAT_0000f2b4 = 0;
           *DAT_0000f28c = '\0';
-          *DAT_0000f290 = 0x1771;
+          *DAT_0000f290 = SOFT_START_INIT;
         }
         if (*DAT_0000f268 == 4) {
           *DAT_0000f2d8 = *DAT_0000f2e8;
           word_ptr = DAT_0000f2f0;
           *DAT_0000f2f0 =
-               (int)(((ulonglong)(0x2c88 - (uint)(*DAT_0000f2d0 * 0x18bd) / 100) / 0x32) /
+               (int)(((ulonglong)(TRIG_PERIOD - (uint)(*DAT_0000f2d0 * ANGLE_SCALE) / 100) / 0x32) /
                     (ulonglong)*DAT_0000f2ec);
           *DAT_0000f2f4 = *DAT_0000f2f4 + *word_ptr;
           if (*DAT_0000f2f8 == '\0') {
-            *DAT_0000f2fc = (uint)(*DAT_0000f2d0 * 0x18bd) / 100 + *DAT_0000f2f4;
+            *DAT_0000f2fc = (uint)(*DAT_0000f2d0 * ANGLE_SCALE) / 100 + *DAT_0000f2f4;
             *DAT_0000f26c = 1;
           }
           if (*DAT_0000f2f8 == '\x01') {
@@ -621,12 +622,12 @@ void output_stage(void)
           pid_out = closed_loop_wrapper(*DAT_0000f718,*DAT_0000f724,*g_act_gain_a,*g_act_gain_b);
           *DAT_0000f760 = pid_out;
         }
-        if (((uint)(*DAT_0000f764 * 0x18bd) < *DAT_0000f760 ||
-             *DAT_0000f764 * 0x18bd - *DAT_0000f760 == 0) && (*DAT_0000f768 == '\0')) {
-          *DAT_0000f760 = *DAT_0000f764 * 0x18bd;
+        if (((uint)(*DAT_0000f764 * ANGLE_SCALE) < *DAT_0000f760 ||
+             *DAT_0000f764 * ANGLE_SCALE - *DAT_0000f760 == 0) && (*DAT_0000f768 == '\0')) {
+          *DAT_0000f760 = *DAT_0000f764 * ANGLE_SCALE;
         }
-        if ((*DAT_0000f760 <= (uint)(*DAT_0000f76c * 0x18bd)) && (*DAT_0000f768 == '\0')) {
-          *DAT_0000f760 = *DAT_0000f76c * 0x18bd;
+        if ((*DAT_0000f760 <= (uint)(*DAT_0000f76c * ANGLE_SCALE)) && (*DAT_0000f768 == '\0')) {
+          *DAT_0000f760 = *DAT_0000f76c * ANGLE_SCALE;
         }
       }
       scratch_ptr = DAT_0000f778;
@@ -650,11 +651,11 @@ void output_stage(void)
           }
           word_ptr = DAT_0000f788;
           *DAT_0000f788 =
-               (int)(((ulonglong)(0x2c88 - (uint)(*DAT_0000f76c * 0x18bd) / 100) / 0x32) /
+               (int)(((ulonglong)(TRIG_PERIOD - (uint)(*DAT_0000f76c * ANGLE_SCALE) / 100) / 0x32) /
                     (ulonglong)*DAT_0000f784);
           *DAT_0000f78c = *DAT_0000f78c + *word_ptr;
           if (*DAT_0000f790 == '\0') {
-            *DAT_0000f794 = (uint)(*DAT_0000f76c * 0x18bd) / 100 + *DAT_0000f78c;
+            *DAT_0000f794 = (uint)(*DAT_0000f76c * ANGLE_SCALE) / 100 + *DAT_0000f78c;
             *DAT_0000f708 = 1;
           }
           if (*DAT_0000f790 == '\x01') {
@@ -676,13 +677,13 @@ void output_stage(void)
           *DAT_0000f794 = (*DAT_0000f77c * 0x2f8) / 100 + 0xedd;
           *DAT_0000f760 = *scratch_ptr * 100;
         }
-        if (((uint)(*DAT_0000f764 * 0x18bd) < *DAT_0000f760 ||
-             *DAT_0000f764 * 0x18bd - *DAT_0000f760 == 0) && (*DAT_0000f768 == '\0')) {
-          *(int *)PTR_out_setpoint_0000fb98 = *DAT_0000fb94 * 0x18bd;
+        if (((uint)(*DAT_0000f764 * ANGLE_SCALE) < *DAT_0000f760 ||
+             *DAT_0000f764 * ANGLE_SCALE - *DAT_0000f760 == 0) && (*DAT_0000f768 == '\0')) {
+          *(int *)PTR_out_setpoint_0000fb98 = *DAT_0000fb94 * ANGLE_SCALE;
         }
-        if ((*(uint *)PTR_out_setpoint_0000fb98 <= (uint)(*DAT_0000fb9c * 0x18bd)) &&
+        if ((*(uint *)PTR_out_setpoint_0000fb98 <= (uint)(*DAT_0000fb9c * ANGLE_SCALE)) &&
            (*DAT_0000fba0 == '\0')) {
-          *(int *)PTR_out_setpoint_0000fb98 = *DAT_0000fb9c * 0x18bd;
+          *(int *)PTR_out_setpoint_0000fb98 = *DAT_0000fb9c * ANGLE_SCALE;
         }
       }
     }
@@ -722,7 +723,7 @@ void output_stage(void)
       }
       else {
         *(int *)PTR_flag_68_0000fbb0 =
-             (int)(((ulonglong)(0x2c88 - (uint)(*DAT_0000fb9c * 0x18bd) / 100) / 0x32) /
+             (int)(((ulonglong)(TRIG_PERIOD - (uint)(*DAT_0000fb9c * ANGLE_SCALE) / 100) / 0x32) /
                   (ulonglong)*DAT_0000fbc4);
         if (*(uint *)ramp_cnt < *(uint *)PTR_flag_6c_0000fbb4) {
           *(undefined4 *)PTR_input_locked_0000fba8 = 4;
@@ -732,18 +733,18 @@ void output_stage(void)
           *(int *)PTR_flag_6c_0000fbb4 = *(int *)PTR_flag_6c_0000fbb4 - *(int *)PTR_flag_68_0000fbb0;
           if (*DAT_0000fbc8 == '\x01') {
             *(uint *)PTR_flag_70_0000fbb8 =
-                 (uint)(*DAT_0000fb9c * 0x18bd) / 100 + *(int *)PTR_flag_6c_0000fbb4;
+                 (uint)(*DAT_0000fb9c * ANGLE_SCALE) / 100 + *(int *)PTR_flag_6c_0000fbb4;
           }
           if (*DAT_0000fbc8 == '\0') {
             *(undefined4 *)PTR_flag_70_0000fbb8 = *(undefined4 *)PTR_flag_6c_0000fbb4;
           }
           *(int *)PTR_out_setpoint_0000fb98 = *(int *)PTR_flag_70_0000fbb8 * 100;
-          if (((uint)(*DAT_0000fb94 * 0x18bd) < *(uint *)PTR_out_setpoint_0000fb98 ||
-               *DAT_0000fb94 * 0x18bd - *(uint *)PTR_out_setpoint_0000fb98 == 0) &&
+          if (((uint)(*DAT_0000fb94 * ANGLE_SCALE) < *(uint *)PTR_out_setpoint_0000fb98 ||
+               *DAT_0000fb94 * ANGLE_SCALE - *(uint *)PTR_out_setpoint_0000fb98 == 0) &&
              (*DAT_0000fba0 == '\0')) {
-            *(int *)PTR_out_setpoint_0000fb98 = *DAT_0000fb94 * 0x18bd;
+            *(int *)PTR_out_setpoint_0000fb98 = *DAT_0000fb94 * ANGLE_SCALE;
           }
-          if ((*(uint *)PTR_out_setpoint_0000fb98 <= (uint)(*DAT_0000fb9c * 0x18bd)) &&
+          if ((*(uint *)PTR_out_setpoint_0000fb98 <= (uint)(*DAT_0000fb9c * ANGLE_SCALE)) &&
              (*DAT_0000fba0 == '\0')) {
             gpio_outputs_set();
             *(undefined4 *)PTR_flag_68_0000fbb0 = 0;

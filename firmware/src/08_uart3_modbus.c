@@ -9,7 +9,7 @@
  *   g_pinsel = PINSEL 0x4002C000（+0 引脚复用为 UART3 TXD/RXD）。
  *   L0 修正：上游反汇编注"B00C=SCB(0x400F4000)"有误，实为 FIO 池 0x2009C000。
  * 波特率：U3LCR=0x80.. 0x9B（DLAB 置位写分频），分频值 = PCLK /
- *   (波特率×查表系数/1000)，系数随 PCLK 表 0x1000B028（0x3BB/0x3B6/...）。
+ *   (波特率×查表系数/1000)，系数随 PCLK 表 0x1000B028（BAUD_FAC_0/BAUD_FAC_3/...）。
  * 协议：Modbus RTU，CRC16 查表（初值 0xFFFF 低位在前）。寄存器映射见
  *   MENU_PARAMETER_MAPPING.md §3；reg 0x0-0x3F 段地址 0x1000B4B8..0x1000B590，
  *   reg 0x2B-0x3D 段 0x1000B984..0x1000B9C4（按 0x1000B068 控制方式选择组）。
@@ -34,6 +34,7 @@
 #include "inc/types.h"
 #include "inc/reg.h"
 #include "inc/globals.h"
+#include "inc/consts.h"
 #include <stdbool.h>
 
 /* CRC16 查表表（内嵌 const 数组，原 flash 0x11034/0x11134 —— 见 crc16_table.c，
@@ -75,32 +76,32 @@ void uart3_init(uint divisor)
   uart3 = g_uart3;
   if (*g_baud_idx < 3) {
     divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * 0x3bb) /
+                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_0) /
                             1000));
   }
   if (*g_baud_idx == 3) {
     divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * 0x3b6) /
+                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_3) /
                             1000));
   }
   if (*g_baud_idx == 4) {
     divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * 0x3b1) /
+                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_4) /
                             1000));
   }
   if (*g_baud_idx == 5) {
     divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * 0x3aa) /
+                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_5) /
                             1000));
   }
   if (*g_baud_idx == 6) {
     divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * 0x39d) /
+                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_6) /
                             1000));
   }
   if (*g_baud_idx == 7) {
     divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * 0x393) /
+                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_7) /
                             1000));
   }
   g_uart3[4] = (char)(divisor + ((uint)((int)divisor >> 0x1f) >> 0x18) >> 8);  /* DLM=高字节 */

@@ -26,6 +26,7 @@
 #include "inc/types.h"
 #include "inc/reg.h"
 #include "inc/globals.h"
+#include "inc/consts.h"
 
 /* 0x000108B0 —— 位置式 PID（积分）闭环计算：给定 setpoint 与反馈 feedback 求误差，
  *   按误差符号分别用死区三段（上界 / 带内 / 下界）选输出系数；再按控制方式
@@ -83,7 +84,7 @@ int closed_loop_integral(int setpoint,int feedback,uint32_t coef_a,uint32_t coef
     if ((0x9c3 < *g_gain_a) && (*g_gain_a < 3000)) { *DAT_00010cf4 = 100; }
     if ((2999 < *g_gain_a) && (*g_gain_a < 4000)) { *DAT_00010cf4 = 0x78; }
     if ((3999 < *g_gain_a) && (*g_gain_a < 5000)) { *DAT_00010cf4 = 0x96; }
-    if ((4999 < *g_gain_a) && (*g_gain_a < 0x1771)) { *DAT_00010cf4 = 0xb4; }
+    if ((4999 < *g_gain_a) && (*g_gain_a < RANGE_MAX)) { *DAT_00010cf4 = 0xb4; }
     if (*DAT_00010cf8 == 1) {
       /* —— 通道 1 另套表（0x10010CFC 为误差源）—— */
       if (*g_gain_b < 0xdc) { *DAT_00010cf4 = 8; }
@@ -95,7 +96,7 @@ int closed_loop_integral(int setpoint,int feedback,uint32_t coef_a,uint32_t coef
       if ((0x9c3 < *g_gain_b) && (*g_gain_b < 3000)) { *DAT_00010cf4 = 100; }
       if ((2999 < *g_gain_b) && (*g_gain_b < 4000)) { *DAT_00010cf4 = 0x78; }
       if ((3999 < *g_gain_b) && (*g_gain_b < 5000)) { *DAT_00010cf4 = 0x96; }
-      if ((4999 < *g_gain_b) && (*g_gain_b < 0x1771)) { *DAT_00010cf4 = 0xb4; }
+      if ((4999 < *g_gain_b) && (*g_gain_b < RANGE_MAX)) { *DAT_00010cf4 = 0xb4; }
     }
   }
   if (*g_gain_sel == '\x01') {
@@ -109,7 +110,7 @@ int closed_loop_integral(int setpoint,int feedback,uint32_t coef_a,uint32_t coef
     if ((0x9c3 < *g_gain_b) && (*g_gain_b < 3000)) { *DAT_00010cf4 = 100; }
     if ((2999 < *g_gain_b) && (*g_gain_b < 4000)) { *DAT_00010f40 = 0x78; }
     if ((3999 < *g_gain_b) && (*g_gain_b < 5000)) { *DAT_00010f40 = 0x96; }
-    if ((4999 < *g_gain_b) && (*g_gain_b < 0x1771)) { *DAT_00010f40 = 0xb4; }
+    if ((4999 < *g_gain_b) && (*g_gain_b < RANGE_MAX)) { *DAT_00010f40 = 0xb4; }
     if (*DAT_00010f48 == 1) {
       if (*g_gain_a < 0xdc) { *DAT_00010f40 = 8; }
       if ((0xdb < *g_gain_a) && (*g_gain_a < 0x226)) { *DAT_00010f40 = 0xf; }
@@ -120,7 +121,7 @@ int closed_loop_integral(int setpoint,int feedback,uint32_t coef_a,uint32_t coef
       if ((0x9c3 < *g_gain_a) && (*g_gain_a < 3000)) { *DAT_00010f40 = 100; }
       if ((2999 < *g_gain_a) && (*g_gain_a < 4000)) { *DAT_00010f40 = 0x78; }
       if ((3999 < *g_gain_a) && (*g_gain_a < 5000)) { *DAT_00010f40 = 0x96; }
-      if ((4999 < *g_gain_a) && (*g_gain_a < 0x1771)) { *DAT_00010f40 = 0xb4; }
+      if ((4999 < *g_gain_a) && (*g_gain_a < RANGE_MAX)) { *DAT_00010f40 = 0xb4; }
     }
   }
   if (*g_gain_sel == '\x02') {
