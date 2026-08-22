@@ -461,7 +461,10 @@ void modbus_dispatch(int arg)
     }
     tx[0] = *slave; tx[1] = 0x03; tx[2] = (uint8_t)(cnt << 1);
     for (i = 0; i < cnt; i++) {
-      v = (uint32_t)modbus_read_reg((uint *)0x100017A4, reg - 1 + i);  /* 内部表 0 基 */
+      /* modbus_read_reg 把数据写入 *out_val(0x100017A4)，返回值恒为 0。
+       * 原机码 bl 后用 ldrh r0,[rx] 回读 *out_val 取数据，不用返回值。 */
+      modbus_read_reg((uint *)0x100017A4, reg - 1 + i);  /* 内部表 0 基 */
+      v = (uint32_t)*(uint16_t *)0x100017A4;
       tx[3 + i * 2] = (uint8_t)(v >> 8);
       tx[4 + i * 2] = (uint8_t)(v & 0xff);
     }

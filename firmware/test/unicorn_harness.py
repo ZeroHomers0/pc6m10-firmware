@@ -30,6 +30,26 @@ SRAM1_BASE  = 0x2007C000
 SRAM1_LEN   = 0x4000           # 16K（.data/.bss 指针变量本体）
 ESTACK      = 0x10006768
 
+# ── 符号地址解析（firmware.map）───────────────────────────────────────────────
+# 硬编码函数地址在源码改动后会漂移，统一从 linker map 解析，测试自动跟随。
+MAP_PATH = os.path.join(os.path.dirname(FW), 'firmware.map')
+
+def lookup(name, fallback=None):
+    """从 firmware.map 解析符号地址。行格式：'  0x0000xxxx   符号名$'。
+    找不到 → fallback；无 fallback 则抛错（避免静默用错址）。"""
+    import re
+    if not os.path.exists(MAP_PATH):
+        raise FileNotFoundError(f"make 前需先跑 build.sh 生成 {MAP_PATH}")
+    pat = re.compile(r'\s+0x([0-9a-fA-F]+)\s+([A-Za-z_][A-Za-z0-9_$]*)\s*$')
+    for line in open(MAP_PATH, encoding='utf-8', errors='ignore'):
+        m = pat.match(line)
+        if m and m.group(2) == name:
+            return int(m.group(1), 16)
+    if fallback is not None:
+        return fallback
+    raise KeyError(f"符号 {name} 未在 {MAP_PATH} 中找到（需重新 build.sh）")
+
+
 def parse_sections(path):
     d = open(path, 'rb').read()
     endian = '<'

@@ -16,9 +16,6 @@ try:
 except Exception:
     pass
 
-# 加载固件函数地址（来自 firmware.map）
-FUNC_crc16 = 0x91ac
-
 def load_model_tables():
     b = open(os.path.join(ROOT, 'LPC1765.bin'), 'rb').read()
     return b[0x11034:0x11034+256], b[0x11134:0x11134+256]
@@ -38,10 +35,11 @@ def crc16_py(data, length, hi, lo):
 def main():
     try:
         import unicorn  # noqa
-        from unicorn_harness import load_firmware
+        from unicorn_harness import load_firmware, lookup
     except Exception as ex:
         print(f"  [SKIP] unicorn 不可用（{ex}），跳过执行级测试")
         return 0  # SKIP 不算失败
+    FUNC_crc16 = lookup('crc16')
 
     hi, lo = load_model_tables()
     # 在仿真 SRAM0（0x10000000..）放测试数据缓冲区，指针=0x10000800

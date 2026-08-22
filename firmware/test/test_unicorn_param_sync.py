@@ -19,13 +19,13 @@ try:
 except Exception:
     pass
 
-from unicorn_harness import load_firmware, call
+from unicorn_harness import load_firmware, call, lookup
 from unicorn import *
 from unicorn.arm_const import *
 import re
 
-FUNC_param_sync = 0x3478
-FUNC_i2c_write_reg = 0x1a58
+FUNC_param_sync = lookup('param_sync_live_to_eeprom')
+FUNC_i2c_write_reg = lookup('i2c_write_reg')
 
 def main():
     try:
