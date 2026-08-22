@@ -304,23 +304,23 @@ void load_config(void)
     i2c_write_reg(0x66,8);
   }
   /* —— shadow→live 拷贝（银行 B 默认区 → 活动参数区）—— */
-  *DAT_000033dc = *DAT_000033d8;
+  *g_gain_sel = *DAT_000033d8;
   *DAT_000033e4 = *DAT_000033e0;
   *DAT_000033ec = *DAT_000033e8;
   *DAT_000033f4 = *DAT_000033f0;
   *DAT_000033fc = *DAT_000033f8;
   *DAT_00003404 = *DAT_00003400;
   *DAT_0000340c = *DAT_00003408;
-  *DAT_00003414 = *DAT_00003410;
-  *DAT_0000341c = *DAT_00003418;
-  *DAT_00003424 = *DAT_00003420;
+  *g_out_fine = *DAT_00003410;
+  *g_gain_b = *DAT_00003418;
+  *g_gain_a = *DAT_00003420;
   *DAT_0000342c = *DAT_00003428;
   *DAT_00003434 = *DAT_00003430;
-  *DAT_0000343c = *DAT_00003438;
+  *g_phase_calib = *DAT_00003438;
   *DAT_00003444 = *DAT_00003440;
   *DAT_00003448 = *DAT_00003398;      /* 保护参数首字节 */
   *DAT_0000344c = *DAT_000033a4;
-  *DAT_00003450 = *DAT_000033a8;
+  *g_out_phase = *DAT_000033a8;
   *DAT_00003454 = *DAT_0000339c;
   *DAT_00003458 = *DAT_000033a0;
   *DAT_0000345c = *(undefined4 *)DAT_000033b8;
@@ -328,8 +328,8 @@ void load_config(void)
   *DAT_00003464 = *(undefined4 *)DAT_000033c0;
   *DAT_00003468 = *(undefined4 *)DAT_000033c4;
   *DAT_0000346c = *(undefined4 *)DAT_000033c8;
-  *DAT_00003470 = *(undefined4 *)DAT_000033ac;
-  *DAT_00003474 = *(undefined4 *)DAT_000033b0;
+  *g_reg61_remote_en = *(undefined4 *)DAT_000033ac;
+  *g_reg62_start_phase = *(undefined4 *)DAT_000033b0;
   *DAT_0000347c = *DAT_00003478;
   *DAT_0000387c = *DAT_00003878;      /* PID / 通讯区 */
   *DAT_00003884 = *DAT_00003880;
@@ -340,7 +340,7 @@ void load_config(void)
   *DAT_000038ac = *DAT_000038a8;
   *DAT_000038b4 = *DAT_000038b0;
   *DAT_000038bc = *DAT_000038b8;
-  *DAT_000038c4 = *DAT_000038c0;
+  *g_cfg_pid_sel = *DAT_000038c0;
   *DAT_000038cc = *DAT_000038c8;
   *DAT_000038d4 = *DAT_000038d0;
   *DAT_000038dc = *DAT_000038d8;
@@ -349,16 +349,16 @@ void load_config(void)
   *DAT_000038f4 = *DAT_000038f0;
   *DAT_000038fc = *DAT_000038f8;
   *DAT_00003904 = *DAT_00003900;
-  dst_shadow = DAT_0000390c;
-  *DAT_0000390c = *DAT_00003908;
+  dst_shadow = g_cl_thresh_hi;
+  *g_cl_thresh_hi = *DAT_00003908;
   *dst_shadow = *DAT_00003908;
-  *DAT_00003914 = *DAT_00003910;
-  *DAT_0000391c = *DAT_00003918;
-  *DAT_00003924 = *DAT_00003920;
-  *DAT_0000392c = *DAT_00003928;
-  *DAT_00003934 = *DAT_00003930;
-  *DAT_0000393c = *DAT_00003938;
-  *DAT_00003944 = *DAT_00003940;
+  *g_cl_gain_big = *DAT_00003910;
+  *g_cl_gain_mid = *DAT_00003918;
+  *g_cl_gain_small = *DAT_00003920;
+  *g_slave_addr = *DAT_00003928;
+  *g_baud_idx = *DAT_00003930;
+  *g_uart_frame_sel = *DAT_00003938;
+  *g_comm_detect = *DAT_00003940;
   *DAT_0000394c = *DAT_00003948;
   *DAT_00003954 = *DAT_00003950;
   *DAT_0000395c = *DAT_00003958;
@@ -367,21 +367,21 @@ void load_config(void)
   *DAT_00003974 = *DAT_00003970;
   *DAT_0000397c = *DAT_00003978;
   /* —— 按控制方式选择活动增益对 → 0x10003980(gain_a 电压量程)/0x10003984(gain_b 电流量程) —— */
-  if (*DAT_000038c4 == '\x01') {
-    *DAT_00003980 = *DAT_000038cc;
-    *DAT_00003984 = *DAT_000038d4;
+  if (*g_cfg_pid_sel == '\x01') {
+    *g_act_gain_a = *DAT_000038cc;
+    *g_act_gain_b = *DAT_000038d4;
   }
-  if (*DAT_000038c4 == '\x02') {
-    *DAT_00003980 = *DAT_000038dc;
-    *DAT_00003984 = *DAT_000038e4;
+  if (*g_cfg_pid_sel == '\x02') {
+    *g_act_gain_a = *DAT_000038dc;
+    *g_act_gain_b = *DAT_000038e4;
   }
-  if (*DAT_000038c4 == '\x03') {
-    *DAT_00003980 = *DAT_000038ec;
-    *DAT_00003984 = *DAT_000038f4;
+  if (*g_cfg_pid_sel == '\x03') {
+    *g_act_gain_a = *DAT_000038ec;
+    *g_act_gain_b = *DAT_000038f4;
   }
-  if (*DAT_000038c4 == '\x04') {
-    *DAT_00003980 = *DAT_000038fc;
-    *DAT_00003984 = *DAT_00003904;
+  if (*g_cfg_pid_sel == '\x04') {
+    *g_act_gain_a = *DAT_000038fc;
+    *g_act_gain_b = *DAT_00003904;
   }
   return;
 }
@@ -401,8 +401,8 @@ void param_sync_live_to_eeprom(void)
   volatile uint8_t *shadow;
 
   shadow = DAT_0000398c;
-  if (*DAT_00003988 != *DAT_0000398c) {
-    *DAT_0000398c = *DAT_00003988;
+  if (*g_gain_sel != *DAT_0000398c) {
+    *DAT_0000398c = *g_gain_sel;
     i2c_write_reg(*shadow,10);
   }
   if (*DAT_00003990 != *(int *)DAT_00003994) {
@@ -436,17 +436,17 @@ void param_sync_live_to_eeprom(void)
     i2c_write_reg((char)*DAT_000039bc,0x14);
   }
   shadow = DAT_000039c4;
-  if (*DAT_000039c0 != *DAT_000039c4) {
-    *DAT_000039c4 = *DAT_000039c0;
+  if (*g_out_fine != *DAT_000039c4) {
+    *DAT_000039c4 = *g_out_fine;
     i2c_write_reg(*shadow,0x15);
   }
-  if (*DAT_000039c8 != *(int *)DAT_000039cc) {
-    *(int *)DAT_000039cc = *DAT_000039c8;
+  if (*g_gain_b != *(int *)DAT_000039cc) {
+    *(int *)DAT_000039cc = *g_gain_b;
     i2c_write_reg(*DAT_000039cc >> 8,0x16);
     i2c_write_reg((char)*DAT_000039cc,0x17);
   }
-  if (*DAT_000039d0 != *(int *)DAT_000039d4) {
-    *(int *)DAT_000039d4 = *DAT_000039d0;
+  if (*g_gain_a != *(int *)DAT_000039d4) {
+    *(int *)DAT_000039d4 = *g_gain_a;
     i2c_write_reg(*DAT_000039d4 >> 8,0x18);
     i2c_write_reg((char)*DAT_000039d4,0x19);
   }
@@ -461,8 +461,8 @@ void param_sync_live_to_eeprom(void)
     i2c_write_reg(*shadow,0x1b);
   }
   shadow = DAT_000039ec;
-  if (*DAT_000039e8 != *DAT_000039ec) {
-    *DAT_000039ec = *DAT_000039e8;
+  if (*g_phase_calib != *DAT_000039ec) {
+    *DAT_000039ec = *g_phase_calib;
     i2c_write_reg(*shadow,0x1c);
   }
   if (*DAT_000039f0 != *(int *)DAT_000039f4) {
@@ -491,17 +491,17 @@ void param_sync_live_to_eeprom(void)
     i2c_write_reg(*shadow,0x22);
   }
   shadow = DAT_00003e1c;
-  if (*DAT_00003e18 != *DAT_00003e1c) {
-    *DAT_00003e1c = *DAT_00003e18;
+  if (*g_out_phase != *DAT_00003e1c) {
+    *DAT_00003e1c = *g_out_phase;
     i2c_write_reg(*shadow,0x23);
   }
-  if (*DAT_00003e20 != *(int *)DAT_00003e24) {
-    *(int *)DAT_00003e24 = *DAT_00003e20;
+  if (*g_reg61_remote_en != *(int *)DAT_00003e24) {
+    *(int *)DAT_00003e24 = *g_reg61_remote_en;
     i2c_write_reg(*DAT_00003e24 >> 8,0x24);
     i2c_write_reg((char)*DAT_00003e24,0x25);
   }
-  if (*DAT_00003e28 != *(int *)DAT_00003e2c) {
-    *(int *)DAT_00003e2c = *DAT_00003e28;
+  if (*g_reg62_start_phase != *(int *)DAT_00003e2c) {
+    *(int *)DAT_00003e2c = *g_reg62_start_phase;
     i2c_write_reg(*DAT_00003e2c >> 8,0x26);
     i2c_write_reg((char)*DAT_00003e2c,0x27);
   }
@@ -556,8 +556,8 @@ void param_sync_live_to_eeprom(void)
     i2c_write_reg(*shadow,0x3f);
   }
   shadow = DAT_00003e84;
-  if (*DAT_00003e80 != *DAT_00003e84) {
-    *DAT_00003e84 = *DAT_00003e80;
+  if (*g_cfg_pid_sel != *DAT_00003e84) {
+    *DAT_00003e84 = *g_cfg_pid_sel;
     i2c_write_reg(*shadow,0x5a);
   }
   shadow = DAT_00003e8c;
@@ -601,48 +601,48 @@ void param_sync_live_to_eeprom(void)
     i2c_write_reg(*shadow,0x62);
   }
   shadow = DAT_000042cc;
-  if (*DAT_000042c8 != *DAT_000042cc) {
-    *DAT_000042cc = *DAT_000042c8;
+  if (*g_cl_thresh_hi != *DAT_000042cc) {
+    *DAT_000042cc = *g_cl_thresh_hi;
     i2c_write_reg(*shadow,0x6e);
   }
   shadow = DAT_000042d4;
-  if (*DAT_000042d0 != *DAT_000042d4) {
-    *DAT_000042d4 = *DAT_000042d0;
+  if (*g_cl_thresh_lo != *DAT_000042d4) {
+    *DAT_000042d4 = *g_cl_thresh_lo;
     i2c_write_reg(*shadow,0x6f);
   }
   shadow = DAT_000042dc;
-  if (*DAT_000042d8 != *DAT_000042dc) {
-    *DAT_000042dc = *DAT_000042d8;
+  if (*g_cl_gain_big != *DAT_000042dc) {
+    *DAT_000042dc = *g_cl_gain_big;
     i2c_write_reg(*shadow,0x70);
   }
   shadow = DAT_000042e4;
-  if (*DAT_000042e0 != *DAT_000042e4) {
-    *DAT_000042e4 = *DAT_000042e0;
+  if (*g_cl_gain_mid != *DAT_000042e4) {
+    *DAT_000042e4 = *g_cl_gain_mid;
     i2c_write_reg(*shadow,0x71);
   }
   shadow = DAT_000042ec;
-  if (*DAT_000042e8 != *DAT_000042ec) {
-    *DAT_000042ec = *DAT_000042e8;
+  if (*g_cl_gain_small != *DAT_000042ec) {
+    *DAT_000042ec = *g_cl_gain_small;
     i2c_write_reg(*shadow,0x72);
   }
   shadow = DAT_000042f4;
-  if (*DAT_000042f0 != *DAT_000042f4) {
-    *DAT_000042f4 = *DAT_000042f0;
+  if (*g_slave_addr != *DAT_000042f4) {
+    *DAT_000042f4 = *g_slave_addr;
     i2c_write_reg(*shadow,100);
   }
-  if (*DAT_000042f8 != *(int *)DAT_000042fc) {
-    *(int *)DAT_000042fc = *DAT_000042f8;
+  if (*g_baud_idx != *(int *)DAT_000042fc) {
+    *(int *)DAT_000042fc = *g_baud_idx;
     i2c_write_reg(*DAT_000042fc >> 8,0x65);
     i2c_write_reg((char)*DAT_000042fc,0x66);
   }
   shadow = DAT_00004304;
-  if (*DAT_00004300 != *DAT_00004304) {
-    *DAT_00004304 = *DAT_00004300;
+  if (*g_uart_frame_sel != *DAT_00004304) {
+    *DAT_00004304 = *g_uart_frame_sel;
     i2c_write_reg(*shadow,0x67);
   }
   shadow = DAT_0000430c;
-  if (*DAT_00004308 != *DAT_0000430c) {
-    *DAT_0000430c = *DAT_00004308;
+  if (*g_comm_detect != *DAT_0000430c) {
+    *DAT_0000430c = *g_comm_detect;
     i2c_write_reg(*shadow,0x68);
   }
   if (*DAT_00004310 != *(int *)DAT_00004314) {

@@ -70,13 +70,13 @@ void auth_challenge(void)
   for (bit_idx = 0; fio_base = DAT_0001087c, bit_idx < 0x18; bit_idx = bit_idx + 1) {  /* 24 bit */
     if (bit_idx == 0) {
       /* 挑战组 A（bit0-7）：4 个板上参数求和 +0x31；期望应答高位 exp_resp_hi */
-      challenge_byte = *DAT_00010884 + (uint)*DAT_00010888 + (uint)*DAT_0001088c + (uint)*DAT_00010890 + 0x31
+      challenge_byte = *g_gain_b + (uint)*DAT_00010888 + (uint)*DAT_0001088c + (uint)*g_out_fine + 0x31
       ;
       exp_resp_hi = ((challenge_byte ^ 0xc2) + (challenge_byte | 0x1b) + (challenge_byte & 0xb2)) & 0xff;
     }
     if (bit_idx == 8) {
       /* 挑战组 B（bit8-15）：3 个板上参数求和 +0xc；期望应答低位 exp_resp_lo */
-      challenge_byte = (uint)*DAT_00010894 + (uint)*DAT_00010890 + *DAT_00010898 + 0xc;
+      challenge_byte = (uint)*DAT_00010894 + (uint)*g_out_fine + *DAT_00010898 + 0xc;
       exp_resp_lo = ((challenge_byte ^ 0x3f) + (challenge_byte | 0xa9) + (challenge_byte & 0xbc)) & 0xff;
     }
     if (bit_idx == 0x10) {

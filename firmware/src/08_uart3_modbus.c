@@ -2,11 +2,11 @@
  * LPC1765FBD100 (ST33C 变频电源 / PC6M-10 三相晶闸管移相触发板)
  * 反编译源码导出 — 模块 08：UART3（Modbus RTU 从站）+ CRC16
  *
- * UART3 硬件：DAT_0000b020 = UART3 基址 0x4009C000（U3RBR/U3THR=+0x00、
+ * UART3 硬件：g_uart3 = UART3 基址 0x4009C000（U3RBR/U3THR=+0x00、
  *   U3IER=+0x04、U3IIR/FCR=+0x08、U3LCR=+0x0C、U3LSR=+0x14、U3DLL=+0x00、
  *   U3DLM=+0x04）。DAT_0000b00c = FIO 池 0x2009C000（+0x20 FIO0DIR、+0x3c FIO1CLR，
  *   RS485 方向/空闲态）；DAT_0000b014 = SCB 0x400FC000（+0xc4 PCONP UART3 上电）；
- *   DAT_0000b018 = PINSEL 0x4002C000（+0 引脚复用为 UART3 TXD/RXD）。
+ *   g_pinsel = PINSEL 0x4002C000（+0 引脚复用为 UART3 TXD/RXD）。
  *   L0 修正：上游反汇编注"B00C=SCB(0x400F4000)"有误，实为 FIO 池 0x2009C000。
  * 波特率：U3LCR=0x80.. 0x9B（DLAB 置位写分频），分频值 = PCLK /
  *   (波特率×查表系数/1000)，系数随 PCLK 表 0x1000B028（0x3BB/0x3B6/...）。
@@ -56,71 +56,71 @@ void uart3_init(uint divisor)
   fio = DAT_0000b00c;
   *(uint *)(DAT_0000b00c + 0x20) = *(uint *)(DAT_0000b00c + 0x20) | 0x20000000;
   *(uint *)(fio + 0x3c) = *(uint *)(fio + 0x3c) | 0x20000000;
-  *(uint *)(DAT_0000b014 + 0xc4) = *DAT_0000b010 | 0x2000000;   /* PCONP UART3 上电 */
-  pinsel = DAT_0000b018;
-  *DAT_0000b018 = *DAT_0000b018 | 2;                            /* PINSEL UART3 引脚 */
+  *(uint *)(DAT_0000b014 + 0xc4) = *g_pconp | 0x2000000;   /* PCONP UART3 上电 */
+  pinsel = g_pinsel;
+  *g_pinsel = *g_pinsel | 2;                            /* PINSEL UART3 引脚 */
   *pinsel = *pinsel | 8;
-  if (*DAT_0000b01c == '\0') {
-    DAT_0000b020[0xc] = 0x87;                                   /* LCR：8 位+DLAB */
+  if (*g_uart_frame_sel == '\0') {
+    g_uart3[0xc] = 0x87;                                   /* LCR：8 位+DLAB */
   }
-  if (*DAT_0000b01c == '\x01') {
-    DAT_0000b020[0xc] = 0x8b;
+  if (*g_uart_frame_sel == '\x01') {
+    g_uart3[0xc] = 0x8b;
   }
-  if (*DAT_0000b01c == '\x02') {
-    DAT_0000b020[0xc] = 0x9b;
+  if (*g_uart_frame_sel == '\x02') {
+    g_uart3[0xc] = 0x9b;
   }
-  if (*DAT_0000b01c == '\x03') {
-    DAT_0000b020[0xc] = 0x83;
+  if (*g_uart_frame_sel == '\x03') {
+    g_uart3[0xc] = 0x83;
   }
-  uart3 = DAT_0000b020;
-  if (*DAT_0000b024 < 3) {
+  uart3 = g_uart3;
+  if (*g_baud_idx < 3) {
     divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *DAT_0000b024 * 4) * 0x3bb) /
+                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * 0x3bb) /
                             1000));
   }
-  if (*DAT_0000b024 == 3) {
+  if (*g_baud_idx == 3) {
     divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *DAT_0000b024 * 4) * 0x3b6) /
+                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * 0x3b6) /
                             1000));
   }
-  if (*DAT_0000b024 == 4) {
+  if (*g_baud_idx == 4) {
     divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *DAT_0000b024 * 4) * 0x3b1) /
+                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * 0x3b1) /
                             1000));
   }
-  if (*DAT_0000b024 == 5) {
+  if (*g_baud_idx == 5) {
     divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *DAT_0000b024 * 4) * 0x3aa) /
+                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * 0x3aa) /
                             1000));
   }
-  if (*DAT_0000b024 == 6) {
+  if (*g_baud_idx == 6) {
     divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *DAT_0000b024 * 4) * 0x39d) /
+                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * 0x39d) /
                             1000));
   }
-  if (*DAT_0000b024 == 7) {
+  if (*g_baud_idx == 7) {
     divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *DAT_0000b024 * 4) * 0x393) /
+                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * 0x393) /
                             1000));
   }
-  DAT_0000b020[4] = (char)(divisor + ((uint)((int)divisor >> 0x1f) >> 0x18) >> 8);  /* DLM=高字节 */
+  g_uart3[4] = (char)(divisor + ((uint)((int)divisor >> 0x1f) >> 0x18) >> 8);  /* DLM=高字节 */
   *uart3 = (char)divisor;                                         /* DLL=低字节 */
-  if (*DAT_0000b01c == '\0') {
+  if (*g_uart_frame_sel == '\0') {
     uart3[0xc] = 7;                                             /* LCR：8N1，清 DLAB */
   }
-  if (*DAT_0000b01c == '\x01') {
-    DAT_0000b020[0xc] = 0xb;
+  if (*g_uart_frame_sel == '\x01') {
+    g_uart3[0xc] = 0xb;
   }
-  if (*DAT_0000b01c == '\x02') {
-    DAT_0000b020[0xc] = 0x1b;
+  if (*g_uart_frame_sel == '\x02') {
+    g_uart3[0xc] = 0x1b;
   }
-  if (*DAT_0000b01c == '\x03') {
-    DAT_0000b020[0xc] = 3;
+  if (*g_uart_frame_sel == '\x03') {
+    g_uart3[0xc] = 3;
   }
-  DAT_0000b020[8] = 7;                                           /* FCR：使能 FIFO+清 */
-  uart3 = DAT_0000b020;
+  g_uart3[8] = 7;                                           /* FCR：使能 FIFO+清 */
+  uart3 = g_uart3;
   NVIC_ISER0 = 0x100;
-  *(uint *)(DAT_0000b020 + 4) = *(uint *)(DAT_0000b020 + 4) | 1;  /* IER RBR 中断 */
+  *(uint *)(g_uart3 + 4) = *(uint *)(g_uart3 + 4) | 1;  /* IER RBR 中断 */
   *(uint *)(uart3 + 4) = *(uint *)(uart3 + 4) | 2;              /* IER THRE 中断 */
   return;
 }
@@ -130,12 +130,12 @@ void uart3_init(uint divisor)
 void uart3_tx_byte(undefined1 tx_byte)
 {
   *(uint *)(DAT_0000b00c + 0x38) = *(uint *)(DAT_0000b00c + 0x38) | 0x20000000;
-  *DAT_0000b030 = 6;
-  *DAT_0000b034 = 0;
-  *DAT_0000b038 = tx_byte;
+  *g_uart_tx_state = 6;
+  *g_uart_tx_flag = 0;
+  *g_uart_tx_len = tx_byte;
   do {
-  } while ((DAT_0000b020[0x14] & 0x20) == 0);                    /* 等 THRE */
-  *DAT_0000b020 = *DAT_0000b03c;
+  } while ((g_uart3[0x14] & 0x20) == 0);                    /* 等 THRE */
+  *g_uart3 = *g_uart_tx_buf;
   return;
 }
 
@@ -149,25 +149,25 @@ void uart3_rx_timeout_monitor(void)
   volatile uint32_t *tick_cnt;
   volatile uint8_t *tx_tick;
 
-  rx_gap_cnt = DAT_0000b044;
-  if ((*DAT_0000b040 != '\0') &&
-     (*DAT_0000b044 = *DAT_0000b044 + 1, 0x7530 < *rx_gap_cnt)) {
-    *DAT_0000b044 = 0;
+  rx_gap_cnt = g_uart_rx_timeout;
+  if ((*g_comm_detect != '\0') &&
+     (*g_uart_rx_timeout = *g_uart_rx_timeout + 1, 0x7530 < *rx_gap_cnt)) {
+    *g_uart_rx_timeout = 0;
     *DAT_0000b048 = *DAT_0000b048 | 0x8000;
   }
-  tick_cnt = DAT_0000b04c;
-  *DAT_0000b04c = *DAT_0000b04c + 1;
+  tick_cnt = g_uart_global_tick;
+  *g_uart_global_tick = *g_uart_global_tick + 1;
   if (300 < *tick_cnt) {
     *tick_cnt = 0;
     uart3_init(0);
   }
-  tx_tick = DAT_0000b050;
-  if (*DAT_0000b030 == '\x01') {
-    *DAT_0000b050 = *DAT_0000b050 + 1;
+  tx_tick = g_uart_tx_busy;
+  if (*g_uart_tx_state == '\x01') {
+    *g_uart_tx_busy = *g_uart_tx_busy + 1;
     if (10 < *tx_tick) {
       *tx_tick = 0;
-      *DAT_0000b030 = '\x05';
-      *(uint *)(DAT_0000b020 + 4) = *(uint *)(DAT_0000b020 + 4) & 0xfffffffe;
+      *g_uart_tx_state = '\x05';
+      *(uint *)(g_uart3 + 4) = *(uint *)(g_uart3 + 4) & 0xfffffffe;
     }
   }
   return;
@@ -182,20 +182,20 @@ void UART3_IRQHandler(void)
   volatile uint8_t *tx_idx;
   uint iir_cause;
 
-  iir_cause = *(uint *)(DAT_0000b020 + 8) & 0xe;                 /* IIR 中断原因 */
+  iir_cause = *(uint *)(g_uart3 + 8) & 0xe;                 /* IIR 中断原因 */
   if (iir_cause == 4) {
     func_0x0000aed0();   /* RX 组帧子例程（extraout_r3 伪影已删：IIR 原因保持原值） */
   }
-  tx_idx = DAT_0000b034;
+  tx_idx = g_uart_tx_flag;
   if (iir_cause == 2) {
-    *DAT_0000b034 = *DAT_0000b034 + 1;                           /* 发送索引++ */
-    if (*tx_idx < *DAT_0000b038) {                               /* 未发完 */
-      *DAT_0000b020 = *(undefined1 *)(DAT_0000b03c + (uint)*DAT_0000b034);
+    *g_uart_tx_flag = *g_uart_tx_flag + 1;                           /* 发送索引++ */
+    if (*tx_idx < *g_uart_tx_len) {                               /* 未发完 */
+      *g_uart3 = *(undefined1 *)(g_uart_tx_buf + (uint)*g_uart_tx_flag);
     }
     else {                                                        /* 发完 */
       *(uint *)(DAT_0000b00c + 0x3c) = *(uint *)(DAT_0000b00c + 0x3c) | 0x20000000;
-      *DAT_0000b030 = 0;
-      *(uint *)(DAT_0000b020 + 4) = *(uint *)(DAT_0000b020 + 4) | 1;
+      *g_uart_tx_state = 0;
+      *(uint *)(g_uart3 + 4) = *(uint *)(g_uart3 + 4) | 1;
     }
   }
   return;
@@ -228,32 +228,32 @@ uint16_t crc16(uint8_t *data,uint16_t len)
  *   reg 0x00-0x3F 映射 0x1000B4B8..0x1000B590（0x1A-0x1F/0x24-0x25 等保留返回 0） */
 undefined4 modbus_read_reg(uint *out_val,uint reg_addr)
 {
-  *DAT_0000b064 = reg_addr & 0xfff;
-  if (*DAT_0000b068 == '\x01') {
-    *DAT_0000b070 = *DAT_0000b06c;
-    *DAT_0000b078 = *DAT_0000b074;
+  *g_reg_cur_idx = reg_addr & 0xfff;
+  if (*g_cfg_pid_sel == '\x01') {
+    *g_act_gain_a = *DAT_0000b06c;
+    *g_act_gain_b = *DAT_0000b074;
   }
-  if (*DAT_0000b068 == '\x02') {
-    *DAT_0000b070 = *DAT_0000b07c;
-    *DAT_0000b078 = *DAT_0000b080;
+  if (*g_cfg_pid_sel == '\x02') {
+    *g_act_gain_a = *DAT_0000b07c;
+    *g_act_gain_b = *DAT_0000b080;
   }
-  if (*DAT_0000b068 == '\x03') {
-    *DAT_0000b070 = *DAT_0000b084;
-    *DAT_0000b078 = *DAT_0000b088;
+  if (*g_cfg_pid_sel == '\x03') {
+    *g_act_gain_a = *DAT_0000b084;
+    *g_act_gain_b = *DAT_0000b088;
   }
-  if (*DAT_0000b068 == '\x04') {
-    *DAT_0000b070 = *DAT_0000b08c;
-    *DAT_0000b078 = *DAT_0000b090;
+  if (*g_cfg_pid_sel == '\x04') {
+    *g_act_gain_a = *DAT_0000b08c;
+    *g_act_gain_b = *DAT_0000b090;
   }
-  switch((char)*DAT_0000b064) {
+  switch((char)*g_reg_cur_idx) {
   case '\0':
-    *out_val = (uint)*DAT_0000b4b8;
+    *out_val = (uint)*g_gain_sel;
     break;
   case '\x01':
-    *out_val = *DAT_0000b4bc;
+    *out_val = *g_gain_a;
     break;
   case '\x02':
-    *out_val = *DAT_0000b4c0;
+    *out_val = *g_gain_b;
     break;
   case '\x03':
     *out_val = *DAT_0000b4c4;
@@ -274,7 +274,7 @@ undefined4 modbus_read_reg(uint *out_val,uint reg_addr)
     *out_val = *DAT_0000b4d8;
     break;
   case '\t':
-    *out_val = (uint)*DAT_0000b4dc;
+    *out_val = (uint)*g_out_fine;
     break;
   case '\n':
     *out_val = (uint)*DAT_0000b4e0;
@@ -313,16 +313,16 @@ undefined4 modbus_read_reg(uint *out_val,uint reg_addr)
     *out_val = (uint)*DAT_0000b50c;
     break;
   case '\x16':
-    *out_val = (uint)*DAT_0000b510;
+    *out_val = (uint)*g_cfg_pid_sel;
     break;
   case '\x17':
-    *out_val = (uint)*DAT_0000b514;
+    *out_val = (uint)*g_act_gain_a;
     break;
   case '\x18':
-    *out_val = (uint)*DAT_0000b518;
+    *out_val = (uint)*g_act_gain_b;
     break;
   case '\x19':
-    *out_val = (uint)*DAT_0000b51c;
+    *out_val = (uint)*g_phase_calib;
     break;
   case '\x1a':
     *out_val = 0;
@@ -361,7 +361,7 @@ undefined4 modbus_read_reg(uint *out_val,uint reg_addr)
     *out_val = 0;
     break;
   case '&':
-    *out_val = (uint)*DAT_0000b530;
+    *out_val = (uint)*g_run_flag;
     break;
   case '\'':
     *out_val = *DAT_0000b534;
@@ -385,16 +385,16 @@ undefined4 modbus_read_reg(uint *out_val,uint reg_addr)
     *out_val = *DAT_0000b54c;
     break;
   case '.':
-    *out_val = (uint)*DAT_0000b550;
+    *out_val = (uint)*g_slave_addr;
     break;
   case '/':
-    *out_val = *DAT_0000b554;
+    *out_val = *g_baud_idx;
     break;
   case '0':
-    *out_val = (uint)*DAT_0000b558;
+    *out_val = (uint)*g_uart_frame_sel;
     break;
   case '1':
-    *out_val = (uint)*DAT_0000b55c;
+    *out_val = (uint)*g_comm_detect;
     break;
   case '2':
     *out_val = *DAT_0000b560;
@@ -424,13 +424,13 @@ undefined4 modbus_read_reg(uint *out_val,uint reg_addr)
     *out_val = (uint)*DAT_0000b580;
     break;
   case ';':
-    *out_val = (uint)*DAT_0000b584;
+    *out_val = (uint)*g_out_phase;
     break;
   case '<':
-    *out_val = *DAT_0000b588;
+    *out_val = *g_reg61_remote_en;
     break;
   case '=':
-    *out_val = *DAT_0000b58c;
+    *out_val = *g_reg62_start_phase;
     break;
   case '>':
     *out_val = *DAT_0000b590;
@@ -445,17 +445,17 @@ undefined4 modbus_write_multi(undefined4 *src_val,uint reg_addr)
 {
   volatile uint32_t *reg_ofs;
 
-  reg_ofs = DAT_0000b594;
-  *DAT_0000b594 = reg_addr & 0xfff;
+  reg_ofs = g_reg_cur_idx;
+  *g_reg_cur_idx = reg_addr & 0xfff;
   switch((char)*reg_ofs) {
   case '\0':
-    *DAT_0000b4b8 = *(undefined1 *)src_val;
+    *g_gain_sel = *(undefined1 *)src_val;
     break;
   case '\x01':
-    *DAT_0000b4bc = *src_val;
+    *g_gain_a = *src_val;
     break;
   case '\x02':
-    *DAT_0000b4c0 = *src_val;
+    *g_gain_b = *src_val;
     break;
   case '\x03':
     *DAT_0000b4c4 = *src_val;
@@ -476,7 +476,7 @@ undefined4 modbus_write_multi(undefined4 *src_val,uint reg_addr)
     *DAT_0000b4d8 = *src_val;
     break;
   case '\t':
-    *DAT_0000b4dc = *(undefined1 *)src_val;
+    *g_out_fine = *(undefined1 *)src_val;
     break;
   case '\n':
     *DAT_0000b4e0 = *(undefined1 *)src_val;
@@ -515,7 +515,7 @@ undefined4 modbus_write_multi(undefined4 *src_val,uint reg_addr)
     *DAT_0000b50c = *(undefined1 *)src_val;
     break;
   case '\x16':
-    *DAT_0000b510 = *(undefined1 *)src_val;
+    *g_cfg_pid_sel = *(undefined1 *)src_val;
     break;
   case '\x17':
     *DAT_0000b598 = *(undefined1 *)src_val;
@@ -524,25 +524,25 @@ undefined4 modbus_write_multi(undefined4 *src_val,uint reg_addr)
     *DAT_0000b59c = *(undefined1 *)src_val;
     break;
   case '\x19':
-    *DAT_0000b51c = *(undefined1 *)src_val;
+    *g_phase_calib = *(undefined1 *)src_val;
     break;
   case '\x1a':
-    *DAT_0000b5a0 = *src_val;
+    *g_scratch = *src_val;
     break;
   case '\x1b':
-    *DAT_0000b5a0 = *src_val;
+    *g_scratch = *src_val;
     break;
   case '\x1c':
-    *DAT_0000b5a0 = *src_val;
+    *g_scratch = *src_val;
     break;
   case '\x1d':
-    *DAT_0000b5a0 = *src_val;
+    *g_scratch = *src_val;
     break;
   case '\x1e':
-    *DAT_0000b5a0 = *src_val;
+    *g_scratch = *src_val;
     break;
   case '\x1f':
-    *DAT_0000b5a0 = *src_val;
+    *g_scratch = *src_val;
     break;
   case ' ':
     *DAT_0000b520 = *src_val;
@@ -557,46 +557,46 @@ undefined4 modbus_write_multi(undefined4 *src_val,uint reg_addr)
     *DAT_0000b52c = *src_val;
     break;
   case '$':
-    *DAT_0000b5a0 = *src_val;
+    *g_scratch = *src_val;
     break;
   case '%':
-    *DAT_0000b5a0 = *src_val;
+    *g_scratch = *src_val;
     break;
   case '&':
-    *DAT_0000b530 = *(undefined1 *)src_val;
+    *g_run_flag = *(undefined1 *)src_val;
     break;
   case '\'':
     *DAT_0000b534 = *src_val;
     break;
   case '(':
-    *DAT_0000b5a0 = *src_val;
+    *g_scratch = *src_val;
     break;
   case ')':
-    *DAT_0000b5a0 = *src_val;
+    *g_scratch = *src_val;
     break;
   case '*':
-    *DAT_0000b5a0 = *src_val;
+    *g_scratch = *src_val;
     break;
   case '+':
-    *DAT_0000b984 = *src_val;
+    *g_scratch = *src_val;
     break;
   case ',':
-    *DAT_0000b984 = *src_val;
+    *g_scratch = *src_val;
     break;
   case '-':
-    *DAT_0000b984 = *src_val;
+    *g_scratch = *src_val;
     break;
   case '.':
-    *DAT_0000b988 = *(undefined1 *)src_val;
+    *g_slave_addr = *(undefined1 *)src_val;
     break;
   case '/':
-    *DAT_0000b98c = *src_val;
+    *g_baud_idx = *src_val;
     break;
   case '0':
-    *DAT_0000b990 = *(undefined1 *)src_val;
+    *g_uart_frame_sel = *(undefined1 *)src_val;
     break;
   case '1':
-    *DAT_0000b994 = *(undefined1 *)src_val;
+    *g_comm_detect = *(undefined1 *)src_val;
     break;
   case '2':
     *DAT_0000b998 = *src_val;
@@ -626,13 +626,13 @@ undefined4 modbus_write_multi(undefined4 *src_val,uint reg_addr)
     *DAT_0000b9b8 = *(undefined1 *)src_val;
     break;
   case ';':
-    *DAT_0000b9bc = *(undefined1 *)src_val;
+    *g_out_phase = *(undefined1 *)src_val;
     break;
   case '<':
-    *DAT_0000b9c0 = *src_val;
+    *g_reg61_remote_en = *src_val;
     break;
   case '=':
-    *DAT_0000b9c4 = *src_val;
+    *g_reg62_start_phase = *src_val;
   }
   return 0;
 }

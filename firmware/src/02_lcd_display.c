@@ -606,7 +606,7 @@ void disp_splash_screen(void)
   disp_string((int)0x4398,2,0,0);
   disp_string((int)0x43ac,3,0,0);
   if (*DAT_000043c0 == '\0') {
-    disp_fixed_1dec(*DAT_000047c0,0,9,0);   /* 反汇编 0x42B4 核：r3=0 → 4 参 */
+    disp_fixed_1dec(*g_src_value,0,9,0);   /* 反汇编 0x42B4 核：r3=0 → 4 参 */
   }
   if (*DAT_000047c4 == '\x01') {
     disp_fixed_1dec(*DAT_000047c8,0,9,0);
@@ -617,23 +617,23 @@ void disp_splash_screen(void)
   disp_uint4(*DAT_000047d0,1,9,0);
   disp_uint4(*DAT_000047d4,2,9,0);
   if (*DAT_000047d8 == 0) {
-    if (*DAT_000047e4 == '\0') {
+    if (*g_cfg_word == '\0') {
       disp_string((int)0x47e8,3,10,0);
     }
-    if (*DAT_000047e4 == '\x01') {
+    if (*g_cfg_word == '\x01') {
       disp_string((int)0x47f0,3,10,0);
     }
   }
   else {
     disp_string((int)0x47dc,3,10,0);
   }
-  if (*DAT_000047f8 == '\0') {
+  if (*g_gain_sel == '\0') {
     disp_string((int)0x47fc,3,0,0);
   }
-  if (*DAT_000047f8 == '\x01') {
+  if (*g_gain_sel == '\x01') {
     disp_string((int)0x4804,3,0,0);
   }
-  if (*DAT_000047f8 == '\x02') {
+  if (*g_gain_sel == '\x02') {
     disp_string((int)0x480c,3,0,0);
   }
   return;

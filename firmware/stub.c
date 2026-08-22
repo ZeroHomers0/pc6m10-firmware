@@ -53,11 +53,11 @@ void freq_adjust_sync(int param_1)
     disp_offset(*DAT_0000ac0c,2,7,1);
   }
   if (param_1 == 5) {
-    *DAT_0000ac14 = 1;
+    *g_cfg_word = 1;
     disp_string((int)0x47F0,3,0xb,0);    /* 0x47F0：高档字符串（&DAT_0000ac18 内容） */
   }
   if (param_1 == 6) {
-    *DAT_0000ac14 = 0;
+    *g_cfg_word = 0;
     disp_string((int)0xAC1C,3,0xb,0);    /* 0xAC1C：低档字符串（&DAT_0000ac1c 即地址） */
   }
   return;

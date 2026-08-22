@@ -49,87 +49,87 @@ int closed_loop_integral(int setpoint,int feedback,uint32_t coef_a,uint32_t coef
   p_pid = DAT_00010cd0;                    /* p_pid → 误差值寄存器 0x10002118 */
   if (*DAT_00010cc0 <= *DAT_00010cbc) {
     *DAT_00010cd0 = *DAT_00010cbc - *DAT_00010cc0; /* 误差（正值路径） */
-    if ((int)(uint)*DAT_00010cd4 <= *p_pid) {     /* 误差 ≥ 死区上界 */
-      *DAT_00010cdc = (uint)*DAT_00010cd8;
+    if ((int)(uint)*g_cl_thresh_hi <= *p_pid) {     /* 误差 ≥ 死区上界 */
+      *DAT_00010cdc = (uint)*g_cl_gain_big;
     }
-    if ((*DAT_00010cd0 < (int)(uint)*DAT_00010cd4) && ((int)(uint)*DAT_00010ce0 < *DAT_00010cd0)) {
-      *DAT_00010cdc = (uint)*DAT_00010ce4;         /* 死区上界内 */
+    if ((*DAT_00010cd0 < (int)(uint)*g_cl_thresh_hi) && ((int)(uint)*g_cl_thresh_lo < *DAT_00010cd0)) {
+      *DAT_00010cdc = (uint)*g_cl_gain_mid;         /* 死区上界内 */
     }
-    if (*DAT_00010cd0 <= (int)(uint)*DAT_00010ce0) {
-      *DAT_00010cdc = (uint)*DAT_00010ce8;         /* 误差 ≤ 死区下界 */
+    if (*DAT_00010cd0 <= (int)(uint)*g_cl_thresh_lo) {
+      *DAT_00010cdc = (uint)*g_cl_gain_small;         /* 误差 ≤ 死区下界 */
     }
   }
   p_pid = DAT_00010cd0;                    /* p_pid → 误差值寄存器（负值路径） */
   if (*DAT_00010cbc < *DAT_00010cc0) {
     *DAT_00010cd0 = *DAT_00010cc0 - *DAT_00010cbc; /* 误差（负值路径，绝对值） */
-    if ((int)(uint)*DAT_00010cd4 <= *p_pid) {
-      *DAT_00010cdc = (uint)*DAT_00010cd8;
+    if ((int)(uint)*g_cl_thresh_hi <= *p_pid) {
+      *DAT_00010cdc = (uint)*g_cl_gain_big;
     }
-    if ((*DAT_00010cd0 < (int)(uint)*DAT_00010cd4) && ((int)(uint)*DAT_00010ce0 < *DAT_00010cd0)) {
-      *DAT_00010cdc = (uint)*DAT_00010ce4;
+    if ((*DAT_00010cd0 < (int)(uint)*g_cl_thresh_hi) && ((int)(uint)*g_cl_thresh_lo < *DAT_00010cd0)) {
+      *DAT_00010cdc = (uint)*g_cl_gain_mid;
     }
-    if (*DAT_00010cd0 <= (int)(uint)*DAT_00010ce0) {
-      *DAT_00010cdc = (uint)*DAT_00010ce8;
+    if (*DAT_00010cd0 <= (int)(uint)*g_cl_thresh_lo) {
+      *DAT_00010cdc = (uint)*g_cl_gain_small;
     }
   }
-  if (*DAT_00010cec == '\0') {
+  if (*g_gain_sel == '\0') {
     /* —— 通道 1 分段除数表（误差越大除数越小 → 步进越快）—— */
-    if (*DAT_00010cf0 < 0xdc) { *DAT_00010cf4 = 8; }
-    if ((0xdb < *DAT_00010cf0) && (*DAT_00010cf0 < 0x226)) { *DAT_00010cf4 = 0xf; }
-    if ((0x225 < *DAT_00010cf0) && (*DAT_00010cf0 < 1000)) { *DAT_00010cf4 = 0x1e; }
-    if ((999 < *DAT_00010cf0) && (*DAT_00010cf0 < 0x5dc)) { *DAT_00010cf4 = 0x2a; }
-    if ((0x5db < *DAT_00010cf0) && (*DAT_00010cf0 < 2000)) { *DAT_00010cf4 = 0x37; }
-    if ((1999 < *DAT_00010cf0) && (*DAT_00010cf0 < 0x9c4)) { *DAT_00010cf4 = 0x50; }
-    if ((0x9c3 < *DAT_00010cf0) && (*DAT_00010cf0 < 3000)) { *DAT_00010cf4 = 100; }
-    if ((2999 < *DAT_00010cf0) && (*DAT_00010cf0 < 4000)) { *DAT_00010cf4 = 0x78; }
-    if ((3999 < *DAT_00010cf0) && (*DAT_00010cf0 < 5000)) { *DAT_00010cf4 = 0x96; }
-    if ((4999 < *DAT_00010cf0) && (*DAT_00010cf0 < 0x1771)) { *DAT_00010cf4 = 0xb4; }
+    if (*g_gain_a < 0xdc) { *DAT_00010cf4 = 8; }
+    if ((0xdb < *g_gain_a) && (*g_gain_a < 0x226)) { *DAT_00010cf4 = 0xf; }
+    if ((0x225 < *g_gain_a) && (*g_gain_a < 1000)) { *DAT_00010cf4 = 0x1e; }
+    if ((999 < *g_gain_a) && (*g_gain_a < 0x5dc)) { *DAT_00010cf4 = 0x2a; }
+    if ((0x5db < *g_gain_a) && (*g_gain_a < 2000)) { *DAT_00010cf4 = 0x37; }
+    if ((1999 < *g_gain_a) && (*g_gain_a < 0x9c4)) { *DAT_00010cf4 = 0x50; }
+    if ((0x9c3 < *g_gain_a) && (*g_gain_a < 3000)) { *DAT_00010cf4 = 100; }
+    if ((2999 < *g_gain_a) && (*g_gain_a < 4000)) { *DAT_00010cf4 = 0x78; }
+    if ((3999 < *g_gain_a) && (*g_gain_a < 5000)) { *DAT_00010cf4 = 0x96; }
+    if ((4999 < *g_gain_a) && (*g_gain_a < 0x1771)) { *DAT_00010cf4 = 0xb4; }
     if (*DAT_00010cf8 == 1) {
       /* —— 通道 1 另套表（0x10010CFC 为误差源）—— */
-      if (*DAT_00010cfc < 0xdc) { *DAT_00010cf4 = 8; }
-      if ((0xdb < *DAT_00010cfc) && (*DAT_00010cfc < 0x226)) { *DAT_00010cf4 = 0xf; }
-      if ((0x225 < *DAT_00010cfc) && (*DAT_00010cfc < 1000)) { *DAT_00010cf4 = 0x1e; }
-      if ((999 < *DAT_00010cfc) && (*DAT_00010cfc < 0x5dc)) { *DAT_00010cf4 = 0x2a; }
-      if ((0x5db < *DAT_00010cfc) && (*DAT_00010cfc < 2000)) { *DAT_00010cf4 = 0x37; }
-      if ((1999 < *DAT_00010cfc) && (*DAT_00010cfc < 0x9c4)) { *DAT_00010cf4 = 0x50; }
-      if ((0x9c3 < *DAT_00010cfc) && (*DAT_00010cfc < 3000)) { *DAT_00010cf4 = 100; }
-      if ((2999 < *DAT_00010cfc) && (*DAT_00010cfc < 4000)) { *DAT_00010cf4 = 0x78; }
-      if ((3999 < *DAT_00010cfc) && (*DAT_00010cfc < 5000)) { *DAT_00010cf4 = 0x96; }
-      if ((4999 < *DAT_00010cfc) && (*DAT_00010cfc < 0x1771)) { *DAT_00010cf4 = 0xb4; }
+      if (*g_gain_b < 0xdc) { *DAT_00010cf4 = 8; }
+      if ((0xdb < *g_gain_b) && (*g_gain_b < 0x226)) { *DAT_00010cf4 = 0xf; }
+      if ((0x225 < *g_gain_b) && (*g_gain_b < 1000)) { *DAT_00010cf4 = 0x1e; }
+      if ((999 < *g_gain_b) && (*g_gain_b < 0x5dc)) { *DAT_00010cf4 = 0x2a; }
+      if ((0x5db < *g_gain_b) && (*g_gain_b < 2000)) { *DAT_00010cf4 = 0x37; }
+      if ((1999 < *g_gain_b) && (*g_gain_b < 0x9c4)) { *DAT_00010cf4 = 0x50; }
+      if ((0x9c3 < *g_gain_b) && (*g_gain_b < 3000)) { *DAT_00010cf4 = 100; }
+      if ((2999 < *g_gain_b) && (*g_gain_b < 4000)) { *DAT_00010cf4 = 0x78; }
+      if ((3999 < *g_gain_b) && (*g_gain_b < 5000)) { *DAT_00010cf4 = 0x96; }
+      if ((4999 < *g_gain_b) && (*g_gain_b < 0x1771)) { *DAT_00010cf4 = 0xb4; }
     }
   }
-  if (*DAT_00010cec == '\x01') {
+  if (*g_gain_sel == '\x01') {
     /* —— 通道 2 分段除数表（0x10010F40）—— */
-    if (*DAT_00010cfc < 0xdc) { *DAT_00010cf4 = 8; }
-    if ((0xdb < *DAT_00010cfc) && (*DAT_00010cfc < 0x226)) { *DAT_00010cf4 = 0xf; }
-    if ((0x225 < *DAT_00010cfc) && (*DAT_00010cfc < 1000)) { *DAT_00010cf4 = 0x1e; }
-    if ((999 < *DAT_00010cfc) && (*DAT_00010cfc < 0x5dc)) { *DAT_00010cf4 = 0x2a; }
-    if ((0x5db < *DAT_00010cfc) && (*DAT_00010cfc < 2000)) { *DAT_00010cf4 = 0x37; }
-    if ((1999 < *DAT_00010cfc) && (*DAT_00010cfc < 0x9c4)) { *DAT_00010cf4 = 0x50; }
-    if ((0x9c3 < *DAT_00010cfc) && (*DAT_00010cfc < 3000)) { *DAT_00010cf4 = 100; }
-    if ((2999 < *DAT_00010cfc) && (*DAT_00010cfc < 4000)) { *DAT_00010f40 = 0x78; }
-    if ((3999 < *DAT_00010f44) && (*DAT_00010f44 < 5000)) { *DAT_00010f40 = 0x96; }
-    if ((4999 < *DAT_00010f44) && (*DAT_00010f44 < 0x1771)) { *DAT_00010f40 = 0xb4; }
+    if (*g_gain_b < 0xdc) { *DAT_00010cf4 = 8; }
+    if ((0xdb < *g_gain_b) && (*g_gain_b < 0x226)) { *DAT_00010cf4 = 0xf; }
+    if ((0x225 < *g_gain_b) && (*g_gain_b < 1000)) { *DAT_00010cf4 = 0x1e; }
+    if ((999 < *g_gain_b) && (*g_gain_b < 0x5dc)) { *DAT_00010cf4 = 0x2a; }
+    if ((0x5db < *g_gain_b) && (*g_gain_b < 2000)) { *DAT_00010cf4 = 0x37; }
+    if ((1999 < *g_gain_b) && (*g_gain_b < 0x9c4)) { *DAT_00010cf4 = 0x50; }
+    if ((0x9c3 < *g_gain_b) && (*g_gain_b < 3000)) { *DAT_00010cf4 = 100; }
+    if ((2999 < *g_gain_b) && (*g_gain_b < 4000)) { *DAT_00010f40 = 0x78; }
+    if ((3999 < *g_gain_b) && (*g_gain_b < 5000)) { *DAT_00010f40 = 0x96; }
+    if ((4999 < *g_gain_b) && (*g_gain_b < 0x1771)) { *DAT_00010f40 = 0xb4; }
     if (*DAT_00010f48 == 1) {
-      if (*DAT_00010f4c < 0xdc) { *DAT_00010f40 = 8; }
-      if ((0xdb < *DAT_00010f4c) && (*DAT_00010f4c < 0x226)) { *DAT_00010f40 = 0xf; }
-      if ((0x225 < *DAT_00010f4c) && (*DAT_00010f4c < 1000)) { *DAT_00010f40 = 0x1e; }
-      if ((999 < *DAT_00010f4c) && (*DAT_00010f4c < 0x5dc)) { *DAT_00010f40 = 0x2a; }
-      if ((0x5db < *DAT_00010f4c) && (*DAT_00010f4c < 2000)) { *DAT_00010f40 = 0x37; }
-      if ((1999 < *DAT_00010f4c) && (*DAT_00010f4c < 0x9c4)) { *DAT_00010f40 = 0x50; }
-      if ((0x9c3 < *DAT_00010f4c) && (*DAT_00010f4c < 3000)) { *DAT_00010f40 = 100; }
-      if ((2999 < *DAT_00010f4c) && (*DAT_00010f4c < 4000)) { *DAT_00010f40 = 0x78; }
-      if ((3999 < *DAT_00010f4c) && (*DAT_00010f4c < 5000)) { *DAT_00010f40 = 0x96; }
-      if ((4999 < *DAT_00010f4c) && (*DAT_00010f4c < 0x1771)) { *DAT_00010f40 = 0xb4; }
+      if (*g_gain_a < 0xdc) { *DAT_00010f40 = 8; }
+      if ((0xdb < *g_gain_a) && (*g_gain_a < 0x226)) { *DAT_00010f40 = 0xf; }
+      if ((0x225 < *g_gain_a) && (*g_gain_a < 1000)) { *DAT_00010f40 = 0x1e; }
+      if ((999 < *g_gain_a) && (*g_gain_a < 0x5dc)) { *DAT_00010f40 = 0x2a; }
+      if ((0x5db < *g_gain_a) && (*g_gain_a < 2000)) { *DAT_00010f40 = 0x37; }
+      if ((1999 < *g_gain_a) && (*g_gain_a < 0x9c4)) { *DAT_00010f40 = 0x50; }
+      if ((0x9c3 < *g_gain_a) && (*g_gain_a < 3000)) { *DAT_00010f40 = 100; }
+      if ((2999 < *g_gain_a) && (*g_gain_a < 4000)) { *DAT_00010f40 = 0x78; }
+      if ((3999 < *g_gain_a) && (*g_gain_a < 5000)) { *DAT_00010f40 = 0x96; }
+      if ((4999 < *g_gain_a) && (*g_gain_a < 0x1771)) { *DAT_00010f40 = 0xb4; }
     }
   }
-  if (*DAT_00010f50 == '\x02') {
+  if (*g_gain_sel == '\x02') {
     *DAT_00010f40 = 0x46;                       /* 控制方式 2：固定除数 0x46 */
   }
   p_pid = DAT_00010f54;                    /* p_pid → 增益寄存器 0x10002124（置 1） */
   *DAT_00010f54 = 1;
-  p_pid_out = DAT_00010f74;                /* 位置增量输出 0x10002130 */
-  *DAT_00010f74 =
+  p_pid_out = g_pid_integral;                /* 位置增量输出 0x10002130 */
+  *g_pid_integral =
        /* 位置式 PID 分子：三项分别对应比例/积分/微分贡献（系数见各 DAT 槽） */
        (*DAT_00010f6c * *DAT_00010f58 * 10 * (*DAT_00010f60 + *DAT_00010f64 * -2 + *DAT_00010f70) +
        *DAT_00010f68 * *DAT_00010f58 * 2 * *DAT_00010f60 +
@@ -148,7 +148,7 @@ int closed_loop_integral(int setpoint,int feedback,uint32_t coef_a,uint32_t coef
 
 /* 0x00010F0A —— 闭环节流包装：每次调用把 *DAT_00010f84（0x100020F4，重算计数）加 1，
  *   计数非 0 时才清零并真正调用一次 closed_loop_integral()，其输出缓存到
- *   *DAT_00010f88（0x1000212C）；中间各次调用直接返回上次缓存值，
+ *   *g_cl_cached_out（0x1000212C）；中间各次调用直接返回上次缓存值，
  *   从而把 PID 重算节流到固定周期（每 N 个 tick 一次）。
  *   参数含义与 closed_loop_integral 一致：setpoint=给定、feedback=反馈、
  *   coef_a/coef_b=PID 系数槽。 */
@@ -163,7 +163,7 @@ closed_loop_wrapper(uint32_t setpoint,uint32_t feedback,uint32_t coef_a,uint32_t
   if (*p_recalc_cnt != 0) {
     *p_recalc_cnt = 0;
     result = closed_loop_integral(setpoint,feedback,coef_a,coef_b);
-    *DAT_00010f88 = result;
+    *g_cl_cached_out = result;
   }
-  return *DAT_00010f88;
+  return *g_cl_cached_out;
 }

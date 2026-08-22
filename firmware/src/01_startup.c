@@ -106,7 +106,7 @@ void wd_feed(void)
 /* 0x00000248 —— TIMER0 初始化：MR0=1999（节拍周期），匹配中断 IRQ0 */
 void timer0_init(void)
 {
-  *(uint *)(DAT_000002d8 + 0xc4) = *DAT_000002d4 | 2;  /* PCONP |= 2：TIMER0 上电 */
+  *(uint *)(DAT_000002d8 + 0xc4) = *g_pconp | 2;  /* PCONP |= 2：TIMER0 上电 */
   TIMER0->TCR = 2;            /* 复位 TC/PC（先复位再配置） */
   TIMER0->PR = 0x18;          /* 预分频 24 */
   TIMER0->MR0 = 1999;         /* MR0 = 1999（节拍周期） */
@@ -126,8 +126,8 @@ void TIMER0_IRQHandler(void)
 
   TIMER0->IR = 0xff;
   *PTR_tick_ready_000002dc = 1;
-  phase_cnt = PTR_phase_cnt_000002e0;
-  *PTR_phase_cnt_000002e0 = *PTR_phase_cnt_000002e0 + '\x01';
+  phase_cnt = g_phase_cnt;
+  *g_phase_cnt = *g_phase_cnt + '\x01';
   if (200 < (byte)*phase_cnt) {
     *phase_cnt = 200;
   }
@@ -147,7 +147,7 @@ void TIMER0_IRQHandler(void)
  *   DAT_00000570=0x400FC08C（PLL0FEED，pll_feed）、DAT_00000574=0x400FC080（PLL0CON）、
  *   DAT_00000578=0x400FC0A4（PLL1CFG）、DAT_0000057c=0x400FC0AC（PLL1FEED）、
  *   DAT_00000580=0x400FC0A0（PLL1CON）、DAT_00000584=0x400FC0A8（PLL1STAT）、
- *   DAT_00000588=0x400FC1A8（PCLKSEL0）、DAT_00000590=0x400FC0C4（PCONP）、
+ *   DAT_00000588=0x400FC1A8（PCLKSEL0）、g_pconp=0x400FC0C4（PCONP）、
  *   DAT_00000594=0x400FC1C8（PCLKSEL1）。
  * PLL 配置要点：改 PLLxCON 后须向 PLLxFEED 写 0xAA→0x55 序列锁存；随后
  *   do{}while 轮询 PLLxSTAT 位直到锁相完成。pll_feed 即 PLL0FEED 寄存器指针。 */
@@ -189,7 +189,7 @@ void SystemInit(void)
   } while ((*DAT_00000584 & 0x300) == 0);
   *DAT_00000588 = 0;
   DAT_00000554[0x6b] = 0;
-  *DAT_00000590 = DAT_0000058c;
+  *g_pconp = DAT_0000058c;
   *DAT_00000594 = 0;
   *DAT_00000554 = 0x303a;
   return;

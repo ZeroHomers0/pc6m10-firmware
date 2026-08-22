@@ -3,7 +3,7 @@
  * 反编译源码导出 — 模块 05：ADC0 多通道采样 + 标定换算
  *
  * 采样链（三相电源反馈 + 给定）：
- *   · ADC0（DAT_00002310 = AD0CR 0x40034000）：adc0_start 置 START bit、adc0_wait_done
+ *   · ADC0（g_adc = AD0CR 0x40034000）：adc0_start 置 START bit、adc0_wait_done
  *     等 GDR bit31 DONE 后读 12 位（&0xffff >> 4）
  *   · 逐通道扫描，通道轮转计数 0x10002314（0..5）：
  *       ch2=IA(三相电流A, SEL=4)、ch1=IB(SEL=2)、ch0=IC(SEL=1)、ch5=Ug 给定(SEL=0x20)、
@@ -35,8 +35,8 @@ void adc_init(void)
   *(uint *)(clk_base + 0xc) = *(uint *)(clk_base + 0xc) | 0xc0000000;
   *(uint *)(clk_base + 0xc) = *(uint *)(clk_base + 0xc) & 0x3fffffff;
   *(uint *)(clk_base + 0xc) = *(uint *)(clk_base + 0xc) | 0xc0000000;
-  *(uint *)(DAT_00002308 + 0xc4) = *DAT_00002304 | 0x1000;      /* PCONP ADC 上电 */
-  *DAT_00002310 = DAT_0000230c;                                 /* AD0CR 初值 */
+  *(uint *)(DAT_00002308 + 0xc4) = *g_pconp | 0x1000;      /* PCONP ADC 上电 */
+  *g_adc = DAT_0000230c;                                 /* AD0CR 初值 */
   return;
 }
 
@@ -45,8 +45,8 @@ void adc0_start(void)
 {
   volatile uint32_t *adcr;
 
-  adcr = DAT_00002310;
-  *DAT_00002310 = *DAT_00002310 & 0xf8ffffff;
+  adcr = g_adc;
+  *g_adc = *g_adc & 0xf8ffffff;
   *adcr = *adcr | 0x1000000;
   return;
 }
@@ -55,8 +55,8 @@ void adc0_start(void)
 uint adc0_wait_done(void)
 {
   do {
-  } while ((*(uint *)(DAT_00002310 + 4) & 0x80000000) == 0);
-  return (*(uint *)(DAT_00002310 + 4) & 0xffff) >> 4;
+  } while ((*(uint *)(g_adc + 4) & 0x80000000) == 0);
+  return (*(uint *)(g_adc + 4) & 0xffff) >> 4;
 }
 
 /* 0x00001FBC —— 逐通道扫描：每通道 5 点循环采样存原始数组，
@@ -84,43 +84,43 @@ void adc0_scan_channels(void)
     *avg_idx = 0;
   }
   /* —— ch2（SEL=4，IA）—— */
-  val_ptr = DAT_00002310;
-  *DAT_00002310 = *DAT_00002310 & 0xffffffc0;
+  val_ptr = g_adc;
+  *g_adc = *g_adc & 0xffffffc0;
   *val_ptr = *val_ptr | 4;
   adc0_start();
   sample = adc0_wait_done();
   DAT_00002318[*DAT_00002314] = sample;
   /* —— ch1（SEL=2，IB）—— */
-  val_ptr = DAT_00002310;
-  *DAT_00002310 = *DAT_00002310 & 0xffffffc0;
+  val_ptr = g_adc;
+  *g_adc = *g_adc & 0xffffffc0;
   *val_ptr = *val_ptr | 2;
   adc0_start();
   sample = adc0_wait_done();
   DAT_0000231c[*DAT_00002314] = sample;
   /* —— ch0（SEL=1，IC）—— */
-  val_ptr = DAT_00002310;
-  *DAT_00002310 = *DAT_00002310 & 0xffffffc0;
+  val_ptr = g_adc;
+  *g_adc = *g_adc & 0xffffffc0;
   *val_ptr = *val_ptr | 1;
   adc0_start();
   sample = adc0_wait_done();
   DAT_00002320[*DAT_00002314] = sample;
   /* —— ch5（SEL=0x20，Ug 给定）—— */
-  val_ptr = DAT_00002310;
-  *DAT_00002310 = *DAT_00002310 & 0xffffffc0;
+  val_ptr = g_adc;
+  *g_adc = *g_adc & 0xffffffc0;
   *val_ptr = *val_ptr | 0x20;
   adc0_start();
   sample = adc0_wait_done();
   DAT_00002324[*DAT_00002314] = sample;
   /* —— ch3（SEL=8，IF）—— */
-  val_ptr = DAT_00002310;
-  *DAT_00002310 = *DAT_00002310 & 0xffffffc0;
+  val_ptr = g_adc;
+  *g_adc = *g_adc & 0xffffffc0;
   *val_ptr = *val_ptr | 8;
   adc0_start();
   sample32 = adc0_wait_done();
   *(undefined4 *)(DAT_00002328 + (uint)*DAT_00002314 * 4) = sample32;
   /* —— ch4（SEL=0x10，Uf）—— */
-  val_ptr = DAT_00002310;
-  *DAT_00002310 = *DAT_00002310 & 0xffffffc0;
+  val_ptr = g_adc;
+  *g_adc = *g_adc & 0xffffffc0;
   *val_ptr = *val_ptr | 0x10;
   adc0_start();
   sample32 = adc0_wait_done();
@@ -141,7 +141,7 @@ void adc0_scan_channels(void)
     *DAT_00002338 = *(uint *)(sample + (uint)*DAT_00002330 * 4);
     out_ptr = DAT_00002344;
     *DAT_00002344 = (*DAT_0000233c * *val_ptr * 2) / *DAT_00002340;
-    if ((*DAT_00002348 == '\0') && (*out_ptr < 10)) {
+    if ((*g_cfg_word == '\0') && (*out_ptr < 10)) {
       *out_ptr = 0;
     }
   }
@@ -160,7 +160,7 @@ void adc0_scan_channels(void)
     *DAT_00002338 = *(uint *)(sample + (uint)*DAT_0000234c * 4);
     out_ptr = DAT_00002358;
     *DAT_00002358 = (*DAT_0000233c * *val_ptr * 2) / *DAT_00002354;
-    if ((*DAT_00002348 == '\0') && (*out_ptr < 10)) {
+    if ((*g_cfg_word == '\0') && (*out_ptr < 10)) {
       *out_ptr = 0;
     }
   }
@@ -180,7 +180,7 @@ void adc0_scan_channels(void)
     *DAT_00002364 = *val_ptr;
     val_ptr = DAT_0000236c;
     *DAT_0000236c = (*DAT_0000233c * *DAT_00002338 * 2) / *DAT_00002368;
-    if ((*DAT_00002348 == '\0') && (*val_ptr < 10)) {
+    if ((*g_cfg_word == '\0') && (*val_ptr < 10)) {
       *val_ptr = 0;
     }
   }
@@ -226,11 +226,11 @@ void adc0_scan_channels(void)
       }
       *DAT_00002588 = (*DAT_00002588 - 800) * 5 >> 2;
     }
-    if (*DAT_0000258c == '\0') {
-      *DAT_00002594 = (*DAT_00002590 * *DAT_00002588) / 0xf78;    /* /3960 */
+    if (*g_gain_sel == '\0') {
+      *DAT_00002594 = (*g_gain_a * *DAT_00002588) / 0xf78;    /* /3960 */
     }
-    if (*DAT_0000258c == '\x01') {
-      *DAT_00002594 = (*DAT_00002598 * *DAT_00002588) / 0xf78;
+    if (*g_gain_sel == '\x01') {
+      *DAT_00002594 = (*g_gain_b * *DAT_00002588) / 0xf78;
     }
   }
   /* —— ch3 平均（→ reg44 IF；仅当 0x1000259C==4）—— */
@@ -248,10 +248,10 @@ void adc0_scan_channels(void)
     *DAT_00002588 = *(uint *)(sample + (uint)*DAT_000025a0 * 4);
     *DAT_000025ac = (*val_ptr * 0x65) / 400;
     val_ptr = DAT_00002588;
-    *DAT_00002588 = (*DAT_00002598 * *DAT_00002588) / *DAT_000025b0;   /* gain_b/reg54 */
+    *DAT_00002588 = (*g_gain_b * *DAT_00002588) / *DAT_000025b0;   /* gain_b/reg54 */
     *DAT_000025b4 = *val_ptr;
     *DAT_000025b8 = *DAT_00002588;
-    if ((*DAT_000025bc == '\0') && (*DAT_000025b4 < 10)) {
+    if ((*g_cfg_word == '\0') && (*DAT_000025b4 < 10)) {
       *DAT_000025b4 = 0;
     }
   }
@@ -270,10 +270,10 @@ void adc0_scan_channels(void)
     *DAT_00002588 = *(uint *)(sample + (uint)*DAT_000025c0 * 4);
     *DAT_000025cc = (*val_ptr * 0x65) / 400;
     val_ptr = DAT_00002588;
-    *DAT_00002588 = (*DAT_00002590 * *DAT_00002588) / *DAT_000025d0;   /* gain_a/reg55 */
+    *DAT_00002588 = (*g_gain_a * *DAT_00002588) / *DAT_000025d0;   /* gain_a/reg55 */
     *DAT_000025d4 = *val_ptr;
     *DAT_000025d8 = *DAT_00002588;
-    if ((*DAT_000025bc == '\0') && (*DAT_000025d4 < 10)) {
+    if ((*g_cfg_word == '\0') && (*DAT_000025d4 < 10)) {
       *DAT_000025d4 = 0;
     }
   }

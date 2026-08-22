@@ -154,7 +154,7 @@ void timer2_init(void)
 {
   volatile uint32_t *timer2;
 
-  *(uint *)(DAT_0000e998 + 0xc4) = *DAT_0000e994 | 0x400000;   /* PCONP bit22 TMR2 */
+  *(uint *)(DAT_0000e998 + 0xc4) = *g_pconp | 0x400000;   /* PCONP bit22 TMR2 */
   timer2 = DAT_0000e99c;                              /* TIMER2 0x40090000 */
   DAT_0000e99c[1] = 2;
   timer2[3] = 0x18;
@@ -263,25 +263,25 @@ void output_stage(void)
   if ((*DAT_0000eda8 != 1) && (*DAT_0000edac = *DAT_0000edac + 1, 9 < *tick_cnt)) {
     *tick_cnt = 0;
     word_ptr = DAT_0000edb4;
-    *DAT_0000edb4 = 0xb4 - *DAT_0000edb0;            /* 触发角 = 180° - 当前角 */
+    *DAT_0000edb4 = 0xb4 - *g_reg62_start_phase;            /* 触发角 = 180° - 当前角 */
     if (*word_ptr == 0) {
       *word_ptr = 1;
     }
     *DAT_0000edbc = 0xb4 - *DAT_0000edb8;
-    if (*DAT_0000edc0 == '\0') {
+    if (*g_cfg_word == '\0') {
       *DAT_0000edc4 = 0;
-      if (*DAT_0000edc8 == '\0') {
-        *DAT_0000edd0 = *DAT_0000edcc / 0xf;         /* 周期/15 换算 */
+      if (*g_gain_sel == '\0') {
+        *DAT_0000edd0 = *g_gain_b / 0xf;         /* 周期/15 换算 */
       }
-      if (*DAT_0000edc8 == '\x01') {
-        *DAT_0000edd0 = *DAT_0000edd4 / 0xf;
+      if (*g_gain_sel == '\x01') {
+        *DAT_0000edd0 = *g_gain_a / 0xf;
       }
-      if (*DAT_0000edc8 == '\x02') {
-        *DAT_0000eddc = (*DAT_0000edd8 * 1000) / *DAT_0000edcc;
-        *DAT_0000edd0 = *DAT_0000edcc / 0xf;
+      if (*g_gain_sel == '\x02') {
+        *DAT_0000eddc = (*DAT_0000edd8 * 1000) / *g_gain_b;
+        *DAT_0000edd0 = *g_gain_b / 0xf;
       }
     }
-    if ((*DAT_0000edc0 == '\x01') && (9 < *DAT_0000ede0)) {
+    if ((*g_cfg_word == '\x01') && (9 < *DAT_0000ede0)) {
       /* —— 过压保护（0x1000EDE4 阈值 / 0x1000EDE8 延时上限）—— */
       if ((*DAT_0000ede4 == 0) || (*DAT_0000ede8 <= *DAT_0000ede4)) {
         *DAT_0000edec = 0;
@@ -337,7 +337,7 @@ void output_stage(void)
         *DAT_0000ee14 = 0;
         *DAT_0000edc4 = 1;
       }
-      if (*DAT_0000edc8 == '\0') {
+      if (*g_gain_sel == '\0') {
         /* —— 软起动斜坡状态机（0x1000EE24：0=停 4=运行 5=稳定）—— */
         *DAT_0000ee1c = *DAT_0000ee18;
         *DAT_0000ee20 = 0;
@@ -369,14 +369,14 @@ void output_stage(void)
           }
           word_ptr = DAT_0000ee28;
           *DAT_0000ee28 = *DAT_0000ee54 * 100;
-          *DAT_0000ee5c = *word_ptr;
+          *g_cl_cached_out = *word_ptr;
           *DAT_0000ee2c = *DAT_0000ee28;
           *DAT_0000ee30 = 0;
           *DAT_0000ee34 = 0;
           if ((*DAT_0000ee1c * 0x2f8) / 100 + 0xedd < *DAT_0000ee54) {  /* 达目标 → 5 稳定 */
             *DAT_0000ee24 = 5;
           }
-          if ((*DAT_0000edd8 <= *DAT_0000ee0c) && (*DAT_0000edd8 <= *DAT_0000edcc)) {
+          if ((*DAT_0000edd8 <= *DAT_0000ee0c) && (*DAT_0000edd8 <= *g_gain_b)) {
             *DAT_0000ee24 = 5;
           }
           if (*DAT_0000ee60 < *DAT_0000ee64) {
@@ -413,7 +413,7 @@ void output_stage(void)
           else {
             *DAT_0000f294 = 0;
           }
-          if (((*DAT_0000f290 <= *DAT_0000f27c) && (*DAT_0000f274 <= *DAT_0000f298)) &&
+          if (((*DAT_0000f290 <= *DAT_0000f27c) && (*DAT_0000f274 <= *g_gain_b)) &&
              (*DAT_0000f280 == 2)) {
             *DAT_0000f27c = *DAT_0000f290;
             scratch_ptr = DAT_0000f290;
@@ -424,8 +424,8 @@ void output_stage(void)
             *DAT_0000f288 = *DAT_0000f288;
             *DAT_0000f28c = '\0';
           }
-          if (((*DAT_0000f274 <= *DAT_0000f298) && (*DAT_0000f280 == 1)) &&
-             (*DAT_0000f29c < *DAT_0000f298)) {
+          if (((*DAT_0000f274 <= *g_gain_b) && (*DAT_0000f280 == 1)) &&
+             (*g_gain_a < *g_gain_b)) {
             *DAT_0000f2a0 = 1;
             if (*DAT_0000f28c != '\x01') {
               *DAT_0000f28c = '\x01';
@@ -437,8 +437,8 @@ void output_stage(void)
             *DAT_0000f27c = *DAT_0000f274;
             *DAT_0000f288 = *DAT_0000f2a4;
           }
-          if (((*DAT_0000f288 <= *DAT_0000f27c) && (*DAT_0000f274 <= *DAT_0000f298)) &&
-             ((*DAT_0000f280 == 1 && (*DAT_0000f298 <= *DAT_0000f29c)))) {
+          if (((*DAT_0000f288 <= *DAT_0000f27c) && (*DAT_0000f274 <= *g_gain_b)) &&
+             ((*DAT_0000f280 == 1 && (*g_gain_b <= *g_gain_a)))) {
             *DAT_0000f2a0 = 1;
             if (*DAT_0000f28c != '\x01') {
               *DAT_0000f28c = '\x01';
@@ -450,7 +450,7 @@ void output_stage(void)
             *DAT_0000f27c = *DAT_0000f274;
             *DAT_0000f288 = *DAT_0000f2a4;
           }
-          if (((*DAT_0000f278 < 2) && (*DAT_0000f274 <= *DAT_0000f298)) && (*DAT_0000f280 == 1)) {
+          if (((*DAT_0000f278 < 2) && (*DAT_0000f274 <= *g_gain_b)) && (*DAT_0000f280 == 1)) {
             *DAT_0000f2a0 = 1;
             if (*DAT_0000f28c != '\x01') {
               *DAT_0000f28c = '\x01';
@@ -472,7 +472,7 @@ void output_stage(void)
           else {
             *DAT_0000f2b4 = 0;
           }
-          pid_out = closed_loop_wrapper(*DAT_0000f27c,*DAT_0000f288,*DAT_0000f2c0,*DAT_0000f2bc);
+          pid_out = closed_loop_wrapper(*DAT_0000f27c,*DAT_0000f288,*g_act_gain_a,*g_act_gain_b);
           *DAT_0000f2c4 = pid_out;
         }
         if (((uint)(*DAT_0000f2c8 * 0x18bd) < *DAT_0000f2c4 ||
@@ -483,7 +483,7 @@ void output_stage(void)
           *DAT_0000f2c4 = *DAT_0000f2d0 * 0x18bd;     /* 输出下限钳位 */
         }
       }
-      if (*DAT_0000f2d4 == '\x01') {
+      if (*g_gain_sel == '\x01') {
         /* —— 第二路闭环（0x1000F2E8.. 软起 + PID + 钳位）—— */
         *DAT_0000f2d8 = *DAT_0000f27c;
         *DAT_0000f2a0 = 0;
@@ -515,14 +515,14 @@ void output_stage(void)
           }
           scratch_ptr = DAT_0000f2c4;
           *DAT_0000f2c4 = *DAT_0000f2fc * 100;
-          *DAT_0000f300 = *scratch_ptr;
+          *g_cl_cached_out = *scratch_ptr;
           *DAT_0000f2dc = *DAT_0000f2c4;
           *DAT_0000f2e0 = 0;
           *DAT_0000f2e4 = 0;
           if ((*DAT_0000f2d8 * 0x2f8) / 100 + 0xedd < *DAT_0000f2fc) {
             *DAT_0000f268 = 5;
           }
-          if ((*DAT_0000f304 <= *DAT_0000f278) && (*DAT_0000f304 <= *DAT_0000f29c)) {
+          if ((*DAT_0000f304 <= *DAT_0000f278) && (*DAT_0000f304 <= *g_gain_a)) {
             *DAT_0000f268 = 5;
           }
           if (*DAT_0000f308 < *DAT_0000f2a4) {
@@ -559,7 +559,7 @@ void output_stage(void)
           else {
             *DAT_0000f730 = 0;
           }
-          if (((*DAT_0000f72c <= *DAT_0000f718) && (*DAT_0000f710 <= *DAT_0000f734)) &&
+          if (((*DAT_0000f72c <= *DAT_0000f718) && (*DAT_0000f710 <= *g_gain_a)) &&
              (*DAT_0000f71c == 2)) {
             *DAT_0000f718 = *DAT_0000f72c;
             scratch_ptr = DAT_0000f72c;
@@ -570,8 +570,8 @@ void output_stage(void)
             *DAT_0000f724 = *DAT_0000f724;
             *DAT_0000f728 = '\0';
           }
-          if (((*DAT_0000f710 <= *DAT_0000f734) && (*DAT_0000f71c == 1)) &&
-             (*DAT_0000f738 < *DAT_0000f734)) {
+          if (((*DAT_0000f710 <= *g_gain_a) && (*DAT_0000f71c == 1)) &&
+             (*g_gain_b < *g_gain_a)) {
             *DAT_0000f73c = 1;
             if (*DAT_0000f728 != '\x01') {
               *DAT_0000f728 = '\x01';
@@ -583,8 +583,8 @@ void output_stage(void)
             *DAT_0000f718 = *DAT_0000f710;
             *DAT_0000f724 = *DAT_0000f740;
           }
-          if (((*DAT_0000f724 <= *DAT_0000f718) && (*DAT_0000f710 <= *DAT_0000f734)) &&
-             ((*DAT_0000f71c == 1 && (*DAT_0000f734 <= *DAT_0000f738)))) {
+          if (((*DAT_0000f724 <= *DAT_0000f718) && (*DAT_0000f710 <= *g_gain_a)) &&
+             ((*DAT_0000f71c == 1 && (*g_gain_a <= *g_gain_b)))) {
             *DAT_0000f73c = 1;
             if (*DAT_0000f728 != '\x01') {
               *DAT_0000f728 = '\x01';
@@ -596,7 +596,7 @@ void output_stage(void)
             *DAT_0000f718 = *DAT_0000f710;
             *DAT_0000f724 = *DAT_0000f740;
           }
-          if (((*DAT_0000f714 < 2) && (*DAT_0000f710 <= *DAT_0000f734)) && (*DAT_0000f71c == 1)) {
+          if (((*DAT_0000f714 < 2) && (*DAT_0000f710 <= *g_gain_a)) && (*DAT_0000f71c == 1)) {
             *DAT_0000f73c = 1;
             if (*DAT_0000f728 != '\x01') {
               *DAT_0000f728 = '\x01';
@@ -618,7 +618,7 @@ void output_stage(void)
           else {
             *DAT_0000f750 = 0;
           }
-          pid_out = closed_loop_wrapper(*DAT_0000f718,*DAT_0000f724,*DAT_0000f75c,*DAT_0000f758);
+          pid_out = closed_loop_wrapper(*DAT_0000f718,*DAT_0000f724,*g_act_gain_a,*g_act_gain_b);
           *DAT_0000f760 = pid_out;
         }
         if (((uint)(*DAT_0000f764 * 0x18bd) < *DAT_0000f760 ||
@@ -630,7 +630,7 @@ void output_stage(void)
         }
       }
       scratch_ptr = DAT_0000f778;
-      if (*DAT_0000f770 == '\x02') {
+      if (*g_gain_sel == '\x02') {
         /* —— 恒压源模式（0x1000F774..F794）—— */
         *DAT_0000f778 = *DAT_0000f774;
         cv_out = DAT_0000f77c;
@@ -686,7 +686,7 @@ void output_stage(void)
         }
       }
     }
-    if (((*PTR_cfg_word_0000fba4 == '\0') && (*(int *)PTR_input_locked_0000fba8 != 0)) &&
+    if (((*g_cfg_word == '\0') && (*(int *)PTR_input_locked_0000fba8 != 0)) &&
        (*DAT_0000fbac == '\x01')) {
       /* —— 运行联锁解除：全部输出复位 —— */
       gpio_outputs_set();
@@ -699,7 +699,7 @@ void output_stage(void)
       *(undefined4 *)PTR_input_locked_0000fba8 = 0;
       *PTR_flag_3c_0000fbbc = 0;
     }
-    if (((*PTR_cfg_word_0000fba4 == '\0') && (*(int *)PTR_input_locked_0000fba8 != 0)) ||
+    if (((*g_cfg_word == '\0') && (*(int *)PTR_input_locked_0000fba8 != 0)) ||
        (*DAT_0000fbc0 < 10)) {
       /* —— 停机斜坡（逐拍降频）—— */
       if (*(int *)PTR_input_locked_0000fba8 == 5) {
@@ -713,7 +713,7 @@ void output_stage(void)
         *(undefined4 *)PTR_flag_6c_0000fbb4 = 0;
         *(undefined4 *)PTR_flag_70_0000fbb8 = 0;
         *(undefined4 *)PTR_out_setpoint_0000fb98 = 0;
-        if (*PTR_cfg_word_0000fba4 == '\0') {
+        if (*g_cfg_word == '\0') {
           fio0_pin22_ctrl(0);
           fio1_pin22_ctrl(0);
         }
@@ -750,7 +750,7 @@ void output_stage(void)
             *(undefined4 *)PTR_flag_6c_0000fbb4 = 0;
             *(undefined4 *)PTR_flag_70_0000fbb8 = 0;
             *(undefined4 *)PTR_out_setpoint_0000fb98 = 0;
-            if (*PTR_cfg_word_0000fba4 == '\0') {
+            if (*g_cfg_word == '\0') {
               fio0_pin22_ctrl(0);
               fio1_pin22_ctrl(0);
             }
@@ -764,7 +764,7 @@ void output_stage(void)
           *(undefined4 *)PTR_flag_6c_0000fbb4 = 0;
           *(undefined4 *)PTR_flag_70_0000fbb8 = 0;
           *(undefined4 *)PTR_out_setpoint_0000fb98 = 0;
-          if (*PTR_cfg_word_0000fba4 == '\0') {
+          if (*g_cfg_word == '\0') {
             fio0_pin22_ctrl(0);
             fio1_pin22_ctrl(0);
           }
@@ -780,11 +780,11 @@ void output_stage(void)
 /* 0x0000F9AA —— 运行/停机预设（cfg_word=1 → 启动；=0 → 停机复位输出） */
 void run_stop_preset(void)
 {
-  if (*PTR_cfg_word_0000fba4 == '\x01') {
+  if (*g_cfg_word == '\x01') {
     *(int *)PTR_out_setpoint_0000fb98 = DAT_0000fbcc[0xfa] * 100;
     *(undefined4 *)PTR_input_locked_0000fba8 = 5;
   }
-  if (*PTR_cfg_word_0000fba4 == '\0') {
+  if (*g_cfg_word == '\0') {
     *(undefined4 *)PTR_out_setpoint_0000fb98 = *DAT_0000fbcc;
     *(undefined4 *)PTR_input_locked_0000fba8 = 0;
     fio0_pin22_ctrl(0);
@@ -797,8 +797,8 @@ void run_stop_preset(void)
 void EINT1_IRQHandler(void)
 {
   *(uint *)(PTR_DAT_0000fbd4 + 0x140) = *(uint *)PTR_DAT_0000fbd0 | 2;   /* EXTINT 清 EINT1 */
-  if (*PTR_input_state_0000fbd8 == '\0') {
-    *PTR_input_state_0000fbd8 = 2;
+  if (*g_input_state == '\0') {
+    *g_input_state = 2;
   }
   *PTR_eint1_flag_0000fbdc = 1;
   return;
@@ -808,8 +808,8 @@ void EINT1_IRQHandler(void)
 void EINT2_IRQHandler(void)
 {
   *(uint *)(PTR_DAT_0000fbd4 + 0x140) = *(uint *)PTR_DAT_0000fbd0 | 4;   /* EXTINT 清 EINT2 */
-  if (*PTR_input_state_0000fbd8 == '\0') {
-    *PTR_input_state_0000fbd8 = 1;
+  if (*g_input_state == '\0') {
+    *g_input_state = 1;
   }
   *PTR_eint2_flag_0000fbe0 = 1;
   return;
@@ -830,36 +830,36 @@ void EINT3_IRQHandler(void)
 
   *(uint *)(PTR_DAT_0000fbd4 + 0x140) = *(uint *)PTR_DAT_0000fbd0 | 8;   /* EXTINT 清 EINT3 */
   if (*(int *)PTR_input_locked_0000fba8 == 0) {
-    if (*PTR_input_state_0000fbd8 == '\x01') {
-      *PTR_mode_byte_0000fbe4 = 1;
+    if (*g_input_state == '\x01') {
+      *g_mode_byte = 1;
     }
-    if (*PTR_input_state_0000fbd8 == '\x02') {
-      *PTR_mode_byte_0000fbe4 = 2;
+    if (*g_input_state == '\x02') {
+      *g_mode_byte = 2;
     }
-    *PTR_input_state_0000fbd8 = 0;
+    *g_input_state = 0;
   }
   *PTR_eint3_flag_0000fbe8 = 1;
   ptr = PTR_debounce_count_0000fbec;
   *PTR_debounce_count_0000fbec = *PTR_debounce_count_0000fbec + '\x01';
   if (9 < (byte)*ptr) {
     *ptr = 0;
-    if ((0x60 < (byte)*PTR_phase_cnt_0000fbf0) && ((byte)*PTR_phase_cnt_0000fbf0 < 0x68)) {
-      *PTR_freq_hz_0000fbf4 = 0x32;                 /* '2' = 50Hz 档 */
+    if ((0x60 < (byte)*g_phase_cnt) && ((byte)*g_phase_cnt < 0x68)) {
+      *g_freq_hz = 0x32;                 /* '2' = 50Hz 档 */
       *(undefined4 *)PTR_hold_count_0000fbf8 = 0;
     }
-    if ((0x51 < (byte)*PTR_phase_cnt_0000fbf0) && ((byte)*PTR_phase_cnt_0000fbf0 < 0x56)) {
-      *PTR_freq_hz_0000fbf4 = 0x3c;                 /* '<' = 60Hz 档 */
+    if ((0x51 < (byte)*g_phase_cnt) && ((byte)*g_phase_cnt < 0x56)) {
+      *g_freq_hz = 0x3c;                 /* '<' = 60Hz 档 */
       *(undefined4 *)PTR_hold_count_0000fbf8 = 0;
     }
     ptr = PTR_hold_count_0000fbf8;
-    if (((((byte)*PTR_phase_cnt_0000fbf0 < 0x61) || (0x67 < (byte)*PTR_phase_cnt_0000fbf0)) &&
-        (*PTR_freq_hz_0000fbf4 == '2')) &&
+    if (((((byte)*g_phase_cnt < 0x61) || (0x67 < (byte)*g_phase_cnt)) &&
+        (*g_freq_hz == '2')) &&
        (*(int *)PTR_hold_count_0000fbf8 = *(int *)PTR_hold_count_0000fbf8 + 1, 4 < *(uint *)ptr))
     {
       /* —— 50Hz 相位保持超时 → 停机复位 —— */
       *(undefined4 *)ptr = 0;
-      *PTR_freq_hz_0000fbf4 = 0;
-      *PTR_cfg_word_0000fba4 = 0;
+      *g_freq_hz = 0;
+      *g_cfg_word = 0;
       gpio_outputs_set();
       *(undefined4 *)PTR_flag_68_0000fbb0 = 0;
       *(undefined4 *)PTR_flag_6c_0000fbb4 = 0;
@@ -872,14 +872,14 @@ void EINT3_IRQHandler(void)
       *(uint *)PTR_out_param_0000fbfc = *(uint *)PTR_out_param_0000fbfc | 0x2000;
     }
     ptr = PTR_hold_count_0000fbf8;
-    if ((((byte)*PTR_phase_cnt_0000fbf0 < 0x52) || (0x55 < (byte)*PTR_phase_cnt_0000fbf0)) &&
-       ((*PTR_freq_hz_0000fbf4 == '<' &&
+    if ((((byte)*g_phase_cnt < 0x52) || (0x55 < (byte)*g_phase_cnt)) &&
+       ((*g_freq_hz == '<' &&
         (*(int *)PTR_hold_count_0000fbf8 = *(int *)PTR_hold_count_0000fbf8 + 1, 4 < *(uint *)ptr)
         ))) {
       /* —— 60Hz 相位保持超时 → 停机复位 —— */
       *(undefined4 *)ptr = 0;
-      *PTR_freq_hz_0000fbf4 = 0;
-      *PTR_cfg_word_0000fba4 = 0;
+      *g_freq_hz = 0;
+      *g_cfg_word = 0;
       gpio_outputs_set();
       *(undefined4 *)PTR_flag_68_0000fbb0 = 0;
       *(undefined4 *)PTR_flag_6c_0000fbb4 = 0;
@@ -891,114 +891,114 @@ void EINT3_IRQHandler(void)
       *PTR_flag_3c_0000fbbc = 0;
       *(uint *)PTR_out_param_0000fbfc = *(uint *)PTR_out_param_0000fbfc | 0x2000;
     }
-    *PTR_phase_cnt_0000fffc = 0;
+    *g_phase_cnt = 0;
   }
   ptr = PTR_DAT_0001000c;
   if (((*(uint *)PTR_input_locked_00010000 < 2) || (7 < *(uint *)PTR_input_locked_00010000)) ||
-     ((*(int *)PTR_out_param_00010004 != 0 || ((byte)*PTR_freq_hz_00010008 < 0x32)))) {
+     ((*(int *)PTR_out_param_00010004 != 0 || ((byte)*g_freq_hz < 0x32)))) {
     gpio_outputs_set();                               /* 非法态/停机 → 复位输出 */
   }
   else {
     /* —— 输出预置：根据 freq_hz + out_phase 计算触发参数 —— */
     *(undefined4 *)(PTR_DAT_0001000c + 4) = 2;
     *(undefined4 *)ptr = 0xff;
-    ptr = PTR_out_scale_00010018;
-    if (*PTR_out_phase_00010010 == '\0') {
-      if (*PTR_freq_hz_00010008 == '2') {
+    ptr = g_out_scale;
+    if (*g_out_phase == '\0') {
+      if (*g_freq_hz == '2') {
         /* 50Hz、单相出 */
-        *(undefined4 *)PTR_out_scale_00010018 = *(undefined4 *)PTR_out_setpoint_00010014;
-        out_scale = PTR_out_scale_00010018;
-        *(uint *)PTR_out_scale_00010018 = (uint)(*(int *)ptr * 0x58) / 100;
-        ptr = PTR_out_scale_00010018;
-        *(uint *)PTR_out_scale_00010018 = *(uint *)out_scale / 100;
+        *(undefined4 *)g_out_scale = *(undefined4 *)PTR_out_setpoint_00010014;
+        out_scale = g_out_scale;
+        *(uint *)g_out_scale = (uint)(*(int *)ptr * 0x58) / 100;
+        ptr = g_out_scale;
+        *(uint *)g_out_scale = *(uint *)out_scale / 100;
         if (0x2730 < *(uint *)ptr) {
-          *(undefined4 *)PTR_out_scale_00010018 = 0x2730;
+          *(undefined4 *)g_out_scale = 0x2730;
         }
         *(uint *)PTR_out_div_0001001c =
-             (uint)((0x2731 - *(int *)PTR_out_scale_00010018) * 10) / 0x22d;
-        if (*PTR_mode_byte_00010020 == '\x01') {
+             (uint)((0x2731 - *(int *)g_out_scale) * 10) / 0x22d;
+        if (*g_mode_byte == '\x01') {
           *(uint *)(PTR_DAT_0001000c + 0x18) =
                (*(int *)PTR_out_freq_adj_00010024 * 10 + 0x1800 +
-               (uint)(byte)*PTR_out_fine_00010028 * 0x38) - *(int *)PTR_out_scale_00010018;
+               (uint)(byte)*g_out_fine * 0x38) - *(int *)g_out_scale;
         }
-        if (*PTR_mode_byte_00010020 == '\x02') {
+        if (*g_mode_byte == '\x02') {
           *(uint *)(PTR_DAT_0001000c + 0x18) =
                (*(int *)PTR_out_freq_adj_00010024 * 10 + 0x1814 +
-               (uint)(byte)*PTR_out_fine_00010028 * 0x38) - *(int *)PTR_out_scale_00010018;
+               (uint)(byte)*g_out_fine * 0x38) - *(int *)g_out_scale;
         }
       }
-      ptr = PTR_out_scale_00010018;
-      if (*PTR_freq_hz_00010008 == '<') {
+      ptr = g_out_scale;
+      if (*g_freq_hz == '<') {
         /* 60Hz、单相出 */
-        *(undefined4 *)PTR_out_scale_00010018 = *(undefined4 *)PTR_out_setpoint_00010014;
-        out_scale = PTR_out_scale_00010018;
-        *(uint *)PTR_out_scale_00010018 = (uint)(*(int *)ptr * 0x50) / 100;
-        ptr = PTR_out_scale_00010018;
-        *(uint *)PTR_out_scale_00010018 = *(uint *)out_scale / 100;
+        *(undefined4 *)g_out_scale = *(undefined4 *)PTR_out_setpoint_00010014;
+        out_scale = g_out_scale;
+        *(uint *)g_out_scale = (uint)(*(int *)ptr * 0x50) / 100;
+        ptr = g_out_scale;
+        *(uint *)g_out_scale = *(uint *)out_scale / 100;
         if (0x23a0 < *(uint *)ptr) {
-          *(undefined4 *)PTR_out_scale_00010018 = 0x23a0;
+          *(undefined4 *)g_out_scale = 0x23a0;
         }
         *(uint *)PTR_out_div_0001001c =
-             (uint)((0x23a1 - *(int *)PTR_out_scale_00010018) * 10) / 0x1fb;
-        if (*PTR_mode_byte_00010020 == '\x01') {
+             (uint)((0x23a1 - *(int *)g_out_scale) * 10) / 0x1fb;
+        if (*g_mode_byte == '\x01') {
           *(uint *)(PTR_DAT_0001000c + 0x18) =
                (*(int *)PTR_out_freq_adj_00010024 * 10 + 0x11d7 +
-               (uint)(byte)*PTR_out_fine_00010028 * 0x33) - *(int *)PTR_out_scale_00010018;
+               (uint)(byte)*g_out_fine * 0x33) - *(int *)g_out_scale;
         }
-        if (*PTR_mode_byte_00010020 == '\x02') {
+        if (*g_mode_byte == '\x02') {
           *(uint *)(PTR_DAT_0001000c + 0x18) =
                (*(int *)PTR_out_freq_adj_00010024 * 10 + 0x11eb +
-               (uint)(byte)*PTR_out_fine_00010028 * 0x33) - *(int *)PTR_out_scale_00010018;
+               (uint)(byte)*g_out_fine * 0x33) - *(int *)g_out_scale;
         }
       }
     }
-    ptr = PTR_out_scale_00010018;
-    if (*PTR_out_phase_00010010 == '\x01') {
-      if (*PTR_freq_hz_00010008 == '2') {
+    ptr = g_out_scale;
+    if (*g_out_phase == '\x01') {
+      if (*g_freq_hz == '2') {
         /* 50Hz、三相出 */
-        *(undefined4 *)PTR_out_scale_00010018 = *(undefined4 *)PTR_out_setpoint_00010014;
-        out_scale = PTR_out_scale_00010018;
-        *(uint *)PTR_out_scale_00010018 = (uint)(*(int *)ptr << 7) / 100;
-        ptr = PTR_out_scale_00010018;
-        *(uint *)PTR_out_scale_00010018 = *(uint *)out_scale / 100;
+        *(undefined4 *)g_out_scale = *(undefined4 *)PTR_out_setpoint_00010014;
+        out_scale = g_out_scale;
+        *(uint *)g_out_scale = (uint)(*(int *)ptr << 7) / 100;
+        ptr = g_out_scale;
+        *(uint *)g_out_scale = *(uint *)out_scale / 100;
         if (0x3903 < *(uint *)ptr) {
-          *(undefined4 *)PTR_out_scale_00010018 = 0x3903;
+          *(undefined4 *)g_out_scale = 0x3903;
         }
         *(uint *)PTR_out_div_0001001c =
-             (uint)((0x3904 - *(int *)PTR_out_scale_00010018) * 10) / 0x32b;
-        if (*PTR_mode_byte_00010020 == '\x01') {
+             (uint)((0x3904 - *(int *)g_out_scale) * 10) / 0x32b;
+        if (*g_mode_byte == '\x01') {
           *(uint *)(PTR_DAT_0001000c + 0x18) =
                (*(int *)PTR_out_freq_adj_00010024 * 10 + 0x2ab5 +
-               (uint)(byte)*PTR_out_fine_00010028 * 0x38) - *(int *)PTR_out_scale_00010018;
+               (uint)(byte)*g_out_fine * 0x38) - *(int *)g_out_scale;
         }
-        if (*PTR_mode_byte_00010020 == '\x02') {
+        if (*g_mode_byte == '\x02') {
           *(uint *)(PTR_DAT_0001000c + 0x18) =
                (*(int *)PTR_out_freq_adj_00010024 * 10 + 0x2ac9 +
-               (uint)(byte)*PTR_out_fine_00010028 * 0x38) - *(int *)PTR_out_scale_00010018;
+               (uint)(byte)*g_out_fine * 0x38) - *(int *)g_out_scale;
         }
       }
-      ptr = PTR_out_scale_00010018;
-      if (*PTR_freq_hz_00010008 == '<') {
+      ptr = g_out_scale;
+      if (*g_freq_hz == '<') {
         /* 60Hz、三相出 */
-        *(undefined4 *)PTR_out_scale_00010018 = *(undefined4 *)PTR_out_setpoint_00010014;
-        out_scale = PTR_out_scale_00010018;
-        *(uint *)PTR_out_scale_00010018 = (uint)(*(int *)ptr * 0x70) / 100;
-        ptr = PTR_out_scale_00010018;
-        *(uint *)PTR_out_scale_00010018 = *(uint *)out_scale / 100;
+        *(undefined4 *)g_out_scale = *(undefined4 *)PTR_out_setpoint_00010014;
+        out_scale = g_out_scale;
+        *(uint *)g_out_scale = (uint)(*(int *)ptr * 0x70) / 100;
+        ptr = g_out_scale;
+        *(uint *)g_out_scale = *(uint *)out_scale / 100;
         if (0x31e0 < *(uint *)ptr) {
-          *(undefined4 *)PTR_out_scale_00010018 = 0x31e0;
+          *(undefined4 *)g_out_scale = 0x31e0;
         }
         *(uint *)PTR_out_div_0001001c =
-             (uint)((0x31e1 - *(int *)PTR_out_scale_00010018) * 10) / 0x2c5;
-        if (*PTR_mode_byte_00010020 == '\x01') {
+             (uint)((0x31e1 - *(int *)g_out_scale) * 10) / 0x2c5;
+        if (*g_mode_byte == '\x01') {
           *(uint *)(PTR_DAT_0001000c + 0x18) =
                (*(int *)PTR_out_freq_adj_00010024 * 10 + 0x20af +
-               (uint)(byte)*PTR_out_fine_00010028 * 0x33) - *(int *)PTR_out_scale_00010018;
+               (uint)(byte)*g_out_fine * 0x33) - *(int *)g_out_scale;
         }
-        if (*PTR_mode_byte_00010020 == '\x02') {
+        if (*g_mode_byte == '\x02') {
           *(uint *)(PTR_DAT_0001000c + 0x18) =
                (*(int *)PTR_out_freq_adj_00010024 * 10 + 0x20b9 +
-               (uint)(byte)*PTR_out_fine_00010028 * 0x33) - *(int *)PTR_out_scale_00010018;
+               (uint)(byte)*g_out_fine * 0x33) - *(int *)g_out_scale;
         }
       }
     }
@@ -1041,10 +1041,10 @@ void TIMER1_IRQHandler(void)
   fio1 = PTR_disp_scan_0001002c;
   *PTR_disp_scan_0001002c = *PTR_disp_scan_0001002c + '\x01';
   if ((uint)(byte)*fio1 == ((byte)*fio1 / 0x28) * 0x28) {
-    if (*PTR_freq_hz_00010008 == '2') {
+    if (*g_freq_hz == '2') {
       *(undefined4 *)(PTR_DAT_00010030 + 0x18) = 0x488;
     }
-    if (*PTR_freq_hz_00010008 == '<') {
+    if (*g_freq_hz == '<') {
       *(undefined4 *)(PTR_DAT_00010030 + 0x18) = 0x261;
     }
   }
@@ -1058,7 +1058,7 @@ void TIMER1_IRQHandler(void)
   fio1 = PTR_DAT_00010034;
   if ((*PTR_disp_scan_0001002c != '\0') && ((byte)*PTR_disp_scan_0001002c < 0x29)) {
     /* —— 区域 0（行 1..0x28）—— */
-    if (*PTR_mode_byte_00010020 == '\x01') {
+    if (*g_mode_byte == '\x01') {
       if ((uint)(byte)*PTR_disp_scan_0001002c == ((int)(uint)(byte)*PTR_disp_scan_0001002c >> 1) * 2
          ) {
         *(uint *)(PTR_DAT_00010454 + 0x58) = *(uint *)(PTR_DAT_00010454 + 0x58) | 0x200;
@@ -1090,7 +1090,7 @@ void TIMER1_IRQHandler(void)
   fio1 = PTR_DAT_00010454;
   if ((0x28 < (byte)*PTR_disp_scan_00010458) && ((byte)*PTR_disp_scan_00010458 < 0x51)) {
     /* —— 区域 1（行 0x29..0x50）—— */
-    if (*PTR_mode_byte_0001045c == '\x01') {
+    if (*g_mode_byte == '\x01') {
       if ((uint)(byte)*PTR_disp_scan_00010458 == ((int)(uint)(byte)*PTR_disp_scan_00010458 >> 1) * 2
          ) {
         *(uint *)(PTR_DAT_00010454 + 0x18) = *(uint *)(PTR_DAT_00010454 + 0x18) | 0x10000;
@@ -1122,7 +1122,7 @@ void TIMER1_IRQHandler(void)
   fio1 = PTR_DAT_00010454;
   if ((0x50 < (byte)*PTR_disp_scan_00010458) && ((byte)*PTR_disp_scan_00010458 < 0x79)) {
     /* —— 区域 2（行 0x51..0x78）—— */
-    if (*PTR_mode_byte_0001045c == '\x01') {
+    if (*g_mode_byte == '\x01') {
       if ((uint)(byte)*PTR_disp_scan_00010458 == ((int)(uint)(byte)*PTR_disp_scan_00010458 >> 1) * 2
          ) {
         *(uint *)(PTR_DAT_00010454 + 0x18) = *(uint *)(PTR_DAT_00010454 + 0x18) | 0x10000;
@@ -1154,7 +1154,7 @@ void TIMER1_IRQHandler(void)
   fio1 = PTR_DAT_00010454;
   if ((0x78 < (byte)*PTR_disp_scan_00010458) && ((byte)*PTR_disp_scan_00010458 < 0xa1)) {
     /* —— 区域 3（行 0x79..0xA0）—— */
-    if (*PTR_mode_byte_0001045c == '\x01') {
+    if (*g_mode_byte == '\x01') {
       if ((uint)(byte)*PTR_disp_scan_00010458 == ((int)(uint)(byte)*PTR_disp_scan_00010458 >> 1) * 2
          ) {
         *(uint *)(PTR_DAT_00010454 + 0x18) = *(uint *)(PTR_DAT_00010454 + 0x18) | 0x8000;
@@ -1187,7 +1187,7 @@ void TIMER1_IRQHandler(void)
   fio1 = PTR_DAT_00010454;
   if ((0xa0 < (byte)*PTR_disp_scan_00010458) && ((byte)*PTR_disp_scan_00010458 < 0xc9)) {
     /* —— 区域 4（行 0xA1..0xC8）—— */
-    if (*PTR_mode_byte_0001045c == '\x01') {
+    if (*g_mode_byte == '\x01') {
       if ((uint)(byte)*PTR_disp_scan_00010458 == ((int)(uint)(byte)*PTR_disp_scan_00010458 >> 1) * 2
          ) {
         *(uint *)(PTR_DAT_00010454 + 0x18) = *(uint *)(PTR_DAT_00010454 + 0x18) | 0x8000;
@@ -1219,7 +1219,7 @@ void TIMER1_IRQHandler(void)
   fio1 = PTR_DAT_00010640;
   if ((200 < (byte)*PTR_disp_scan_00010644) && ((byte)*PTR_disp_scan_00010644 < 0xf1)) {
     /* —— 区域 5（行 0xC9..0xF0）—— */
-    if (*PTR_mode_byte_00010648 == '\x01') {
+    if (*g_mode_byte == '\x01') {
       if ((uint)(byte)*PTR_disp_scan_00010644 == ((int)(uint)(byte)*PTR_disp_scan_00010644 >> 1) * 2
          ) {
         *(uint *)(PTR_DAT_00010640 + 0x58) = *(uint *)(PTR_DAT_00010640 + 0x58) | 0x200;
