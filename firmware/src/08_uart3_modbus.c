@@ -55,9 +55,9 @@ void uart3_init(uint divisor)
   volatile uint8_t *uart3;
 
   fio = DAT_0000b00c;
-  *(uint *)(DAT_0000b00c + 0x20) = *(uint *)(DAT_0000b00c + 0x20) | 0x20000000;
-  *(uint *)(fio + 0x3c) = *(uint *)(fio + 0x3c) | 0x20000000;
-  *(uint *)(DAT_0000b014 + 0xc4) = *g_pconp | 0x2000000;   /* PCONP UART3 上电 */
+  *(volatile uint *)(DAT_0000b00c + 0x20) = *(volatile uint *)(DAT_0000b00c + 0x20) | 0x20000000;
+  *(volatile uint *)(fio + 0x3c) = *(volatile uint *)(fio + 0x3c) | 0x20000000;
+  *(volatile uint *)(DAT_0000b014 + 0xc4) = *g_pconp | 0x2000000;   /* PCONP UART3 上电 */
   pinsel = g_pinsel;
   *g_pinsel = *g_pinsel | 2;                            /* PINSEL UART3 引脚 */
   *pinsel = *pinsel | 8;
@@ -76,32 +76,32 @@ void uart3_init(uint divisor)
   uart3 = g_uart3;
   if (*g_baud_idx < 3) {
     divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_0) /
+                            ((ulonglong)(uint)(*(volatile int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_0) /
                             1000));
   }
   if (*g_baud_idx == 3) {
     divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_3) /
+                            ((ulonglong)(uint)(*(volatile int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_3) /
                             1000));
   }
   if (*g_baud_idx == 4) {
     divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_4) /
+                            ((ulonglong)(uint)(*(volatile int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_4) /
                             1000));
   }
   if (*g_baud_idx == 5) {
     divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_5) /
+                            ((ulonglong)(uint)(*(volatile int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_5) /
                             1000));
   }
   if (*g_baud_idx == 6) {
     divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_6) /
+                            ((ulonglong)(uint)(*(volatile int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_6) /
                             1000));
   }
   if (*g_baud_idx == 7) {
     divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_7) /
+                            ((ulonglong)(uint)(*(volatile int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_7) /
                             1000));
   }
   g_uart3[4] = (char)(divisor + ((uint)((int)divisor >> 0x1f) >> 0x18) >> 8);  /* DLM=高字节 */
@@ -121,8 +121,8 @@ void uart3_init(uint divisor)
   g_uart3[8] = 7;                                           /* FCR：使能 FIFO+清 */
   uart3 = g_uart3;
   NVIC_ISER0 = 0x100;
-  *(uint *)(g_uart3 + 4) = *(uint *)(g_uart3 + 4) | 1;  /* IER RBR 中断 */
-  *(uint *)(uart3 + 4) = *(uint *)(uart3 + 4) | 2;              /* IER THRE 中断 */
+  *(volatile uint *)(g_uart3 + 4) = *(volatile uint *)(g_uart3 + 4) | 1;  /* IER RBR 中断 */
+  *(volatile uint *)(uart3 + 4) = *(volatile uint *)(uart3 + 4) | 2;              /* IER THRE 中断 */
   return;
 }
 
@@ -130,7 +130,7 @@ void uart3_init(uint divisor)
  *   0x1000B030=发送状态、0x1000B038=发送长度、0x1000B03C=发送缓冲 */
 void uart3_tx_byte(undefined1 tx_byte)
 {
-  *(uint *)(DAT_0000b00c + 0x38) = *(uint *)(DAT_0000b00c + 0x38) | 0x20000000;
+  *(volatile uint *)(DAT_0000b00c + 0x38) = *(volatile uint *)(DAT_0000b00c + 0x38) | 0x20000000;
   *g_uart_tx_state = 6;
   *g_uart_tx_flag = 0;
   *g_uart_tx_len = tx_byte;
@@ -168,7 +168,7 @@ void uart3_rx_timeout_monitor(void)
     if (10 < *tx_tick) {
       *tx_tick = 0;
       *g_uart_tx_state = '\x05';
-      *(uint *)(g_uart3 + 4) = *(uint *)(g_uart3 + 4) & 0xfffffffe;
+      *(volatile uint *)(g_uart3 + 4) = *(volatile uint *)(g_uart3 + 4) & 0xfffffffe;
     }
   }
   return;
@@ -183,7 +183,7 @@ void UART3_IRQHandler(void)
   volatile uint8_t *tx_idx;
   uint iir_cause;
 
-  iir_cause = *(uint *)(g_uart3 + 8) & 0xe;                 /* IIR 中断原因 */
+  iir_cause = *(volatile uint *)(g_uart3 + 8) & 0xe;                 /* IIR 中断原因 */
   if (iir_cause == 4) {
     func_0x0000aed0();   /* RX 组帧子例程（extraout_r3 伪影已删：IIR 原因保持原值） */
   }
@@ -191,12 +191,12 @@ void UART3_IRQHandler(void)
   if (iir_cause == 2) {
     *g_uart_tx_flag = *g_uart_tx_flag + 1;                           /* 发送索引++ */
     if (*tx_idx < *g_uart_tx_len) {                               /* 未发完 */
-      *g_uart3 = *(undefined1 *)(g_uart_tx_buf + (uint)*g_uart_tx_flag);
+      *g_uart3 = *(volatile undefined1 *)(g_uart_tx_buf + (uint)*g_uart_tx_flag);
     }
     else {                                                        /* 发完 */
-      *(uint *)(DAT_0000b00c + 0x3c) = *(uint *)(DAT_0000b00c + 0x3c) | 0x20000000;
+      *(volatile uint *)(DAT_0000b00c + 0x3c) = *(volatile uint *)(DAT_0000b00c + 0x3c) | 0x20000000;
       *g_uart_tx_state = 0;
-      *(uint *)(g_uart3 + 4) = *(uint *)(g_uart3 + 4) | 1;
+      *(volatile uint *)(g_uart3 + 4) = *(volatile uint *)(g_uart3 + 4) | 1;
     }
   }
   return;
@@ -456,7 +456,7 @@ undefined4 modbus_write_multi(undefined4 *src_val,uint reg_addr)
   *g_reg_cur_idx = reg_addr & 0xfff;
   switch((char)*reg_ofs) {
   case '\0':
-    *g_gain_sel = *(undefined1 *)src_val;
+    *g_gain_sel = *(volatile undefined1 *)src_val;
     break;
   case '\x01':
     *g_gain_a = *src_val;
@@ -474,64 +474,64 @@ undefined4 modbus_write_multi(undefined4 *src_val,uint reg_addr)
     *DAT_0000b4cc = *src_val;
     break;
   case '\x06':
-    *DAT_0000b4d0 = *(undefined1 *)src_val;
+    *DAT_0000b4d0 = *(volatile undefined1 *)src_val;
     break;
   case '\a':
-    *DAT_0000b4d4 = *(undefined1 *)src_val;
+    *DAT_0000b4d4 = *(volatile undefined1 *)src_val;
     break;
   case '\b':
     *DAT_0000b4d8 = *src_val;
     break;
   case '\t':
-    *g_out_fine = *(undefined1 *)src_val;
+    *g_out_fine = *(volatile undefined1 *)src_val;
     break;
   case '\n':
-    *DAT_0000b4e0 = *(undefined1 *)src_val;
+    *DAT_0000b4e0 = *(volatile undefined1 *)src_val;
     break;
   case '\v':
-    *DAT_0000b4e4 = *(undefined1 *)src_val;
+    *DAT_0000b4e4 = *(volatile undefined1 *)src_val;
     break;
   case '\f':
     *DAT_0000b4e8 = *src_val;
     break;
   case '\r':
-    *DAT_0000b4ec = *(undefined1 *)src_val;
+    *DAT_0000b4ec = *(volatile undefined1 *)src_val;
     break;
   case '\x0e':
     *DAT_0000b4f0 = *src_val;
     break;
   case '\x0f':
-    *DAT_0000b4f4 = *(undefined1 *)src_val;
+    *DAT_0000b4f4 = *(volatile undefined1 *)src_val;
     break;
   case '\x10':
     *DAT_0000b4f8 = *src_val;
     break;
   case '\x11':
-    *DAT_0000b4fc = *(undefined1 *)src_val;
+    *DAT_0000b4fc = *(volatile undefined1 *)src_val;
     break;
   case '\x12':
     *DAT_0000b500 = *src_val;
     break;
   case '\x13':
-    *DAT_0000b504 = *(undefined1 *)src_val;
+    *DAT_0000b504 = *(volatile undefined1 *)src_val;
     break;
   case '\x14':
-    *DAT_0000b508 = *(undefined1 *)src_val;
+    *DAT_0000b508 = *(volatile undefined1 *)src_val;
     break;
   case '\x15':
-    *DAT_0000b50c = *(undefined1 *)src_val;
+    *DAT_0000b50c = *(volatile undefined1 *)src_val;
     break;
   case '\x16':
-    *g_cfg_pid_sel = *(undefined1 *)src_val;
+    *g_cfg_pid_sel = *(volatile undefined1 *)src_val;
     break;
   case '\x17':
-    *DAT_0000b598 = *(undefined1 *)src_val;
+    *DAT_0000b598 = *(volatile undefined1 *)src_val;
     break;
   case '\x18':
-    *DAT_0000b59c = *(undefined1 *)src_val;
+    *DAT_0000b59c = *(volatile undefined1 *)src_val;
     break;
   case '\x19':
-    *g_phase_calib = *(undefined1 *)src_val;
+    *g_phase_calib = *(volatile undefined1 *)src_val;
     break;
   case '\x1a':
     *g_scratch = *src_val;
@@ -570,7 +570,7 @@ undefined4 modbus_write_multi(undefined4 *src_val,uint reg_addr)
     *g_scratch = *src_val;
     break;
   case '&':
-    *g_run_flag = *(undefined1 *)src_val;
+    *g_run_flag = *(volatile undefined1 *)src_val;
     break;
   case '\'':
     *DAT_0000b534 = *src_val;
@@ -594,16 +594,16 @@ undefined4 modbus_write_multi(undefined4 *src_val,uint reg_addr)
     *g_scratch = *src_val;
     break;
   case '.':
-    *g_slave_addr = *(undefined1 *)src_val;
+    *g_slave_addr = *(volatile undefined1 *)src_val;
     break;
   case '/':
     *g_baud_idx = *src_val;
     break;
   case '0':
-    *g_uart_frame_sel = *(undefined1 *)src_val;
+    *g_uart_frame_sel = *(volatile undefined1 *)src_val;
     break;
   case '1':
-    *g_comm_detect = *(undefined1 *)src_val;
+    *g_comm_detect = *(volatile undefined1 *)src_val;
     break;
   case '2':
     *DAT_0000b998 = *src_val;
@@ -621,19 +621,19 @@ undefined4 modbus_write_multi(undefined4 *src_val,uint reg_addr)
     *DAT_0000b9a8 = *src_val;
     break;
   case '7':
-    *DAT_0000b9ac = *(undefined1 *)src_val;
+    *DAT_0000b9ac = *(volatile undefined1 *)src_val;
     break;
   case '8':
-    *DAT_0000b9b0 = *(undefined1 *)src_val;
+    *DAT_0000b9b0 = *(volatile undefined1 *)src_val;
     break;
   case '9':
-    *DAT_0000b9b4 = *(undefined1 *)src_val;
+    *DAT_0000b9b4 = *(volatile undefined1 *)src_val;
     break;
   case ':':
-    *DAT_0000b9b8 = *(undefined1 *)src_val;
+    *DAT_0000b9b8 = *(volatile undefined1 *)src_val;
     break;
   case ';':
-    *g_out_phase = *(undefined1 *)src_val;
+    *g_out_phase = *(volatile undefined1 *)src_val;
     break;
   case '<':
     *g_reg61_remote_en = *src_val;
@@ -650,7 +650,7 @@ undefined4 modbus_write_multi(undefined4 *src_val,uint reg_addr)
  *
  * ★ 说明：该函数为本固件最大函数之一，C 语言反编译结果超过 MCP 5s 传输上限
  *   （连续 6 次超时），因此改为「反汇编精读还原」：完整反汇编已另存为
- *   decompiled/08_modbus_dispatch_asm.txt（5161 条指令），此处给出流程还原、
+ *   evidence/reverse/disassembly/08_modbus_dispatch_asm.txt（5161 条指令），此处给出流程还原、
  *   关键数据区与代表性代码段。寄存器读/写值映射见 modbus_read_reg 与
  *   modbus_write_multi（reg 0x00-0x3F → 0x1000B4B8..0x1000B590；
  *   reg 0x2B-0x3D → 0x1000B984..0x1000B9C4）。

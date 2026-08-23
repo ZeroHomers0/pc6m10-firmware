@@ -15,9 +15,23 @@
 #include "inc/types.h"
 #include "inc/globals.h"
 
-/* 08 UART3 RX 组帧子例程（0xAED0，Ghidra 未识别为独立函数）骨架占位 */
+/* 08 UART3 RX 组帧子例程（0xAED0..0xAF06）。 */
 void func_0x0000aed0(void)
 {
+  volatile uint8_t *state = (volatile uint8_t *)0x10001790;
+  volatile uint8_t *gap = (volatile uint8_t *)0x10001791;
+  volatile uint8_t *rx_idx = (volatile uint8_t *)0x10001792;
+  volatile uint8_t *rx_buf = (volatile uint8_t *)0x100022A4;
+
+  if (*state == 0) {
+    *rx_idx = 0;
+    *state = 1;
+  }
+  if (*state == 1) {
+    *gap = 0;
+    rx_buf[*rx_idx] = *(volatile uint8_t *)0x4009C000;
+    *rx_idx = (uint8_t)(*rx_idx + 1);
+  }
 }
 
 /* 0x0000AB48 —— 联锁/错误屏频率调节 + EEPROM 写回（07 迁入，完整实现） */

@@ -7,7 +7,7 @@
  *
  * 函数：0x0000458C-0xAB44（UI 状态机主分发，MENU 驱动）
  * 调用点：main() 主循环 state_machine(*key)
- * 分发链（顺序 if 级联，遇 return 即返回；§说明见 tools/_SM_W1B_PROGRESS.md）：
+ * 分发链（顺序 if 级联，遇 return 即返回；历史说明见 docs/history/_SM_W1B_PROGRESS.md）：
  *   entry(0x458C)→case1(0x4B16)→caseA(0x541C)→case62(0x5572)→case63(0x5748)
  *   →case2(0x6134)→case3(0x69D6)→case4(0x7C1A)→case5(0x8780)→case6(0x8C1A)
  *   →case7(0x910C)→case8(0x9A84)→caseB(0x9C5C)→case9(0x9D86)→case5A(0x9E14)
@@ -445,7 +445,11 @@ do_dispatch:
         *DISP_MODE = 3; fio1_pin20_ctrl(0); fio1_pin21_ctrl(0);
         disp_string((int)0x480c, 0, 0, 0);
       }
-      *DB_117 = debounce_p117();
+    }
+
+    /* 0x4CF2 直接跳到 0x4EBC：显示刷新未到 350 tick 时仍须执行输入扫描。
+     * 这段不能放在 IDLE>=0x15e 内，否则复位/急停/RUN-STOP 只会每 350 次扫描一次。 */
+    *DB_117 = debounce_p117();
       if (*FAULT != 0) {
         if (*DB_117 == 2 && *(volatile uint8_t*)0x10001658 == 0) {  /* 复位流程 */
           *FAULT = 0; *RUN = 0; *STOP_PEND = 1; *STOP_REQ = 0;
@@ -548,8 +552,6 @@ do_dispatch:
           *V_AMP = *(volatile uint32_t*)0x100015d4;   /* 0x541A→0x541E：仅 DISP_SEL==2 覆盖；0/1 走 0x4C1C→0x541C 跳过 */
           *V_AMP2 = *(volatile uint32_t*)0x100015d4;
         }
-      }
-      return;
     }
     return;
   }
@@ -851,13 +853,17 @@ do_dispatch:
     uint32_t it = *MENU2;                              /* 项号 */
     uint32_t row = it & 3;                             /* 页内行 0-3 */
 
+    /* 原汇编公共尾部 0x7446-0x744E 对刷新计数加一。提前执行可保持所有
+     * 提前返回/辅助绘制调用下的同一可观察结果；按键分支在下方写入最终值。 */
+    (*TIMEOUT3)++;
+
     /* ---- key==1：在 查看/编辑 之间切换 MENU3，并复位修改空闲计时 ---- */
     if (key == 1) {
       *TIMEOUT = 0;
       (*MENU3)++;
       if (*MENU3 > 1) *MENU3 = 0;
-      *TIMEOUT3 = 0xfa;
-      if (*MENU3 == 1) *TIMEOUT3 = 0x1f4;
+      *TIMEOUT3 = 0xfb;
+      if (*MENU3 == 1) *TIMEOUT3 = 0x1f5;
     }
 
     /* ---- key==4：保存并退回 参数子菜单(type2 屏) ---- */
@@ -873,7 +879,7 @@ do_dispatch:
       *TIMEOUT = 0;
       if (key == 3) { (*MENU2)++; if (*MENU2 > 0xf) *MENU2 = 0xf; }
       else          { if (*MENU2 > 0) (*MENU2)--; }
-      *TIMEOUT3 = 0xfa;
+      *TIMEOUT3 = 0xfb;
       /* 重绘新项所在页标题(值列清空) + 当前项值 */
       it = *MENU2; row = it & 3;
       switch (it >> 2) {
@@ -892,6 +898,7 @@ do_dispatch:
     /* ---- key==2/0x16/3/0x21 且 *MENU3==1：修改当前项值 ---- */
     else if ((key == 2 || key == 0x16 || key == 3 || key == 0x21) && *MENU3 == 1) {
       *TIMEOUT = 0;
+      *TIMEOUT3 = 0xfb;
       it = *MENU2;  row = it & 3;
       /* 步进：数字项 key==0x16 快加 +5、key==0x21 快减 -5 */
       if (it >= 1 && it <= 5) {
@@ -975,12 +982,13 @@ do_dispatch:
        8=缺相0x100016dd(0..1) 9=三相平衡0x100016de(0..0x3c,%)
      编辑方向按反汇编：2/0x16 增、3/0x21 减；word 项 0x16/0x21 走 ±5。          */
   if (*MENU == 4) {
+    (*TIMEOUT3)++;
     /* ---- key==1：切换编辑态 ---- */
     if (key == 1) {
       *TIMEOUT = 0;
       (*MENU3)++;
       if (*MENU3 > 1) *MENU3 = 0;
-      *TIMEOUT3 = (*MENU3 == 0) ? 0xfa : 0x1f4;
+      *TIMEOUT3 = (*MENU3 == 0) ? 0xfb : 0x1f5;
     }
 
     /* ---- key==4：保存并退回 参数子菜单(type2 屏) ---- */
@@ -994,6 +1002,7 @@ do_dispatch:
     /* ---- key==2/3 且 *MENU3==0：项间导航 (MENU2=0..9) + 画页标题 ---- */
     else if ((key == 2 || key == 3) && *MENU3 == 0) {
       *TIMEOUT = 0;
+      *TIMEOUT3 = 0xfb;
       if (key == 3) { (*MENU2)++; if (*MENU2 > 9) *MENU2 = 9; }
       else          { if (*MENU2 > 0) (*MENU2)--; }
       /* 画当前项所在页 4 行标题；页2 的 2/3 行用空串占位 */
@@ -1007,7 +1016,6 @@ do_dispatch:
         disp_string((int)0x7e60,0,0,0); disp_string((int)0x7e74,1,0,0);
         disp_string((int)0x5ba4,2,0,0); disp_string((int)0x5ba4,3,0,0);
       }
-      *TIMEOUT3 = 0xfa;
     }
 
     /* ---- key==2/0x16/3/0x21 且 *MENU3==1：修改当前项值 ---- */
@@ -1051,11 +1059,10 @@ do_dispatch:
         else if (it == 4) { uint32_t v=*(volatile uint32_t*)0x100016d0; if (key==0x21) { uint32_t w=(v<6)?5:v; *(volatile uint32_t*)0x100016d0 = w-5; } else if (v) *(volatile uint32_t*)0x100016d0=v-1; }
         else if (it == 6) { uint32_t v=*(volatile uint32_t*)0x100016d8; if (key==0x21) { uint32_t w=(v<6)?5:v; *(volatile uint32_t*)0x100016d8 = w-5; } else if (v) *(volatile uint32_t*)0x100016d8=v-1; }
       }
-      *TIMEOUT3 = 0xfa;
+      *TIMEOUT3 = 0xfb;
     }
 
     /* ---- 刷新节流：TIMEOUT3==0xfb 时重绘当前页（高亮当前项） ---- */
-    (*TIMEOUT3)++;
     if (*TIMEOUT3 == 0xfb) sm4_draw_page(*MENU2);
 
     /* ---- 编辑空闲超时：回到主屏 ---- */
@@ -1071,12 +1078,13 @@ do_dispatch:
   /* =====================================================================*/
   /* ---------- case5 通讯屏 (0x8780-0x8C1A)，MENU==5，4 项（MENU2=0-3）单页 ---------- */
   if (*MENU == 5) {
+    (*TIMEOUT3)++;
     /* key==1：进入/退出编辑模式（MENU3 0<->1） */
     if (key == 1) {
       *TIMEOUT = 0;
       (*MENU3)++;
       if (*MENU3 > 1) *MENU3 = 0;
-      *TIMEOUT3 = (*MENU3 == 0) ? 0xfa : 0x1f4;
+      *TIMEOUT3 = (*MENU3 == 0) ? 0xfb : 0x1f5;
     }
     /* key==4：返回基本参数主菜单（MENU=2/MENU2=2），立即写回 EEPROM */
     else if (key == 4) {
@@ -1093,6 +1101,7 @@ do_dispatch:
     /* 导航（MENU3==0，key2/3 上下移，仅 4 项） */
     else if ((key == 2 || key == 3) && *MENU3 == 0) {
       *TIMEOUT = 0;
+      *TIMEOUT3 = 0xfb;
       if (key == 3) { (*MENU2)++; if (*MENU2 > 3) *MENU2 = 3; }
       if (key == 2) { if (*MENU2 > 0) (*MENU2)--; }
       if (*MENU2 < 4) {   /* 重绘通讯页标题帧（值列 0xb/0xa 由刷新块绘制） */
@@ -1101,10 +1110,10 @@ do_dispatch:
         disp_string(0x6a40, 2, 0, 0);
         disp_string(0x6a54, 3, 0, 0);
       }
-      *TIMEOUT3 = 0xfa;
     }
     /* 编辑（MENU3==1，key2/0x16 增、key3/0x21 减；byte 项恒 ±1，word 项恒 ±1） */
     else if ((key == 2 || key == 0x16 || key == 3 || key == 0x21) && *MENU3 == 1) {
+      *TIMEOUT3 = 0xfb;
       if (key == 2 || key == 0x16) {   /* 增 */
         *TIMEOUT = 0;
         if (*MENU2 == 0) { if (*COM_ADDR >= 0xf6) *COM_ADDR = 0xf6; (*COM_ADDR)++; }
@@ -1119,11 +1128,9 @@ do_dispatch:
         if (*MENU2 == 2) { if (*PARITY > 0) (*PARITY)--; }
         if (*MENU2 == 3) *COM_CHK = 0;
       }
-      *TIMEOUT3 = 0xfa;
     }
 
     /* ---- 刷新节流：TIMEOUT3==0xfb 时整页重绘（高亮当前项） ---- */
-    (*TIMEOUT3)++;
     if (*TIMEOUT3 == 0xfb) { if (*MENU2 < 4) sm5_draw_page(*MENU2); }
 
     /* ---- 编辑空闲超时：清空当前项所在行（闪烁）后返回主屏 ---- */
@@ -1470,13 +1477,14 @@ do_dispatch:
    * 必须按 byte 宽访问，否则 word 读写会污染相邻槽（PID_MODE 宏是 word，勿用）。 */
 #define SM7B(addr) (*(volatile uint8_t*)(addr))
   if (*MENU == 7) {
+    (*TIMEOUT3)++;
     /* key==1 编辑/浏览切换：MENU3 在 0/1 间翻转，随之调整 O 刷新节奏 */
     if (key == 1) {
       *TIMEOUT = 0;
       (*MENU3)++;
       if (*MENU3 > 1) *MENU3 = 0;
-      if (*MENU3 == 0) *TIMEOUT3 = 0xfa;
-      if (*MENU3 == 1) *TIMEOUT3 = 0x1f4;
+      if (*MENU3 == 0) *TIMEOUT3 = 0xfb;
+      if (*MENU3 == 1) *TIMEOUT3 = 0x1f5;
     }
     /* key==4 回主菜单：当前 PID 模式槽复制到显示缓冲 0x1000170e/0x1000170f */
     else if (key == 4) {
@@ -1497,6 +1505,7 @@ do_dispatch:
     /* key==2/3/0x16/0x21：*MENU3==1 编辑，否则 (key==2/3 && PIDMODE==4) 导航 */
     if (key == 2 || key == 0x16 || key == 3 || key == 0x21) {
       if (*MENU3 == 1) {
+        *TIMEOUT3 = 0xfb;
         /* ---------- 编辑 ---------- */
         *TIMEOUT = 0;
         if (key == 3 || key == 0x21) {
@@ -1520,11 +1529,11 @@ do_dispatch:
           if (*MENU2 == 7) { SM7B(0x10001725)++; if (SM7B(0x10001725) > SM7B(0x10001724)) SM7B(0x10001725) = SM7B(0x10001724); }
           if (*MENU2 == 8) { SM7B(0x10001726)++; if (SM7B(0x10001726) > SM7B(0x10001725)) SM7B(0x10001726) = SM7B(0x10001725); }
         }
-        *TIMEOUT3 = 0xfa;
       }
       else if ((key == 2 || key == 3) && SM7B(0x10001710) == 4) {
         /* ---------- 导航（0x921E-0x931A）：切换子项页标题 ---------- */
         *TIMEOUT = 0;
+        *TIMEOUT3 = 0xfb;
         if (key == 3) { (*MENU2)++; if (*MENU2 > 8) *MENU2 = 8; }
         if (key == 2) { if (*MENU2 > 0) (*MENU2)--; }
         if (*MENU2 < 4) {
@@ -1545,11 +1554,9 @@ do_dispatch:
           disp_string(0x5ba4, 2, 0, 0);
           disp_string(0x5ba4, 3, 0, 0);
         }
-        *TIMEOUT3 = 0xfa;
       }
     }
     /* ---------- 刷新区（0x9614-0x9984）：TIMEOUT3 计到 0xfb 时按 MENU2 重绘 ---------- */
-    (*TIMEOUT3)++;
     if (*TIMEOUT3 == 0xfb) {
       if (*MENU2 < 4) {
         /* 模式名 row0 col0xb（PIDMODE 1-4 → 0x6af8 基） */

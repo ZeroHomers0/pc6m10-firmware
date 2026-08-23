@@ -6,9 +6,7 @@
  *   SRAM0 : 0x10000000, 32K —— 原固件 SRAM0 使用区：
  *           0x10000000-0x1000213C 放 .data 初始镜像（fw_image，LMA 在 flash）
  *           0x1000213C-0x100029C8 为原 .bss 清零区（fw_bss）
- *           _estack=0x10006768（复刻原 iar_init_core 最终 SP：向量表初值 0x100029C8
- *           IAR 启动后改至 0x10006768；GCC 无该环节，直接以 0x10006768 作栈顶，
- *           0x100029C8 以上 ~15.5KB 栈空间，向下生长避开 .data/.bss）
+ *           _estack=0x100029C8（原始复位向量栈顶）
  *   SRAM1 : 0x2007C000, 16K —— 本固件编译期全局（DAT_ 指针/值变量）
  *           （与匿名 SRAM0 目标物理分离，避免覆盖 DAT_ 指针指向的变量区）
  * ========================================================================== */
@@ -21,7 +19,11 @@ MEMORY
   SRAM1 (rwx) : ORIGIN = 0x2007C000, LENGTH = 16K
 }
 
-_estack = 0x10006768;              /* 复刻原固件 iar_init_core 最终 SP（RAM 顶区，向下生长） */
+_estack = 0x100029C8;
+
+/* Cortex-M 函数向量含 Thumb bit，链接符号本身为偶地址，故补六个 +1。 */
+_vector_checksum = 0 - (_estack + Reset_Handler + NMI_Handler + HardFault_Handler +
+                        MemManage_Handler + BusFault_Handler + UsageFault_Handler + 6);
 
 SECTIONS
 {

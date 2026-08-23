@@ -1,7 +1,11 @@
-# firmware — LPC1765 目标B 可编译骨架
+# firmware — LPC1765 可编译复刻工程
 
-目标B（新板复刻/替换固件）阶段1-3 成果。GCC 骨架：12 个真实模块 + 07 用 stub，
-零警告编译链接出 `.hex/.bin/.elf`。原反编译源码（decompiled 根 01-13*.c）保留不动。
+目标B的 GCC 工程已经完成，不再是“12 个模块 + 07 stub”的早期骨架。07 状态机、08 Modbus
+分发、UART3 RX、启动链及数据映像均已进入正式构建；根目录反编译存档仍保留用于追溯。
+
+当前基线（2026-08-23）：`text 61936 / data 3000 / bss 2188`，`firmware.bin` SHA-256 为
+`F032EFB70BB3942C4999D7C1F2D0DEBB64125F004C4E19405CAB0DD08F5EAA44`。离线验证通过
+`output_stage` 144/144、`state_machine` 115/115 和测试套件 11/11；仍须完成 W8 分级硬件验证。
 
 ## 构建
 
@@ -17,15 +21,15 @@ bash build.sh          # 产出 firmware.elf / firmware.hex / firmware.bin / fir
 |---|---|
 | `startup.s` | Cortex-M3 启动：拷贝原 .data 镜像(fw_image)→0x10000000、清零原 .bss(0x1000213C-0x100029C8)、拷贝本 .data/清零 .bss、调 main()；向量表含 8 个真实 IRQ + weak 默认自旋 |
 | `lpc1765.ld` | FLASH 0x0/256K、SRAM0 0x10000000/32K（原固件 .data/.bss 布局）、SRAM1 0x2007C000/16K（globals）。**_estack=0x10006768**（复刻原 iar_init_core 最终 SP，避免栈覆盖 .bss） |
-| `data_image.s` | 原固件 SRAM .data 初始镜像（`docs/_data_image.bin`，8508B） |
-| `globals.c/h` | 847 个 DAT_/PTR_ 符号定义/声明（`tools/gen_globals.py` 生成，初值=flash 字面量池内容） |
-| `src/strpool.c` | **W7a 字符串表**（`tools/gen_strpool.py` 生成）：GBK 字符串 blob + 20 簇表 + `strpool_map()`；把 disp_string 直传的原 flash 地址映射到 .rodata blob 偏移 |
-| `stub.c` | 占位收尾：仅 `freq_adjust_sync(0xAB48)`（07 迁入完整实现）+ `func_0x0000aed0` 骨架（state_machine/modbus 已迁入 src，W1a/W1b） |
+| `data_image.s` | 原固件 SRAM .data 初始镜像（`assets/ram_data_image.bin`，8508B） |
+| `globals.c/h` | 847 个 DAT_/PTR_ 符号定义/声明（`tools/generation/generate_globals.py` 生成） |
+| `src/strpool.c` | **W7a 字符串表**（`tools/generation/generate_string_pool.py` 生成） |
+| `stub.c` | 收尾子例程：`freq_adjust_sync(0xAB48)` + 已按原指令恢复的 UART3 RX 组帧 `func_0x0000aed0` |
 | `src/` | 13 个可编译模块 + `strpool.c`（01_startup 移除 IAR runtime；07_state_machine.c / 08_modbus_dispatch.c 已 W1a/W1b 完整还原） |
 | `inc/reg.h` | LPC1765 外设寄存器宏（FIO/TIMER/UART3/ADC/SCB/PINSEL/NVIC/WDT） |
 | `inc/types.h` | Ghidra 类型映射（undefined1/4/8、byte、uint…） |
 
-## 验证（2026-08-21）
+## 历史构建基准（2026-08-21，已被当前基线取代）
 
 - 零错误零警告；text 35904 / data 3388 / bss 2188；bin 39284B < 256K（阶段1-3 骨架基准）
 - 向量表：SP=0x10006768、Reset=0xD4；8 个 IRQ handler 全部绑定（nm 核实）

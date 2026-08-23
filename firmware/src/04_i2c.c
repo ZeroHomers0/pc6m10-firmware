@@ -31,24 +31,23 @@ void i2c_gpio_init(void)
 /* 0x00001C6C —— 短延时（5 空循环） */
 void i2c_delay_short(void)
 {
-  undefined4 i;
-
-  for (i = 5; i != 0; i = i + -1) {
+  volatile uint32_t i;
+  for (i = 5; i != 0; i--) {
+    /* 原固件空转延时。 */
   }
-  return;
 }
 
 /* 0x00001C82 —— 延时（units × 10000 空循环；EEPROM 写周期等待用） */
 void i2c_delay(uint units)
 {
-  undefined4 j;
-  undefined4 i;
+  volatile uint32_t i;
+  volatile uint32_t j;
 
-  for (i = 0; i < units; i = i + 1) {
-    for (j = 0; j < 10000; j = j + 1) {
+  for (i = 0; i < units; i++) {
+    for (j = 0; j < 10000; j++) {
+      /* EEPROM 写周期等待。 */
     }
   }
-  return;
 }
 
 /* 0x00001CAE —— START 条件：SDA=1 → SCL=1 → SDA=0 → SCL=0 */
