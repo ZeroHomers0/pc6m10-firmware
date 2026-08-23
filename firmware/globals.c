@@ -1,4 +1,4 @@
-/* 自动生成：tools/gen_globals.py（目标B 阶段2）。勿手改。 */
+/* 自动生成：tools/generation/generate_globals.py（目标B 阶段2）。勿手改。 */
 #include "inc/globals.h"
 
 volatile uint32_t *DAT_000000f8 = (uint32_t *)0x0001113C;  /* flash word */

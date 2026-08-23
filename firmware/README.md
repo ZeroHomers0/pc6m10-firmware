@@ -21,9 +21,9 @@ bash build.sh          # 产出 firmware.elf / firmware.hex / firmware.bin / fir
 |---|---|
 | `startup.s` | Cortex-M3 启动：拷贝原 .data 镜像(fw_image)→0x10000000、清零原 .bss(0x1000213C-0x100029C8)、拷贝本 .data/清零 .bss、调 main()；向量表含 8 个真实 IRQ + weak 默认自旋 |
 | `lpc1765.ld` | FLASH 0x0/256K、SRAM0 0x10000000/32K（原固件 .data/.bss 布局）、SRAM1 0x2007C000/16K（globals）。**_estack=0x10006768**（复刻原 iar_init_core 最终 SP，避免栈覆盖 .bss） |
-| `data_image.s` | 原固件 SRAM .data 初始镜像（`docs/_data_image.bin`，8508B） |
-| `globals.c/h` | 847 个 DAT_/PTR_ 符号定义/声明（`tools/gen_globals.py` 生成，初值=flash 字面量池内容） |
-| `src/strpool.c` | **W7a 字符串表**（`tools/gen_strpool.py` 生成）：GBK 字符串 blob + 20 簇表 + `strpool_map()`；把 disp_string 直传的原 flash 地址映射到 .rodata blob 偏移 |
+| `data_image.s` | 原固件 SRAM .data 初始镜像（`assets/ram_data_image.bin`，8508B） |
+| `globals.c/h` | 847 个 DAT_/PTR_ 符号定义/声明（`tools/generation/generate_globals.py` 生成） |
+| `src/strpool.c` | **W7a 字符串表**（`tools/generation/generate_string_pool.py` 生成） |
 | `stub.c` | 收尾子例程：`freq_adjust_sync(0xAB48)` + 已按原指令恢复的 UART3 RX 组帧 `func_0x0000aed0` |
 | `src/` | 13 个可编译模块 + `strpool.c`（01_startup 移除 IAR runtime；07_state_machine.c / 08_modbus_dispatch.c 已 W1a/W1b 完整还原） |
 | `inc/reg.h` | LPC1765 外设寄存器宏（FIO/TIMER/UART3/ADC/SCB/PINSEL/NVIC/WDT） |

@@ -1,6 +1,6 @@
 /* =============================================================================
  * 08_modbus_dispatch.c — modbus_dispatch(0xB642) C 级还原
- * 目标B W1a：替换 firmware/stub.c 占位。依据 08_modbus_dispatch_asm.txt
+ * 目标B W1a：替换 firmware/stub.c 占位。依据 evidence/reverse/disassembly/08_modbus_dispatch_asm.txt
  *   （5161 条指令）逐段还原，数据地址全部以反汇编字面量 SRAM 值为准。
  *
  * 函数：0x0000B642-0xE573（Modbus RTU 从站帧解析与分发主处理）
@@ -51,7 +51,7 @@ void out_relay_p020(int on);                                   /* 10_relay_led.c
 
 /* =============================================================================
  * modbus_dispatch(0x0000B642)
- * 流程（对照 08_modbus_dispatch_asm.txt 入口 0xB642-0xB77E、0xE19E-0xE573）：
+ * 流程（对照 evidence/reverse/disassembly/08_modbus_dispatch_asm.txt）：
  *   1) 帧态门控：状态==1 → 只清计数返回；==5 → 继续；否则返回
  *   2) 从站地址匹配：帧[0]==本站地址？不匹配 → FIO4CLR P4.29 + 清状态 + IER + 返回
  *   3) 功能码分发：非 0x03/0x06/0x10 → 异常响应 [地址,func|0x80,0x01]
