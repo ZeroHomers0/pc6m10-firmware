@@ -5,6 +5,10 @@
 当前离线结论为：新增的 `output_stage` 与 `state_machine` 差分矩阵均已通过。仍应遵循本文的
 分阶段流程，先做断开功率级的 SWD/供电冒烟和示波器空载验证，不能直接跳到 SCR 带载测试。
 
+当前构建：`text 61936 / data 3000 / bss 2188`；测试套件 11/11 模块通过。当前
+`firmware.bin` SHA-256 为
+`F032EFB70BB3942C4999D7C1F2D0DEBB64125F004C4E19405CAB0DD08F5EAA44`。
+
 ## 冻结基线
 
 - Git 标签：`pre-hw-test-01`，指向提交 `95345e4`

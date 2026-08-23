@@ -8,7 +8,7 @@
 对 NXP **LPC1765**（Cortex-M3，256KB flash）固件 `LPC1765.bin` 的**静态逆向工程**。
 目标设备：**PC6M-10 三相晶闸管（SCR）移相触发功率控制板**（SINE POWER / ST33C 变频电源，恒压/恒流/开环三模式）。
 已完成：105 个函数全部反编译、协议/架构全解析、硬件与菜单映射印证。
-长期目标：还原为**可编译、可修改**的等价源码（当前未达成，见"未完成"）。
+可编译、可修改的源码工程已经达成；离线等价验证已覆盖关键路径，完整硬件行为等价仍待 W8 分级实测确认。
 
 ## 沟通约定（重要）
 
@@ -86,11 +86,11 @@ decompiled/
 ## 未完成 / 下一步
 
 **目标B 可编译已达成**（2026-08-22）：`firmware/` 工程 `bash build.sh` 零警告产出 `firmware.hex/bin/elf`
-（text 60268 / data 3000 / bss 2188）。**W1 已完成**——07/08 两大函数已转为真实 C 级还原
+（text 61936 / data 3000 / bss 2188）。**W1 已完成**——07/08 两大函数已转为真实 C 级还原
 （state_machine 0x458C 18 case 写码 / modbus_dispatch 0xB642 51 写分支）；`stub.c` **保留**于 firmware/ 根
 （承载不可入 src 联编的 `func_0x0000aed0` 骨架 + `freq_adjust_sync` 0xAB48 完整实现，链接于 0x1A2），
 不再提供 07/08 占位。可读性重构 3 组提交已落地（全局变量语义化 g_ / reg.h 位宽 / consts.h 常量表）。
-仓库无 remotes（纯本地），默认分支为 `master`（无 `main`）。
+仓库远端为 `origin`；集成分支为 `master`，同时保留 `main`。当前审查分支为 `codex/decompiler-review`。
 
 - 完整清单：`WORK_GUIDE_2026-08-21.md` 的 **W1-W8**。
 - W7 行为等价验证（2026-08-23）：数据层三验全 PASS（SRAM 访问宽度 / modbus 51 写分支 / strpool 字符串映射）；
@@ -103,8 +103,9 @@ decompiled/
   ① crc16 `len-1` 语义（原固件处理**全部** len 字节；误读 `sub.w r4,#1` 带 S 置位 → 0xAF84 实为 `movs r0,r4` 置 Z、
   sub.w 无 S 不置位、uxtb 后减）；② closed_loop 误差链符号/无符号（应 SDIV 符号除）。
   **教训**：模型测试能"反编译 C == 手抄模型"双错一致，A/B 才能抓；后续纯逻辑函数首选 A/B 而非模型。
-  剩余：case2-7 控制流语义精读 + 01-06/09-13 逐函数精读（非 A/B 可达，需人工/Ghidra）。
-- 下一步：W7 控制流精读 → W8 硬件实测（第Ⅰ段 SWD 冒烟 blink → 第Ⅱ段示波器抓 12° 触发脉冲 + reg44/45 标定）。
+  后续独立矩阵已补齐：`output_stage` 144/144、`state_machine` 115/115，测试套件 11/11 通过。
+- 当前 `firmware.bin` SHA-256：`F032EFB70BB3942C4999D7C1F2D0DEBB64125F004C4E19405CAB0DD08F5EAA44`。
+- 下一步：W8 分级硬件实测——先断开门极与功率负载完成 SWD/控制电冒烟，再做三相过零、12°/60° 波形、reg44/45 标定，最后才允许低压/带载。
   上机风险分层评估见记忆 `firmware-hardware-risk-assessment`（点亮 70-85%、带载 SCR 40-60%）。
 - 目标 A（仅文档化）三项收尾已完成（②数据段清单 / ③交叉引用 / ①两大函数注释），≈100%。
 

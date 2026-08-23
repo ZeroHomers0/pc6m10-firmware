@@ -1,5 +1,9 @@
 # Codex 全量独立审查记录
 
+> **时间点审计记录**：本文列出的阻断缺陷均已在后续提交中修复并重新验证。当前结论见
+> `CODEX_REVALIDATION_2026-08-23.md` 与 `W8_PRE_HARDWARE_VALIDATION_2026-08-23.md`；不要把本文末尾的
+> “不可上机”判断套用到当前构建。
+
 > 基准：仅以 `LPC1765.bin`、`tools/_disasm/` 原始指令转储和 LPC1765 硬件定义为金标准。
 > 不采信既有测试通过结果或文档中的“已核对”结论。审查分支：`codex/decompiler-review`。
 

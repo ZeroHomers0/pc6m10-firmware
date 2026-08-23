@@ -8,28 +8,106 @@
 
 ## 1. W8 需要什么（软件 + 硬件配套）
 
-### 1.1 软件清单
+### 1.1 免费软件固定选型（仅官方来源）
 
-| # | 软件 | 用途 | 怎么装 | W8 哪阶段用 |
+| # | 软件 | 费用/必要性 | 用途 | 官方下载地址 |
 |---|---|---|---|---|
-| 1 | **Python 3.13** | 跑 Modbus 测试 / 波形分析脚本 | `winget install Python.Python.3.13` | B / C |
-| 2 | **minimalmodbus + pyserial**（Python 包） | Modbus-RTU 通信、枚举串口 | `python -m pip install minimalmodbus pyserial` | B |
-| 3 | **USB-RS485 转换器驱动**（如 CH340/FTDI） | 电脑识别 RS485 转换器为 COM 口 | 厂商驱动（无需单独装，多为内置/自动） | B |
-| 4 | **示波器厂商软件**（可选） | 存波形、导 CSV、远程控制 | 随示波器光盘/官网 | C / D |
-| 5 | **串口助手**（可选，方便手看原始帧） | 手动发 Modbus 帧、看回包 | 任意（SSCOM/XCOM/串口助手） | B |
+| 1 | **Arm GNU Toolchain 14.2.Rel1 (`arm-none-eabi`)** | 免费；**必装并固定版本** | 唯一固件编译器，内含 `arm-none-eabi-gdb` | [Windows x64 14.2.Rel1 官方安装器](https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-mingw-w64-x86_64-arm-none-eabi.exe) / [Arm 官方发布页](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads) |
+| 2 | **SEGGER J-Link Software and Documentation Pack** | 软件免费供 J-Link/J-Trace 硬件用户使用；**上机必装** | 一次安装获得 USB 驱动、J-Link Commander、J-Link GDB Server；用于 SWD 连接、备份、烧录、校验和调试 | [SEGGER J-Link 官方下载页](https://www.segger.com/downloads/jlink/) |
+| 3 | **Python 3.12（64-bit）** | 免费；**必装** | 运行 Modbus、串口枚举和 CSV 波形分析脚本 | [Python 3.12.10 Windows x64 官方安装器](https://www.python.org/ftp/python/3.12.10/python-3.12.10-amd64.exe) / [版本说明页](https://www.python.org/downloads/release/python-31210/) |
+| 4 | **MinimalModbus** | 免费开源；阶段 B 必装 | Modbus-RTU 主站脚本 | [MinimalModbus 官方文档](https://minimalmodbus.readthedocs.io/en/stable/installation.html) / [PyPI 官方包页](https://pypi.org/project/MinimalModbus/) |
+| 5 | **pySerial** | 免费开源；阶段 B 必装 | Windows COM 口和 USB-RS485 通信 | [pySerial PyPI 官方包页](https://pypi.org/project/pyserial/) |
+| 6 | **Git for Windows** | 免费开源；建议安装 | 版本管理、保存测试记录；不要把原 Flash 备份提交到公共仓库 | [Git for Windows 官方下载](https://git-scm.com/download/win) |
+| 7 | **PulseView / sigrok** | 免费开源；可选 | 配合兼容逻辑分析仪观察多路数字触发时序，不能替代示波器测模拟量/强电 | [PulseView 0.4.2 Windows x64 官方安装器](https://sigrok.org/download/binary/pulseview/pulseview-0.4.2-64bit-static-release-installer.exe) / [sigrok官方下载页](https://sigrok.org/wiki/Downloads) |
+| 8 | **示波器厂商软件** | 仅选择仪器厂家免费版本；可选 | 截图、CSV 导出和远程控制 | 从示波器铭牌对应的厂家官网进入“支持/下载”，不使用第三方下载站 |
+| 9 | **USB-RS485 官方驱动** | 通常免费；按硬件芯片选装 | 让转换器显示为 COM 口 | 先由 Windows Update 安装；仍缺驱动时只从转换器厂商或芯片原厂官网下载，不能仅凭外壳猜测 CH340/FTDI |
+
+安装 Python 依赖：
+
+```powershell
+python -m pip install --upgrade minimalmodbus pyserial
+```
+
+版本确认：
+
+```powershell
+arm-none-eabi-gcc --version
+arm-none-eabi-gdb --version
+python --version
+python -m pip show minimalmodbus pyserial
+```
+
+> 本工程固定使用已经验证过的 Arm GNU Toolchain **14.2.Rel1**，不要在实机验证前切换到最新
+> 15.x。Python 推荐 3.12；MinimalModbus 官方支持 Python 3.8 及以上。J-Link Commander 和
+> J-Link GDB Server 已包含在同一个免费软件包中，不需要另购 J-Flash，也不需要安装 Keil、
+> MCUXpresso、OpenOCD、pyOCD 或付费 Modbus 软件。
 
 > **只需标准库、无需第三方**：`tools/verify_*.py`（逆向验证脚本）——纯标准库直接跑。
-> **需要 pip 第三方**：W8 的 Modbus 脚本（依赖 minimalmodbus + pyserial），得先装这两个包。
+> **需要 pip 装**：W8 的 Modbus 脚本（依赖 minimalmodbus + pyserial），先装这两个包。
+> **J-Link** 由 SEGGER 官方安装包安装（**非 pip、非 winget**），装完自带 `J-Link Commander`。
+> HEX/ELF 用 `LoadFile`；BIN 用 `LoadFile 文件.bin 0x00000000`，无需另装 J-Flash。
 
 ### 1.2 硬件配套（跟软件配合用的仪器）
 
 | # | 硬件 | 用途 | 阶段 |
 |---|---|---|---|
-| 1 | **USB-RS485 转换器** | 电脑 ↔ 板子 UART3 通信 | B |
-| 2 | **示波器 ≥2 通道** | 抓触发脉冲 / 输出波形 | C / D |
-| 3 | **差分探头 / 隔离通道** | **测强电必须**（普通探头测高压会烧示波器） | D |
-| 4 | **信号发生器** | 输出 50Hz 方波模拟过零 | C |
-| 5 | **万用表** | 量电压/电流/电阻 | A / B / D |
+| 1 | **SEGGER J-Link（SWD）** | 识别 / 备份 / 烧写 / 调试 LPC1765 | A |
+| 2 | **USB-RS485 转换器** | 电脑 ↔ 板子 UART3 通信 | B |
+| 3 | **示波器 ≥2 通道** | 抓触发脉冲 / 输出波形 | C / D |
+| 4 | **差分探头 / 隔离通道** | **测强电必须**（普通探头测高压会烧示波器） | D |
+| 5 | **信号发生器** | 输出 50Hz 方波模拟过零 | C |
+| 6 | **万用表** | 量电压/电流/电阻 | A / B / D |
+
+---
+
+## A. 阶段 A：J-Link 调试/烧写链路（现在可做）
+
+> 只证明「J-Link ↔ P12 ↔ LPC1765 能连、能读、能写、能跑」，不触碰 SCR/主整机。
+> 硬件接线、P12 引脚定义、预期值与通过标准见 `W8_HARDWARE_TEST_2026-08-22.md` §6 第Ⅰ段。
+
+### A.1 连接（J-Link Commander 交互 CLI）
+装好 J-Link 驱动后打开 `JLink.exe`（J-Link Commander），逐行输入：
+
+```
+device LPC1765        ; 选芯片（也可先 "device LPC176x" 再确认）
+si SWD                ; 本项目 P12 采用 SWD 四线连接
+speed 100             ; 先 100 kHz，稳定后→400 kHz→1 MHz
+connect               ; 连接，应输出 Found SW-DP / IDCode / Cortex-M3 / Flash 256K
+```
+
+连接成功标志：`Found SW-DP` + `IDCode` + `Device core`。若失败→降到 100 kHz；仍失败→见 A.5。
+
+### A.2 识别 / 备份原固件（务必先做）
+```
+showdevice                                  ; 或 mem32 0x400FC41C，确认 CPU/Flash 型号、CRP 状态
+savebin backup_orig.bin, 0x00000000, 0x40000 ; LPC1765 Flash=256KB=0x40000，备份后再动
+```
+> **铁律**：备份前**不要** `unlock` / `recover` / `mass erase`（LPC17xx 有 CRP1/2/3，解除较高保护会整片擦除，原固件不可恢复）；确认可覆盖前也不要执行 `LoadFile`。
+
+### A.3 烧写 / 运行最小验证（blink）
+```
+loadfile blink.hex             ; HEX 自带地址
+loadfile blink.bin 0x00000000  ; BIN 必须指定起始地址 0
+r                              ; 复位
+g                              ; 运行（Go）
+```
+目标板 LED 闪烁 = 烧写/运行链打通。
+
+### A.4 断点 / 单步（验证调试链路）
+```
+halt            ; 暂停
+setbp 0x<addr>  ; 设断点
+go              ; 恢复运行，命中即停
+st              ; 单步     mem / regs  读内存/寄存器
+```
+
+### A.5 失败排查
+| 现象 | 处置 |
+|---|---|
+| `connect` 失败 | 核对 P12-1/2/6/8 接线与共地；降到 100 kHz；给 TCK 补下拉（数据手册注15） |
+| 复位后死机 | `mem32 0x0,4` 看前 4 字（应为 SP/Reset/IRQ）；若需 `Connect under reset` 须从 MCU 第 17 脚/复位网络**另引 RESET**（P12-3 不是 nRESET，不能接） |
+
+**阶段 A 通过标准**：能 `connect`、能读设备 ID、能备份原 Flash、能烧 blink 且复位后运行、能断点单步。
 
 ---
 
@@ -49,7 +127,7 @@
 ### 2.2 接线
 - USB-RS485 的 **A（也叫 D+/B+）→ 板 UART3 的 A**；**B（D−/B−）→ 板 B**。
 - 不确定就**先接一副（A-B 对 A-B），读不到再对调**（RS485 反接是最常见坑）。
-- 可选共地：板是 ADuM2483 隔离模块，可先共地试，不行再全隔离。
+- 可选共地：板是 ADM2483 隔离模块，可先共地试，不行再全隔离。
 
 ### 2.3 软测：确认能读到
 用 `tools/w8_modbus_test.py` 的"枚举"模式（或直接跑），能读到 reg 就 OK。

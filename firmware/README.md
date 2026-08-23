@@ -1,7 +1,11 @@
-# firmware — LPC1765 目标B 可编译骨架
+# firmware — LPC1765 可编译复刻工程
 
-目标B（新板复刻/替换固件）阶段1-3 成果。GCC 骨架：12 个真实模块 + 07 用 stub，
-零警告编译链接出 `.hex/.bin/.elf`。原反编译源码（decompiled 根 01-13*.c）保留不动。
+目标B的 GCC 工程已经完成，不再是“12 个模块 + 07 stub”的早期骨架。07 状态机、08 Modbus
+分发、UART3 RX、启动链及数据映像均已进入正式构建；根目录反编译存档仍保留用于追溯。
+
+当前基线（2026-08-23）：`text 61936 / data 3000 / bss 2188`，`firmware.bin` SHA-256 为
+`F032EFB70BB3942C4999D7C1F2D0DEBB64125F004C4E19405CAB0DD08F5EAA44`。离线验证通过
+`output_stage` 144/144、`state_machine` 115/115 和测试套件 11/11；仍须完成 W8 分级硬件验证。
 
 ## 构建
 
@@ -25,7 +29,7 @@ bash build.sh          # 产出 firmware.elf / firmware.hex / firmware.bin / fir
 | `inc/reg.h` | LPC1765 外设寄存器宏（FIO/TIMER/UART3/ADC/SCB/PINSEL/NVIC/WDT） |
 | `inc/types.h` | Ghidra 类型映射（undefined1/4/8、byte、uint…） |
 
-## 验证（2026-08-21）
+## 历史构建基准（2026-08-21，已被当前基线取代）
 
 - 零错误零警告；text 35904 / data 3388 / bss 2188；bin 39284B < 256K（阶段1-3 骨架基准）
 - 向量表：SP=0x10006768、Reset=0xD4；8 个 IRQ handler 全部绑定（nm 核实）

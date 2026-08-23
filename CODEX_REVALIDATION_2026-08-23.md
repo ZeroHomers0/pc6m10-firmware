@@ -1,5 +1,8 @@
 # Codex 修复后独立再验证
 
+> 本文是修复后的第一次独立复验记录；其后又完成状态机控制流修复与 115/115 矩阵验证。
+> 当前冻结信息以 `W8_PRE_HARDWARE_VALIDATION_2026-08-23.md` 为准。
+
 > 金标准：`LPC1765.bin`、原函数入口和原始指令执行结果。
 > 本轮不调用 `test/` 下的既有测试套件；使用新建
 > `tools/codex_verify_repairs.py` 在 Unicorn Cortex-M3/Thumb 环境中直接对比原 BIN 与新 ELF。

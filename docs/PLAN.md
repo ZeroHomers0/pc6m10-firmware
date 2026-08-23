@@ -1,5 +1,8 @@
 # LPC1765 变频电源逆向工程 — 进度与计划
 
+> **历史过程文档**：本计划保存早期任务拆解，不再表示当前待办。最新进度和 W8 入口见
+> `../DOCUMENTATION_INDEX.md` 与 `../W8_PRE_HARDWARE_VALIDATION_2026-08-23.md`。
+
 > 恢复时间：2026-08-20（会话因死机丢失后重建）
 > 固件：`LPC1765.bin`（NXP LPC1765 / Cortex-M3，256KB flash @0x00000000）
 > 设备：ST33C 变频电源（恒压/恒流/开环 三模式，正弦波，SINEP0WER）
