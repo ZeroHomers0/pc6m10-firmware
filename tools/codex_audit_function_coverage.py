@@ -14,7 +14,8 @@ for path in sources:
     for mark in marks:
         tail = text[mark.end():mark.end() + 3500]
         fn = re.search(
-            r"(?:^|\n)\s*(?:static\s+)?(?:void|int|uint\w*|undefined\w*|byte|ushort|short)"
+            r"(?:^|\n)\s*(?:__attribute__\s*\(\([^\n]*?\)\)\s*)?"
+            r"(?:static\s+)?(?:void|int|uint\w*|undefined\w*|byte|ushort|short)"
             r"(?:\s*\*)?\s+([A-Za-z_]\w*)\s*\([^;{]*\)\s*\{", tail
         )
         if fn:

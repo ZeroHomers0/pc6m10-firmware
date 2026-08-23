@@ -14,21 +14,23 @@
 #define REG8(addr)   (*(volatile uint8_t  *)(uintptr_t)(addr))
 
 /* ================= FIO 池 0x2009C000 =================
- * +0x18 FIO0SET +0x1C FIO0CLR +0x20 FIO0DIR
- * +0x38 FIO1SET +0x3C FIO1CLR +0x40 FIO1DIR
+ * DIR: FIO0..4 = +0x00/+0x20/+0x40/+0x60/+0x80
+ * SET/CLR: FIO0 = +0x18/+0x1C，FIO1 = +0x38/+0x3C
  * +0x54 FIO2PIN +0x58 FIO2SET +0x5C FIO2CLR
  * +0x80 FIO3DIR                                                       */
 #define FIO_BASE        0x2009C000UL
 #define FIO0SET         REG32(FIO_BASE + 0x18)
 #define FIO0CLR         REG32(FIO_BASE + 0x1C)
-#define FIO0DIR         REG32(FIO_BASE + 0x20)
+#define FIO0DIR         REG32(FIO_BASE + 0x00)
 #define FIO1SET         REG32(FIO_BASE + 0x38)
 #define FIO1CLR         REG32(FIO_BASE + 0x3C)
-#define FIO1DIR         REG32(FIO_BASE + 0x40)
+#define FIO1DIR         REG32(FIO_BASE + 0x20)
+#define FIO2DIR         REG32(FIO_BASE + 0x40)
 #define FIO2PIN         REG32(FIO_BASE + 0x54)
 #define FIO2SET         REG32(FIO_BASE + 0x58)
 #define FIO2CLR         REG32(FIO_BASE + 0x5C)
-#define FIO3DIR         REG32(FIO_BASE + 0x80)
+#define FIO3DIR         REG32(FIO_BASE + 0x60)
+#define FIO4DIR         REG32(FIO_BASE + 0x80)
 
 /* ================= TIMER 通用结构（TIMER0/1/2/3 同布局） ================= */
 typedef struct {

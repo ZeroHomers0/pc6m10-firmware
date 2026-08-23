@@ -19,10 +19,10 @@
 void out_relay_p020(int level)
 {
   if (level < 1) {
-    *(uint *)(PTR_DAT_00010640 + 0x1c) = *(uint *)(PTR_DAT_00010640 + 0x1c) | 0x100000;
+    *(volatile uint *)(PTR_DAT_00010640 + 0x1c) = *(volatile uint *)(PTR_DAT_00010640 + 0x1c) | 0x100000;
   }
   else {
-    *(uint *)(PTR_DAT_00010640 + 0x18) = *(uint *)(PTR_DAT_00010640 + 0x18) | 0x100000;
+    *(volatile uint *)(PTR_DAT_00010640 + 0x18) = *(volatile uint *)(PTR_DAT_00010640 + 0x18) | 0x100000;
   }
 }
 
@@ -30,10 +30,10 @@ void out_relay_p020(int level)
 void out_relay_p021(int level)
 {
   if (level < 1) {
-    *(uint *)(PTR_DAT_00010640 + 0x1c) = *(uint *)(PTR_DAT_00010640 + 0x1c) | 0x200000;
+    *(volatile uint *)(PTR_DAT_00010640 + 0x1c) = *(volatile uint *)(PTR_DAT_00010640 + 0x1c) | 0x200000;
   }
   else {
-    *(uint *)(PTR_DAT_00010640 + 0x18) = *(uint *)(PTR_DAT_00010640 + 0x18) | 0x200000;
+    *(volatile uint *)(PTR_DAT_00010640 + 0x18) = *(volatile uint *)(PTR_DAT_00010640 + 0x18) | 0x200000;
   }
 }
 
@@ -41,10 +41,10 @@ void out_relay_p021(int level)
 void fio1_pin20_ctrl(int level)
 {
   if (level < 1) {
-    *(uint *)(PTR_DAT_00010640 + 0x3c) = *(uint *)(PTR_DAT_00010640 + 0x3c) | 0x100000;
+    *(volatile uint *)(PTR_DAT_00010640 + 0x3c) = *(volatile uint *)(PTR_DAT_00010640 + 0x3c) | 0x100000;
   }
   else {
-    *(uint *)(PTR_DAT_00010640 + 0x38) = *(uint *)(PTR_DAT_00010640 + 0x38) | 0x100000;
+    *(volatile uint *)(PTR_DAT_00010640 + 0x38) = *(volatile uint *)(PTR_DAT_00010640 + 0x38) | 0x100000;
   }
 }
 
@@ -52,10 +52,10 @@ void fio1_pin20_ctrl(int level)
 void fio1_pin21_ctrl(int level)
 {
   if (level < 1) {
-    *(uint *)(PTR_DAT_00010640 + 0x3c) = *(uint *)(PTR_DAT_00010640 + 0x3c) | 0x200000;
+    *(volatile uint *)(PTR_DAT_00010640 + 0x3c) = *(volatile uint *)(PTR_DAT_00010640 + 0x3c) | 0x200000;
   }
   else {
-    *(uint *)(PTR_DAT_00010640 + 0x38) = *(uint *)(PTR_DAT_00010640 + 0x38) | 0x200000;
+    *(volatile uint *)(PTR_DAT_00010640 + 0x38) = *(volatile uint *)(PTR_DAT_00010640 + 0x38) | 0x200000;
   }
 }
 
@@ -63,9 +63,9 @@ void fio1_pin21_ctrl(int level)
 void fio1_pin23_ctrl(int level)
 {
   if (level < 1) {
-    *(uint *)(PTR_DAT_00010640 + 0x3c) = *(uint *)(PTR_DAT_00010640 + 0x3c) | 0x800000;
+    *(volatile uint *)(PTR_DAT_00010640 + 0x3c) = *(volatile uint *)(PTR_DAT_00010640 + 0x3c) | 0x800000;
   }
   else {
-    *(uint *)(PTR_DAT_00010640 + 0x38) = *(uint *)(PTR_DAT_00010640 + 0x38) | 0x800000;
+    *(volatile uint *)(PTR_DAT_00010640 + 0x38) = *(volatile uint *)(PTR_DAT_00010640 + 0x38) | 0x800000;
   }
 }

@@ -20,7 +20,7 @@ bash build.sh          # 产出 firmware.elf / firmware.hex / firmware.bin / fir
 | `data_image.s` | 原固件 SRAM .data 初始镜像（`docs/_data_image.bin`，8508B） |
 | `globals.c/h` | 847 个 DAT_/PTR_ 符号定义/声明（`tools/gen_globals.py` 生成，初值=flash 字面量池内容） |
 | `src/strpool.c` | **W7a 字符串表**（`tools/gen_strpool.py` 生成）：GBK 字符串 blob + 20 簇表 + `strpool_map()`；把 disp_string 直传的原 flash 地址映射到 .rodata blob 偏移 |
-| `stub.c` | 占位收尾：仅 `freq_adjust_sync(0xAB48)`（07 迁入完整实现）+ `func_0x0000aed0` 骨架（state_machine/modbus 已迁入 src，W1a/W1b） |
+| `stub.c` | 收尾子例程：`freq_adjust_sync(0xAB48)` + 已按原指令恢复的 UART3 RX 组帧 `func_0x0000aed0` |
 | `src/` | 13 个可编译模块 + `strpool.c`（01_startup 移除 IAR runtime；07_state_machine.c / 08_modbus_dispatch.c 已 W1a/W1b 完整还原） |
 | `inc/reg.h` | LPC1765 外设寄存器宏（FIO/TIMER/UART3/ADC/SCB/PINSEL/NVIC/WDT） |
 | `inc/types.h` | Ghidra 类型映射（undefined1/4/8、byte、uint…） |

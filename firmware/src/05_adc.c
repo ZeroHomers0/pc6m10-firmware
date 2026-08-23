@@ -25,17 +25,17 @@ void adc_init(void)
   int clk_base;
 
   clk_base = DAT_00002300;
-  *(uint *)(DAT_00002300 + 4) = *(uint *)(DAT_00002300 + 4) & 0xffc03fff;
-  *(uint *)(clk_base + 4) = *(uint *)(clk_base + 4) | 0x154000;      /* PCLK ADC=CCLK */
-  *(uint *)(clk_base + 0xc) = *(uint *)(clk_base + 0xc) & 0xcfffffff;
-  *(uint *)(clk_base + 0xc) = *(uint *)(clk_base + 0xc) | 0x30000000;
-  *(uint *)(clk_base + 0xc) = *(uint *)(clk_base + 0xc) & 0xcfffffff;
-  *(uint *)(clk_base + 0xc) = *(uint *)(clk_base + 0xc) | 0x30000000;
-  *(uint *)(clk_base + 0xc) = *(uint *)(clk_base + 0xc) & 0x3fffffff;
-  *(uint *)(clk_base + 0xc) = *(uint *)(clk_base + 0xc) | 0xc0000000;
-  *(uint *)(clk_base + 0xc) = *(uint *)(clk_base + 0xc) & 0x3fffffff;
-  *(uint *)(clk_base + 0xc) = *(uint *)(clk_base + 0xc) | 0xc0000000;
-  *(uint *)(DAT_00002308 + 0xc4) = *g_pconp | 0x1000;      /* PCONP ADC 上电 */
+  *(volatile uint *)(DAT_00002300 + 4) = *(volatile uint *)(DAT_00002300 + 4) & 0xffc03fff;
+  *(volatile uint *)(clk_base + 4) = *(volatile uint *)(clk_base + 4) | 0x154000;      /* PCLK ADC=CCLK */
+  *(volatile uint *)(clk_base + 0xc) = *(volatile uint *)(clk_base + 0xc) & 0xcfffffff;
+  *(volatile uint *)(clk_base + 0xc) = *(volatile uint *)(clk_base + 0xc) | 0x30000000;
+  *(volatile uint *)(clk_base + 0xc) = *(volatile uint *)(clk_base + 0xc) & 0xcfffffff;
+  *(volatile uint *)(clk_base + 0xc) = *(volatile uint *)(clk_base + 0xc) | 0x30000000;
+  *(volatile uint *)(clk_base + 0xc) = *(volatile uint *)(clk_base + 0xc) & 0x3fffffff;
+  *(volatile uint *)(clk_base + 0xc) = *(volatile uint *)(clk_base + 0xc) | 0xc0000000;
+  *(volatile uint *)(clk_base + 0xc) = *(volatile uint *)(clk_base + 0xc) & 0x3fffffff;
+  *(volatile uint *)(clk_base + 0xc) = *(volatile uint *)(clk_base + 0xc) | 0xc0000000;
+  *(volatile uint *)(DAT_00002308 + 0xc4) = *g_pconp | 0x1000;      /* PCONP ADC 上电 */
   *g_adc = DAT_0000230c;                                 /* AD0CR 初值 */
   return;
 }
@@ -55,8 +55,8 @@ void adc0_start(void)
 uint adc0_wait_done(void)
 {
   do {
-  } while ((*(uint *)(g_adc + 4) & 0x80000000) == 0);
-  return (*(uint *)(g_adc + 4) & 0xffff) >> 4;
+  } while ((*(volatile uint *)(g_adc + 4) & 0x80000000) == 0);
+  return (*(volatile uint *)(g_adc + 4) & 0xffff) >> 4;
 }
 
 /* 0x00001FBC —— 逐通道扫描：每通道 5 点循环采样存原始数组，
@@ -117,14 +117,14 @@ void adc0_scan_channels(void)
   *val_ptr = *val_ptr | 8;
   adc0_start();
   sample32 = adc0_wait_done();
-  *(undefined4 *)(DAT_00002328 + (uint)*DAT_00002314 * 4) = sample32;
+  *(volatile undefined4 *)(DAT_00002328 + (uint)*DAT_00002314 * 4) = sample32;
   /* —— ch4（SEL=0x10，Uf）—— */
   val_ptr = g_adc;
   *g_adc = *g_adc & 0xffffffc0;
   *val_ptr = *val_ptr | 0x10;
   adc0_start();
   sample32 = adc0_wait_done();
-  *(undefined4 *)(DAT_0000232c + (uint)*DAT_00002314 * 4) = sample32;
+  *(volatile undefined4 *)(DAT_0000232c + (uint)*DAT_00002314 * 4) = sample32;
 
   /* —— ch2 平均（每轮转满 5 点计算）—— */
   avg_idx = DAT_00002330;
@@ -134,11 +134,11 @@ void adc0_scan_channels(void)
       *avg_idx = 0;
     }
     sample = DAT_00002334;
-    *(uint *)(DAT_00002334 + (uint)*DAT_00002330 * 4) =
+    *(volatile uint *)(DAT_00002334 + (uint)*DAT_00002330 * 4) =
          (uint)(*DAT_00002318 + DAT_00002318[1] + DAT_00002318[2] + DAT_00002318[3] +
                DAT_00002318[4]) / 5;
     val_ptr = DAT_00002338;
-    *DAT_00002338 = *(uint *)(sample + (uint)*DAT_00002330 * 4);
+    *DAT_00002338 = *(volatile uint *)(sample + (uint)*DAT_00002330 * 4);
     out_ptr = DAT_00002344;
     *DAT_00002344 = (*DAT_0000233c * *val_ptr * 2) / *DAT_00002340;
     if ((*g_cfg_word == '\0') && (*out_ptr < 10)) {
@@ -153,11 +153,11 @@ void adc0_scan_channels(void)
       *avg_idx = 0;
     }
     sample = DAT_00002350;
-    *(uint *)(DAT_00002350 + (uint)*DAT_0000234c * 4) =
+    *(volatile uint *)(DAT_00002350 + (uint)*DAT_0000234c * 4) =
          (uint)(*DAT_0000231c + DAT_0000231c[1] + DAT_0000231c[2] + DAT_0000231c[3] +
                DAT_0000231c[4]) / 5;
     val_ptr = DAT_00002338;
-    *DAT_00002338 = *(uint *)(sample + (uint)*DAT_0000234c * 4);
+    *DAT_00002338 = *(volatile uint *)(sample + (uint)*DAT_0000234c * 4);
     out_ptr = DAT_00002358;
     *DAT_00002358 = (*DAT_0000233c * *val_ptr * 2) / *DAT_00002354;
     if ((*g_cfg_word == '\0') && (*out_ptr < 10)) {
@@ -172,11 +172,11 @@ void adc0_scan_channels(void)
       *avg_idx = 0;
     }
     sample = DAT_00002360;
-    *(uint *)(DAT_00002360 + (uint)*DAT_0000235c * 4) =
+    *(volatile uint *)(DAT_00002360 + (uint)*DAT_0000235c * 4) =
          (uint)(*DAT_00002320 + DAT_00002320[1] + DAT_00002320[2] + DAT_00002320[3] +
                DAT_00002320[4]) / 5;
     val_ptr = DAT_00002338;
-    *DAT_00002338 = *(uint *)(sample + (uint)*DAT_0000235c * 4);
+    *DAT_00002338 = *(volatile uint *)(sample + (uint)*DAT_0000235c * 4);
     *DAT_00002364 = *val_ptr;
     val_ptr = DAT_0000236c;
     *DAT_0000236c = (*DAT_0000233c * *DAT_00002338 * 2) / *DAT_00002368;
@@ -241,11 +241,11 @@ void adc0_scan_channels(void)
       *avg_idx = 0;
     }
     sample = DAT_000025a8;
-    *(uint *)(DAT_000025a8 + (uint)*DAT_000025a0 * 4) =
+    *(volatile uint *)(DAT_000025a8 + (uint)*DAT_000025a0 * 4) =
          (uint)(*DAT_000025a4 + DAT_000025a4[1] + DAT_000025a4[2] + DAT_000025a4[3] +
                DAT_000025a4[4]) / 5;
     val_ptr = DAT_00002588;
-    *DAT_00002588 = *(uint *)(sample + (uint)*DAT_000025a0 * 4);
+    *DAT_00002588 = *(volatile uint *)(sample + (uint)*DAT_000025a0 * 4);
     *DAT_000025ac = (*val_ptr * 0x65) / 400;
     val_ptr = DAT_00002588;
     *DAT_00002588 = (*g_gain_b * *DAT_00002588) / *DAT_000025b0;   /* gain_b/reg54 */
@@ -263,11 +263,11 @@ void adc0_scan_channels(void)
       *avg_idx = 0;
     }
     sample = DAT_000025c8;
-    *(uint *)(DAT_000025c8 + (uint)*DAT_000025c0 * 4) =
+    *(volatile uint *)(DAT_000025c8 + (uint)*DAT_000025c0 * 4) =
          (uint)(*DAT_000025c4 + DAT_000025c4[1] + DAT_000025c4[2] + DAT_000025c4[3] +
                DAT_000025c4[4]) / 5;
     val_ptr = DAT_00002588;
-    *DAT_00002588 = *(uint *)(sample + (uint)*DAT_000025c0 * 4);
+    *DAT_00002588 = *(volatile uint *)(sample + (uint)*DAT_000025c0 * 4);
     *DAT_000025cc = (*val_ptr * 0x65) / 400;
     val_ptr = DAT_00002588;
     *DAT_00002588 = (*g_gain_a * *DAT_00002588) / *DAT_000025d0;   /* gain_a/reg55 */

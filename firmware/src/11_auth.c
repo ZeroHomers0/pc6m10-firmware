@@ -57,7 +57,7 @@ void auth_challenge(void)
   int fio_base;
   uint challenge_byte;
   uint bit_idx;
-  uint delay_cnt;
+  volatile uint delay_cnt;
   uint response_bits;
   uint exp_resp_hi;
   uint exp_resp_lo;
@@ -66,7 +66,7 @@ void auth_challenge(void)
   exp_resp_lo = 0;
   challenge_byte = 0;
   response_bits = 0;
-  *(uint *)(DAT_0001087c + 0x5c) = *(uint *)(DAT_0001087c + 0x5c) | 0x10;  /* FIO2CLR P2.4=复位线拉低 */
+  *(volatile uint *)(DAT_0001087c + 0x5c) = *(volatile uint *)(DAT_0001087c + 0x5c) | 0x10;  /* FIO2CLR P2.4=复位线拉低 */
   for (bit_idx = 0; fio_base = DAT_0001087c, bit_idx < 0x18; bit_idx = bit_idx + 1) {  /* 24 bit */
     if (bit_idx == 0) {
       /* 挑战组 A（bit0-7）：4 个板上参数求和 +0x31；期望应答高位 exp_resp_hi */
@@ -82,24 +82,24 @@ void auth_challenge(void)
     if (bit_idx == 0x10) {
       challenge_byte = 0x55;                                 /* 挑战组 C（bit16-23）：固定 0x55 */
     }
-    *(uint *)(DAT_0001087c + 0x5c) = *(uint *)(DAT_0001087c + 0x5c) | 2;  /* FIO2CLR P2.1=数据线拉低 */
+    *(volatile uint *)(DAT_0001087c + 0x5c) = *(volatile uint *)(DAT_0001087c + 0x5c) | 2;  /* FIO2CLR P2.1=数据线拉低 */
     if ((challenge_byte & 0x80) != 0) {
-      *(uint *)(fio_base + 0x58) = *(uint *)(fio_base + 0x58) | 2;              /* 挑战位=1 → FIO2SET P2.1 */
+      *(volatile uint *)(fio_base + 0x58) = *(volatile uint *)(fio_base + 0x58) | 2;              /* 挑战位=1 → FIO2SET P2.1 */
     }
     challenge_byte = challenge_byte << 1;
-    for (delay_cnt = 0; delay_cnt < 2000; delay_cnt = delay_cnt + 1) {                    /* 位建立延时 */
+    for (delay_cnt = 0; delay_cnt < 2000; delay_cnt++) {             /* 位建立延时 */
     }
-    *(uint *)(DAT_0001087c + 0x5c) = *(uint *)(DAT_0001087c + 0x5c) | 8;  /* FIO2CLR P2.3=时钟拉低 */
-    for (delay_cnt = 0; delay_cnt < 1000; delay_cnt = delay_cnt + 1) {                    /* 时钟低延时 */
+    *(volatile uint *)(DAT_0001087c + 0x5c) = *(volatile uint *)(DAT_0001087c + 0x5c) | 8;  /* FIO2CLR P2.3=时钟拉低 */
+    for (delay_cnt = 0; delay_cnt < 1000; delay_cnt++) {             /* 时钟低延时 */
     }
-    if ((7 < bit_idx) && (response_bits = response_bits * 2, (*(uint *)(DAT_0001087c + 0x54) & 4) != 0)) {
+    if ((7 < bit_idx) && (response_bits = response_bits * 2, (*(volatile uint *)(DAT_0001087c + 0x54) & 4) != 0)) {
       response_bits = response_bits + 1;                                                  /* bit8 起读 FIO2PIN P2.2 */
     }
-    for (delay_cnt = 0; delay_cnt < 1000; delay_cnt = delay_cnt + 1) {                    /* 时钟高延时 */
+    for (delay_cnt = 0; delay_cnt < 1000; delay_cnt++) {             /* 时钟高延时 */
     }
-    *(uint *)(DAT_0001087c + 0x58) = *(uint *)(DAT_0001087c + 0x58) | 8;  /* FIO2SET P2.3=时钟拉高 */
+    *(volatile uint *)(DAT_0001087c + 0x58) = *(volatile uint *)(DAT_0001087c + 0x58) | 8;  /* FIO2SET P2.3=时钟拉高 */
   }
-  *(uint *)(DAT_0001087c + 0x58) = *(uint *)(DAT_0001087c + 0x58) | 0x10; /* FIO2SET P2.4=复位线释放 */
+  *(volatile uint *)(DAT_0001087c + 0x58) = *(volatile uint *)(DAT_0001087c + 0x58) | 0x10; /* FIO2SET P2.4=复位线释放 */
   if ((exp_resp_hi == response_bits >> 8) && ((response_bits & 0xff) == exp_resp_lo)) {
     *DAT_000108a0 = 0;                                                    /* 应答匹配 → 认证通过 */
     *DAT_0001089c = 0;

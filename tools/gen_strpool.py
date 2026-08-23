@@ -36,23 +36,21 @@ def addrs_from_src():
     for fp in SCAN_FILES:
         src = open(fp, "rb").read().decode("utf-8", errors="replace")
         for line in src.splitlines():
-            m = re.search(r'\bdisp_string\s*\(', line)
-            if not m:
-                continue
-            first = line[m.end():].split(',', 1)[0]   # 第一实参
-            if '/*' in first or '//' in first:
-                continue                              # 实参含注释 → 不可靠，跳过
-            # 剥掉可选 `(int)`（或任何 `( ... )` cast/括号前缀，实证 `(int)` `(uint)`
-            #   `(void*)` 等），再提取 base 与可选 ± off（均十六进制字面量）
-            first = re.sub(r'^\s*\([A-Za-z_][A-Za-z0-9_ *]*\)\s*', '', first)
-            n = re.match(r'0x([0-9a-fA-F]+)\s*(?:([+-])\s*0x([0-9a-fA-F]+))?', first)
-            if not n:
-                continue
-            base = int(n.group(1), 16)
-            if n.group(2) and n.group(3):
-                off = int(n.group(3), 16)
-                base = base + off if n.group(2) == '+' else base - off
-            found.add(base)
+            # 同一行可有多个调用（07_state_machine.c 大量使用此形式）。
+            for m in re.finditer(r'\bdisp_string\s*\(', line):
+                first = line[m.end():].split(',', 1)[0]   # 该调用的第一实参
+                if '/*' in first or '//' in first:
+                    continue
+                # 剥掉可选 cast，再提取 base 与可选 ± off。
+                first = re.sub(r'^\s*\([A-Za-z_][A-Za-z0-9_ *]*\)\s*', '', first)
+                n = re.match(r'0x([0-9a-fA-F]+)\s*(?:([+-])\s*0x([0-9a-fA-F]+))?', first)
+                if not n:
+                    continue
+                base = int(n.group(1), 16)
+                if n.group(2) and n.group(3):
+                    off = int(n.group(3), 16)
+                    base = base + off if n.group(2) == '+' else base - off
+                found.add(base)
     return found
 
 # W7b 修正后的真实单位字符地址（修正前 src 为误译 ASCII 值 0x56/0x41/0x25，扫描不到）
