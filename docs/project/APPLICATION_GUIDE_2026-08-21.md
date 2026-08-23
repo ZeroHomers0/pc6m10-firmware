@@ -2,8 +2,8 @@
 
 > 日期：2026-08-21
 > 目的：把逆向结论翻译成**可操作的实际用途**（使用/调试/诊断/定制/集成），面向设备使用者与技术员。
-> 配套：`WORK_GUIDE_2026-08-21.md`（评估/未完成）、`docs/MENU_PARAMETER_MAPPING.md`（菜单全量映射）、
-> `docs/PROGRESS_2026-08-20.md`（63 寄存器全表/61 组同步全图）、`docs/HARDWARE_VERIFICATION_2026-08-20.md`（硬件印证）
+> 配套：`PROJECT_STATUS.md`、`../analysis/MENU_PARAMETER_MAPPING.md`、
+> `../history/PROGRESS_2026-08-20.md`、`../analysis/HARDWARE_VERIFICATION_2026-08-20.md`
 > 注：本文档基于静态逆向结论，最终以实机验证为准（见 §九）。
 
 ---
@@ -18,7 +18,7 @@
 | 换芯片/修板子，换什么、测什么 | BOM 芯片清单 + 引脚映射速查 | §五 |
 | 想改软起/软停/触发角/保护阈值/PID | 参数地址表（改参数级，不需重烧） | §六 |
 | 想改固件本身（加功能、改协议） | 可编译路线 W2-W8 | §七 |
-| 硬件实测印证（依据 `docs/doc/` BOM 表） | 示波器/Modbus 标定/认证验证清单 | §八 |
+| 硬件实测印证（依据 `evidence/hardware/` BOM 表） | 示波器/Modbus 标定/认证验证清单 | §八 |
 
 ---
 
@@ -51,7 +51,7 @@
 | 62 | 读写 | **起始相位/输出下限**（≤180，输出路径 180-值） | 与基本菜单屏 15 同一参数 |
 | 24 / 25 | 读写 | **读写不对称**：写→组4 增益槽；读→活动增益对 | 见 §2.3 |
 
-> 完整 63 项寄存器（范围校验/别名/只写项）见 `docs/PROGRESS_2026-08-20.md` §4b + 读表 FUN_0000af94 逐条。
+> 完整 63 项寄存器见 `../history/PROGRESS_2026-08-20.md` §4b + 读表 FUN_0000af94。
 
 ### 2.3 读写不对称陷阱（易踩坑）
 
@@ -71,7 +71,7 @@
 
 ## 三、面板菜单 → 参数对照（操作员级）
 
-> 全量证据见 `docs/MENU_PARAMETER_MAPPING.md`。下表为可直接对照的速查。
+> 全量证据见 `../analysis/MENU_PARAMETER_MAPPING.md`。下表为可直接对照的速查。
 
 ### 3.1 基本参数 16 屏（手册只写 12 项，固件另有 4 个隐藏/高级项）
 
@@ -181,7 +181,7 @@
 
 ## 五、硬件维护与更换（BOM 芯片清单）
 
-> 全表见 `docs/HARDWARE_VERIFICATION_2026-08-20.md` §六（来源：`docs/doc/PC6M-10-BOM-更新版.xlsx`，已迁入 doc 原件）。
+> 全表见 `../analysis/HARDWARE_VERIFICATION_2026-08-20.md` §六（来源：`../../evidence/hardware/PC6M-10-BOM-更新版.xlsx`）。
 
 ### 5.1 关键器件（坏了换什么）
 
@@ -252,9 +252,9 @@ W2 数据段导出 → W3 全局符号化 → W6 外设头文件+工程 → W7 �
 
 ---
 
-## 八、硬件实测验证清单（W8，依据 `docs/doc/` BOM 表）
+## 八、硬件实测验证清单（W8，依据 `evidence/hardware/` BOM 表）
 
-> 硬件依据 = `docs/doc/` 下 doc 硬件文档（唯一来源，无独立芯片清单）。芯片级印证已完成（BOM 表 `PC6M-10-BOM-更新版.xlsx` → HARDWARE_VERIFICATION §六）。
+> 硬件依据统一归档于 `evidence/hardware/`。芯片级印证已完成（BOM 表 → HARDWARE_VERIFICATION §六）。
 
 固件结论是静态证据，最终靠实测闭环：
 

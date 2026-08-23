@@ -9,27 +9,34 @@
 
 用法：cd decompiled && python tools/verify_startup.py
 """
+import re
 import struct
+from pathlib import Path
 
 def dword(buf, off):
     return struct.unpack_from('<I', buf, off)[0]
 
 def main():
-    fw = open('firmware/firmware.bin', 'rb').read()
-    img = open('firmware/assets/ram_data_image.bin', 'rb').read()
+    root = Path(__file__).resolve().parents[2]
+    fw = (root / 'firmware/firmware.bin').read_bytes()
+    img = (root / 'firmware/assets/ram_data_image.bin').read_bytes()
+    link_map = (root / 'firmware/firmware.map').read_text(encoding='utf-8', errors='ignore')
 
     print('== firmware.bin 大小:', hex(len(fw)))
     print('== ram_data_image.bin 大小:', len(img), '(=0x%x)' % len(img))
 
-    # 链接符号（与 nm 一致）
-    RAM_IMAGE_LMA  = 0xca4c   # _ram_image_lma_start
-    RAM_IMAGE_VMA  = 0x10000000
-    RAM_IMAGE_LEN  = 0x213c   # 0x1000213c - 0x10000000
+    # 从 linker map 动态解析，避免源码改动后 LMA 漂移造成误报。
+    def section(name):
+        match = re.search(rf'^\.{name}\s+0x([0-9a-fA-F]+)\s+0x([0-9a-fA-F]+)\s+load address 0x([0-9a-fA-F]+)', link_map, re.M)
+        if not match:
+            raise RuntimeError(f'firmware.map 中找不到 .{name}')
+        return tuple(int(value, 16) for value in match.groups())
+
+    RAM_IMAGE_VMA, RAM_IMAGE_LEN, RAM_IMAGE_LMA = section('fw_image')
     RAM_BSS_START  = 0x1000213c
     RAM_BSS_END    = 0x100029c8
-    SIDATA         = 0xeb88   # 本固件 .data LMA
-    SDATA          = 0x2007c000
-    EDATA          = 0x2007cd3c
+    SDATA, DATA_LEN, SIDATA = section('data')
+    EDATA = SDATA + DATA_LEN
 
     ok = True
 

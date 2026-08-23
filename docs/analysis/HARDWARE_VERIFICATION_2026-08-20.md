@@ -1,13 +1,13 @@
 # PC6M-10 硬件印证/修正报告（逆向 ↔ 原理图/BOM/接线表）
 
 > 日期：2026-08-20
-> 用途：用户提供 `doc/` 硬件文档后，对 PROGRESS_2026-08-20.md 全部逆向结论做系统印证与修正。
+> 用途：根据 `../../evidence/hardware/` 原始资料，对历史进度中的逆向结论做系统印证与修正。
 > 数据来源：
-> - `doc/U38_LPC1765FBD100_pinout_wiring_v5_2026-08-04-zz.xlsx`（U38=U38 全引脚接线表，2 个 sheet）
-> - `doc/PC6M-10-BOM-更新版.xlsx`（BOM，70 条目/387 位号）
-> - `doc/PC6M-10ylt.pdf`（原理图）
-> - `doc/PC6M-10控制板综合分析报告_更新版_2026-07-14.docx`（第三方分析报告，含 P4↔面板/引脚确认）
-> - `doc/pc6m-10与CYW-B12864G的连接表.xlsx`、`doc/CYW-B12864G显示操作面板操作手册.docx`
+> - `../../evidence/hardware/U38_LPC1765FBD100_pinout_wiring_v5_2026-08-04-zz.xlsx`
+> - `../../evidence/hardware/PC6M-10-BOM-更新版.xlsx`
+> - `../../evidence/hardware/PC6M-10ylt.pdf`
+> - `../../evidence/hardware/PC6M-10控制板综合分析报告_更新版_2026-07-14.docx`
+> - `../../evidence/hardware/pc6m-10与CYW-B12864G的连接表.xlsx`、`../../evidence/hardware/CYW-B12864G显示操作面板操作手册.docx`
 
 **设备定位（硬件口径）**：PC6M-10 是**三相晶闸管（SCR）功率控制板**——LPC1765 依据三相同步相位、给定、反馈与保护状态**计算移相触发时刻**，六路 GPIO 经 HEF40106→FR120N→KMB419-301S 脉冲变压器隔离，输出六路晶闸管门极触发脉冲（12° 脉宽、双脉冲 60° 间隔）。支持 6 脉波主桥 + 12 脉波扩展（P11）。**不是"变频输出正弦 PWM"**，是**相控整流的触发角控制**。
 
@@ -140,7 +140,7 @@
 
 ## 六、BOM 芯片清单印证（2026-08-20，用户提供 `PC6M-10-BOM-更新版.xlsx`）
 
-> 数据来源：`doc/PC6M-10-BOM-更新版.xlsx`（70 条目：48 贴片 + 22 插件，387 位号）。逐项对照全部逆向结论。
+> 数据来源：`../../evidence/hardware/PC6M-10-BOM-更新版.xlsx`（70 条目：48 贴片 + 22 插件，387 位号）。
 
 ### A. 核心 IC/元件全表与逆向对应
 

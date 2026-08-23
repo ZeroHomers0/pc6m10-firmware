@@ -1,7 +1,8 @@
 # 显示面板菜单树 → 固件参数精确映射
 
 > 生成：2026-08-20（任务 #16，state_machine 反汇编 + 池扫描 + Ghidra xrefs 三重确证）
-> 依据：`doc/_disp_manual.txt`（面板手册）+ `state_machine_disasm.txt`（Ghidra 对齐反汇编）
+> 依据：`../../evidence/hardware/_disp_manual.txt`（面板手册）+
+> `../../evidence/reverse/disassembly/legacy/state_machine_disasm.txt`（Ghidra 对齐反汇编）
 > 状态：**基本/保护/通讯/PID 菜单全部逐项确证**；相位校准、恢复出厂、版本信息已定位
 
 ---

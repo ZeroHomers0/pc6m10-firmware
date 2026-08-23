@@ -2,7 +2,7 @@
 
 > 日期：2026-08-22 ｜ 配合 `W8_HARDWARE_TEST_2026-08-22.md`（硬件接线/预期值/判定）使用
 > 本篇聚焦**软件侧**：W8 需要哪些软件、怎么装、每一步具体怎么操作（示波器挡位、信号发生器设置、串口连接…）
-> 环境搭建见 `SETUP_WINDOWS.md`（先把它搭好：Git+ARM GCC+Python+minimalmodbus）
+> 本文同时包含固定版本环境安装，不再维护独立的重复安装文档。
 
 ---
 
@@ -25,7 +25,7 @@
 安装 Python 依赖：
 
 ```powershell
-python -m pip install --upgrade minimalmodbus pyserial
+py -3.12 -m pip install minimalmodbus pyserial unicorn
 ```
 
 版本确认：
@@ -47,7 +47,21 @@ python -m pip show minimalmodbus pyserial
 > **J-Link** 由 SEGGER 官方安装包安装（**非 pip、非 winget**），装完自带 `J-Link Commander`。
 > HEX/ELF 用 `LoadFile`；BIN 用 `LoadFile 文件.bin 0x00000000`，无需另装 J-Flash。
 
-### 1.2 硬件配套（跟软件配合用的仪器）
+### 1.2 Windows 环境安装与自检
+
+安装表中的 Git、Arm GNU Toolchain 14.2.Rel1、Python 3.12.10 和 SEGGER J-Link，重开终端，
+确认 `firmware/build.sh` 的 `TC=` 指向实际工具链目录，然后在项目根执行：
+
+```bash
+cd firmware && bash build.sh && cd ..
+python test/run_tests.py
+python tools/verification/verify_firmware_equivalence.py
+```
+
+通过标准：构建尺寸 `text 61936 / data 3000 / bss 2188`；`firmware.bin` SHA-256 为
+`F032EFB70BB3942C4999D7C1F2D0DEBB64125F004C4E19405CAB0DD08F5EAA44`；测试 11/11，独立验证器全 PASS。
+
+### 1.3 硬件配套（跟软件配合用的仪器）
 
 | # | 硬件 | 用途 | 阶段 |
 |---|---|---|---|
@@ -63,7 +77,7 @@ python -m pip show minimalmodbus pyserial
 ## A. 阶段 A：J-Link 调试/烧写链路（现在可做）
 
 > 只证明「J-Link ↔ P12 ↔ LPC1765 能连、能读、能写、能跑」，不触碰 SCR/主整机。
-> 硬件接线、P12 引脚定义、预期值与通过标准见 `W8_HARDWARE_TEST_2026-08-22.md` §6 第Ⅰ段。
+> 硬件接线、P12 引脚定义、预期值与通过标准见 `W8_HARDWARE_TEST_2026-08-22.md`。
 
 ### A.1 连接（J-Link Commander 交互 CLI）
 装好 J-Link 驱动后打开 `JLink.exe`（J-Link Commander），逐行输入：
@@ -119,7 +133,7 @@ st              ; 单步     mem / regs  读内存/寄存器
    - **图形界面**：右键"此电脑 → 属性 → 设备管理器"→ 展开"端口 (COM 和 LPT)"，应出现 `USB-SERIAL CH340 (COMx)` 或 `USB Serial Port (COMx)`。**记下这个 COMx。**
    - **命令行**：运行
      ```bash
-     python tools/w8_serial_detect.py
+     python tools/w8/w8_serial_detect.py
      ```
      会自动列出所有 COM 口及描述，你就能认出哪个是 RS485。
 3. 若"其他设备"里有黄色感叹号 → **没装驱动**，去转换器芯片官网装（常见 CH340：`ch340.com`；FTDI：`ftdichip.com`）。
@@ -130,7 +144,7 @@ st              ; 单步     mem / regs  读内存/寄存器
 - 可选共地：板是 ADM2483 隔离模块，可先共地试，不行再全隔离。
 
 ### 2.3 软测：确认能读到
-用 `tools/w8_modbus_test.py` 的"枚举"模式（或直接跑），能读到 reg 就 OK。
+用 `tools/w8/w8_modbus_test.py` 的“枚举”模式（或直接跑），能读到 reg 就 OK。
 
 ---
 
@@ -139,8 +153,8 @@ st              ; 单步     mem / regs  读内存/寄存器
 ### 3.1 跑脚本
 ```bash
 cd /d/code/LPC1765FBD100/decompiled
-python tools/w8_modbus_test.py              # 默认 COM5 / 9600 / addr=1
-python tools/w8_modbus_test.py --port COM8 --baud 9600 --addr 1   # 自定义
+python tools/w8/w8_modbus_test.py              # 默认 COM5 / 9600 / addr=1
+python tools/w8/w8_modbus_test.py --port COM8 --baud 9600 --addr 1   # 自定义
 ```
 脚本会依次：
 1. 读 reg 40~45（Ug/IA/IB/IC/IF/Uf），未接主回路应≈0 或面板值；
@@ -197,7 +211,7 @@ python tools/w8_modbus_test.py --port COM8 --baud 9600 --addr 1   # 自定义
 - **方式1 手动**：用示波器 CURSORS 读 Δt，对照 §4.2 换算，看是否 12°/60°/3.333ms（写进 W8 回填模板）。
 - **方式2 交给脚本**：把示波器**导出的 CSV**（两列：时间、电压，如 CH1.CSV）拷到电脑，运行：
   ```bash
-  python tools/w8_analyze_wave.py 波形.csv --v-thresh 1.5
+  python tools/w8/w8_analyze_wave.py 波形.csv --v-thresh 1.5
   ```
   脚本自动统计：找到多少个脉冲、每个脉宽、主周期、相邻脉冲间隔，换算成电角度的 60°/12°，并打印判定。**可把输出贴回给我进一步分析。**
 
@@ -229,14 +243,14 @@ python tools/w8_modbus_test.py --port COM8 --baud 9600 --addr 1   # 自定义
 | 标定数据 | Modbus 原始值 + 万用表实测值 | 算比例系数，对照固件标定除数 reg51-55 |
 | 任何 FAIL | 现象 + 读数 | 结合反汇编逻辑反推原因 |
 
-> **回填模板**见 `W8_HARDWARE_TEST_2026-08-22.md` §6。复制到记事本边测边填，最后整段贴给我。
+> **回填模板**见 `W8_HARDWARE_TEST_2026-08-22.md`。复制到记事本边测边填，最后整段贴给我。
 
 ---
 
 ## 8. 一键准备清单（开测前勾一遍）
 
-- [ ] 环境搭建完成（`SETUP_WINDOWS.md`，`bash build.sh` 出 OK）
-- [ ] `python -m pip install minimalmodbus pyserial` 成功
+- [ ] §1.2 环境自检完成，`bash build.sh` 出 OK
+- [ ] `py -3.12 -m pip install minimalmodbus pyserial unicorn` 成功
 - [ ] USB-RS485 已识别成 COM 口（`w8_serial_detect.py` 能看到）
 - [ ] 示波器探头比例选对、挡位按 §4.1
 - [ ] 信号发生器已设 50Hz 0-3.3V 方波
@@ -249,6 +263,6 @@ python tools/w8_modbus_test.py --port COM8 --baud 9600 --addr 1   # 自定义
 
 | 脚本 | 命令 | 依赖 |
 |---|---|---|
-| `tools/w8_serial_detect.py` | `python tools/w8_serial_detect.py` | pyserial |
-| `tools/w8_modbus_test.py` | `python tools/w8_modbus_test.py --port COMx --addr 1` | minimalmodbus |
-| `tools/w8_analyze_wave.py` | `python tools/w8_analyze_wave.py 波形.csv --v-thresh 1.5` | 标准库（csv） |
+| `tools/w8/w8_serial_detect.py` | `python tools/w8/w8_serial_detect.py` | pyserial |
+| `tools/w8/w8_modbus_test.py` | `python tools/w8/w8_modbus_test.py --port COMx --addr 1` | minimalmodbus |
+| `tools/w8/w8_analyze_wave.py` | `python tools/w8/w8_analyze_wave.py 波形.csv --v-thresh 1.5` | 标准库（csv） |
