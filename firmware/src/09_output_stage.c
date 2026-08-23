@@ -61,54 +61,54 @@ void pin_config(void)
   volatile uint8_t *fio;
 
   fio = PTR_DAT_0000e988;
-  *(uint *)PTR_DAT_0000e988 = *(uint *)PTR_DAT_0000e988 | 0x100000;   /* FIO0DIR P0.20 */
-  *(uint *)fio = *(uint *)fio | 0x200000;                       /* P0.21 */
-  *(uint *)fio = *(uint *)fio | 0x400000;                       /* P0.22 */
-  *(uint *)(fio + 0x1c) = *(uint *)(fio + 0x1c) | 0x100000;     /* FIO0CLR P0.20 */
-  *(uint *)(fio + 0x1c) = *(uint *)(fio + 0x1c) | 0x200000;     /* P0.21 */
-  *(uint *)(fio + 0x1c) = *(uint *)(fio + 0x1c) | 0x400000;     /* P0.22 */
-  *(uint *)fio = *(uint *)fio | 0x20000;                        /* P0.17 触发组 */
-  *(uint *)fio = *(uint *)fio | 0x40000;                        /* P0.18 */
-  *(uint *)fio = *(uint *)fio | 0x80000;                        /* P0.19 */
-  *(uint *)(fio + 0x40) = *(uint *)(fio + 0x40) | 0x200;        /* FIO2DIR P2.9 */
-  *(uint *)fio = *(uint *)fio | 0x10000;                        /* P0.16 */
-  *(uint *)fio = *(uint *)fio | 0x8000;                         /* P0.15 */
-  *(uint *)(fio + 0x40) = *(uint *)(fio + 0x40) | 0x100;        /* P2.8 */
-  *(uint *)(fio + 0x40) = *(uint *)(fio + 0x40) | 0x80;         /* P2.7 */
-  *(uint *)(fio + 0x40) = *(uint *)(fio + 0x40) | 0x40;         /* P2.6 */
-  *(uint *)(fio + 0x40) = *(uint *)(fio + 0x40) | 0x20;         /* P2.5 */
-  *(uint *)fio = *(uint *)fio | 0x100;                          /* P0.8 */
-  *(uint *)fio = *(uint *)fio | 0x80;                           /* P0.7 */
-  *(uint *)(fio + 0x18) = *(uint *)(fio + 0x18) | 0x20000;      /* FIO0SET P0.17 */
-  *(uint *)(fio + 0x18) = *(uint *)(fio + 0x18) | 0x40000;      /* P0.18 */
-  *(uint *)(fio + 0x18) = *(uint *)(fio + 0x18) | 0x80000;      /* P0.19 */
-  *(uint *)(fio + 0x58) = *(uint *)(fio + 0x58) | 0x200;        /* FIO2SET P2.9 */
-  *(uint *)(fio + 0x18) = *(uint *)(fio + 0x18) | 0x10000;      /* FIO0SET P0.16 */
-  *(uint *)(fio + 0x18) = *(uint *)(fio + 0x18) | 0x8000;       /* P0.15 */
-  *(uint *)(fio + 0x58) = *(uint *)(fio + 0x58) | 0x100;        /* P2.8 */
-  *(uint *)(fio + 0x58) = *(uint *)(fio + 0x58) | 0x80;         /* P2.7 */
-  *(uint *)(fio + 0x58) = *(uint *)(fio + 0x58) | 0x40;         /* P2.6 */
-  *(uint *)(fio + 0x58) = *(uint *)(fio + 0x58) | 0x20;         /* P2.5 */
-  *(uint *)(fio + 0x18) = *(uint *)(fio + 0x18) | 0x100;        /* FIO0SET P0.8 */
-  *(uint *)(fio + 0x18) = *(uint *)(fio + 0x18) | 0x80;         /* P0.7 */
-  *(uint *)(fio + 0x20) = *(uint *)(fio + 0x20) | 0x100000;     /* FIO1DIR P1.20 */
-  *(uint *)(fio + 0x20) = *(uint *)(fio + 0x20) | 0x200000;     /* P1.21 */
-  *(uint *)(fio + 0x20) = *(uint *)(fio + 0x20) | 0x400000;     /* P1.22 */
-  *(uint *)(fio + 0x20) = *(uint *)(fio + 0x20) | 0x800000;     /* P1.23 */
-  *(uint *)(fio + 0x3c) = *(uint *)(fio + 0x3c) | 0x100000;     /* FIO1CLR P1.20 */
-  *(uint *)(fio + 0x3c) = *(uint *)(fio + 0x3c) | 0x200000;     /* P1.21 */
-  *(uint *)(fio + 0x3c) = *(uint *)(fio + 0x3c) | 0x400000;     /* P1.22 */
-  *(uint *)(fio + 0x3c) = *(uint *)(fio + 0x3c) | 0x800000;     /* P1.23 */
-  *(uint *)(fio + 0x80) = *DAT_0000e98c | 0x10000000;              /* FIO4DIR P4.28 */
-  *(uint *)(fio + 0x80) = *(uint *)(fio + 0x80) | 0x20000000;   /* P4.29 */
-  *(uint *)fio = *(uint *)fio | 0x10;                           /* P0.4 */
-  *(uint *)fio = *(uint *)fio | 0x20;                           /* P0.5 */
-  *(uint *)(fio + 0x40) = *(uint *)(fio + 0x40) | 1;            /* FIO2DIR P2.0 */
-  *(uint *)(fio + 0x9c) = *(uint *)(fio + 0x9c) | 0x10000000;   /* FIO4CLR P4.28 */
-  *(uint *)(fio + 0x9c) = *(uint *)(fio + 0x9c) | 0x20000000;   /* P4.29 */
-  *(uint *)(fio + 0x1c) = *(uint *)(fio + 0x1c) | 0x10;         /* FIO0CLR P0.4 */
-  *(uint *)(fio + 0x1c) = *(uint *)(fio + 0x1c) | 0x20;         /* P0.5 */
-  *(uint *)(fio + 0x5c) = *(uint *)(fio + 0x5c) | 1;            /* FIO2CLR P2.0 */
+  *(volatile uint *)PTR_DAT_0000e988 = *(volatile uint *)PTR_DAT_0000e988 | 0x100000;   /* FIO0DIR P0.20 */
+  *(volatile uint *)fio = *(volatile uint *)fio | 0x200000;                       /* P0.21 */
+  *(volatile uint *)fio = *(volatile uint *)fio | 0x400000;                       /* P0.22 */
+  *(volatile uint *)(fio + 0x1c) = *(volatile uint *)(fio + 0x1c) | 0x100000;     /* FIO0CLR P0.20 */
+  *(volatile uint *)(fio + 0x1c) = *(volatile uint *)(fio + 0x1c) | 0x200000;     /* P0.21 */
+  *(volatile uint *)(fio + 0x1c) = *(volatile uint *)(fio + 0x1c) | 0x400000;     /* P0.22 */
+  *(volatile uint *)fio = *(volatile uint *)fio | 0x20000;                        /* P0.17 触发组 */
+  *(volatile uint *)fio = *(volatile uint *)fio | 0x40000;                        /* P0.18 */
+  *(volatile uint *)fio = *(volatile uint *)fio | 0x80000;                        /* P0.19 */
+  *(volatile uint *)(fio + 0x40) = *(volatile uint *)(fio + 0x40) | 0x200;        /* FIO2DIR P2.9 */
+  *(volatile uint *)fio = *(volatile uint *)fio | 0x10000;                        /* P0.16 */
+  *(volatile uint *)fio = *(volatile uint *)fio | 0x8000;                         /* P0.15 */
+  *(volatile uint *)(fio + 0x40) = *(volatile uint *)(fio + 0x40) | 0x100;        /* P2.8 */
+  *(volatile uint *)(fio + 0x40) = *(volatile uint *)(fio + 0x40) | 0x80;         /* P2.7 */
+  *(volatile uint *)(fio + 0x40) = *(volatile uint *)(fio + 0x40) | 0x40;         /* P2.6 */
+  *(volatile uint *)(fio + 0x40) = *(volatile uint *)(fio + 0x40) | 0x20;         /* P2.5 */
+  *(volatile uint *)fio = *(volatile uint *)fio | 0x100;                          /* P0.8 */
+  *(volatile uint *)fio = *(volatile uint *)fio | 0x80;                           /* P0.7 */
+  *(volatile uint *)(fio + 0x18) = *(volatile uint *)(fio + 0x18) | 0x20000;      /* FIO0SET P0.17 */
+  *(volatile uint *)(fio + 0x18) = *(volatile uint *)(fio + 0x18) | 0x40000;      /* P0.18 */
+  *(volatile uint *)(fio + 0x18) = *(volatile uint *)(fio + 0x18) | 0x80000;      /* P0.19 */
+  *(volatile uint *)(fio + 0x58) = *(volatile uint *)(fio + 0x58) | 0x200;        /* FIO2SET P2.9 */
+  *(volatile uint *)(fio + 0x18) = *(volatile uint *)(fio + 0x18) | 0x10000;      /* FIO0SET P0.16 */
+  *(volatile uint *)(fio + 0x18) = *(volatile uint *)(fio + 0x18) | 0x8000;       /* P0.15 */
+  *(volatile uint *)(fio + 0x58) = *(volatile uint *)(fio + 0x58) | 0x100;        /* P2.8 */
+  *(volatile uint *)(fio + 0x58) = *(volatile uint *)(fio + 0x58) | 0x80;         /* P2.7 */
+  *(volatile uint *)(fio + 0x58) = *(volatile uint *)(fio + 0x58) | 0x40;         /* P2.6 */
+  *(volatile uint *)(fio + 0x58) = *(volatile uint *)(fio + 0x58) | 0x20;         /* P2.5 */
+  *(volatile uint *)(fio + 0x18) = *(volatile uint *)(fio + 0x18) | 0x100;        /* FIO0SET P0.8 */
+  *(volatile uint *)(fio + 0x18) = *(volatile uint *)(fio + 0x18) | 0x80;         /* P0.7 */
+  *(volatile uint *)(fio + 0x20) = *(volatile uint *)(fio + 0x20) | 0x100000;     /* FIO1DIR P1.20 */
+  *(volatile uint *)(fio + 0x20) = *(volatile uint *)(fio + 0x20) | 0x200000;     /* P1.21 */
+  *(volatile uint *)(fio + 0x20) = *(volatile uint *)(fio + 0x20) | 0x400000;     /* P1.22 */
+  *(volatile uint *)(fio + 0x20) = *(volatile uint *)(fio + 0x20) | 0x800000;     /* P1.23 */
+  *(volatile uint *)(fio + 0x3c) = *(volatile uint *)(fio + 0x3c) | 0x100000;     /* FIO1CLR P1.20 */
+  *(volatile uint *)(fio + 0x3c) = *(volatile uint *)(fio + 0x3c) | 0x200000;     /* P1.21 */
+  *(volatile uint *)(fio + 0x3c) = *(volatile uint *)(fio + 0x3c) | 0x400000;     /* P1.22 */
+  *(volatile uint *)(fio + 0x3c) = *(volatile uint *)(fio + 0x3c) | 0x800000;     /* P1.23 */
+  *(volatile uint *)(fio + 0x80) = *DAT_0000e98c | 0x10000000;              /* FIO4DIR P4.28 */
+  *(volatile uint *)(fio + 0x80) = *(volatile uint *)(fio + 0x80) | 0x20000000;   /* P4.29 */
+  *(volatile uint *)fio = *(volatile uint *)fio | 0x10;                           /* P0.4 */
+  *(volatile uint *)fio = *(volatile uint *)fio | 0x20;                           /* P0.5 */
+  *(volatile uint *)(fio + 0x40) = *(volatile uint *)(fio + 0x40) | 1;            /* FIO2DIR P2.0 */
+  *(volatile uint *)(fio + 0x9c) = *(volatile uint *)(fio + 0x9c) | 0x10000000;   /* FIO4CLR P4.28 */
+  *(volatile uint *)(fio + 0x9c) = *(volatile uint *)(fio + 0x9c) | 0x20000000;   /* P4.29 */
+  *(volatile uint *)(fio + 0x1c) = *(volatile uint *)(fio + 0x1c) | 0x10;         /* FIO0CLR P0.4 */
+  *(volatile uint *)(fio + 0x1c) = *(volatile uint *)(fio + 0x1c) | 0x20;         /* P0.5 */
+  *(volatile uint *)(fio + 0x5c) = *(volatile uint *)(fio + 0x5c) | 1;            /* FIO2CLR P2.0 */
   return;
 }
 
@@ -118,18 +118,18 @@ void gpio_outputs_set(void)
   volatile uint8_t *fio;
 
   fio = PTR_DAT_0000e988;
-  *(uint *)(PTR_DAT_0000e988 + 0x18) = *(uint *)(PTR_DAT_0000e988 + 0x18) | 0x20000;
-  *(uint *)(fio + 0x18) = *(uint *)(fio + 0x18) | 0x40000;
-  *(uint *)(fio + 0x18) = *(uint *)(fio + 0x18) | 0x80000;
-  *(uint *)(fio + 0x58) = *(uint *)(fio + 0x58) | 0x200;
-  *(uint *)(fio + 0x18) = *(uint *)(fio + 0x18) | 0x10000;
-  *(uint *)(fio + 0x18) = *(uint *)(fio + 0x18) | 0x8000;
-  *(uint *)(fio + 0x58) = *(uint *)(fio + 0x58) | 0x100;
-  *(uint *)(fio + 0x58) = *(uint *)(fio + 0x58) | 0x80;
-  *(uint *)(fio + 0x58) = *(uint *)(fio + 0x58) | 0x40;
-  *(uint *)(fio + 0x58) = *(uint *)(fio + 0x58) | 0x20;
-  *(uint *)(fio + 0x18) = *(uint *)(fio + 0x18) | 0x100;
-  *(uint *)(fio + 0x18) = *(uint *)(fio + 0x18) | 0x80;
+  *(volatile uint *)(PTR_DAT_0000e988 + 0x18) = *(volatile uint *)(PTR_DAT_0000e988 + 0x18) | 0x20000;
+  *(volatile uint *)(fio + 0x18) = *(volatile uint *)(fio + 0x18) | 0x40000;
+  *(volatile uint *)(fio + 0x18) = *(volatile uint *)(fio + 0x18) | 0x80000;
+  *(volatile uint *)(fio + 0x58) = *(volatile uint *)(fio + 0x58) | 0x200;
+  *(volatile uint *)(fio + 0x18) = *(volatile uint *)(fio + 0x18) | 0x10000;
+  *(volatile uint *)(fio + 0x18) = *(volatile uint *)(fio + 0x18) | 0x8000;
+  *(volatile uint *)(fio + 0x58) = *(volatile uint *)(fio + 0x58) | 0x100;
+  *(volatile uint *)(fio + 0x58) = *(volatile uint *)(fio + 0x58) | 0x80;
+  *(volatile uint *)(fio + 0x58) = *(volatile uint *)(fio + 0x58) | 0x40;
+  *(volatile uint *)(fio + 0x58) = *(volatile uint *)(fio + 0x58) | 0x20;
+  *(volatile uint *)(fio + 0x18) = *(volatile uint *)(fio + 0x18) | 0x100;
+  *(volatile uint *)(fio + 0x18) = *(volatile uint *)(fio + 0x18) | 0x80;
   return;
 }
 
@@ -155,7 +155,7 @@ void timer2_init(void)
 {
   volatile uint32_t *timer2;
 
-  *(uint *)(DAT_0000e998 + 0xc4) = *g_pconp | 0x400000;   /* PCONP bit22 TMR2 */
+  *(volatile uint *)(DAT_0000e998 + 0xc4) = *g_pconp | 0x400000;   /* PCONP bit22 TMR2 */
   timer2 = DAT_0000e99c;                              /* TIMER2 0x40090000 */
   DAT_0000e99c[1] = 2;
   timer2[3] = 0x18;
@@ -172,14 +172,14 @@ void eint1_init(void)
 {
   int base;
 
-  *(uint *)(DAT_0000e998 + 0x140) = *DAT_0000e9a0 | 2;      /* EXTINT 清 EINT1 */
+  *(volatile uint *)(DAT_0000e998 + 0x140) = *DAT_0000e9a0 | 2;      /* EXTINT 清 EINT1 */
   base = DAT_0000e9a4;                                     /* PINSEL 0x4002C000 */
-  *(uint *)(DAT_0000e9a4 + 0x10) = *(uint *)(DAT_0000e9a4 + 0x10) | 0x400000;  /* PINSEL4 P2.11=EINT1（bit22=1、bit23=0） */
-  *(uint *)(base + 0x10) = *(uint *)(base + 0x10) & 0xff7fffff;
+  *(volatile uint *)(DAT_0000e9a4 + 0x10) = *(volatile uint *)(DAT_0000e9a4 + 0x10) | 0x400000;  /* PINSEL4 P2.11=EINT1（bit22=1、bit23=0） */
+  *(volatile uint *)(base + 0x10) = *(volatile uint *)(base + 0x10) & 0xff7fffff;
   base = DAT_0000e998;                                     /* SCB 0x400FC000 */
-  *(uint *)(DAT_0000e998 + 0x148) = *(uint *)(DAT_0000e998 + 0x148) | 2;      /* EXTMODE 边沿 */
-  *(uint *)(base + 0x14c) = *(uint *)(base + 0x14c) & 0xfffffffd;          /* EXTPOLAR 下降沿 */
-  *(uint *)(base + 0x140) = *(uint *)(base + 0x140) | 2;  /* EXTINT 清 */
+  *(volatile uint *)(DAT_0000e998 + 0x148) = *(volatile uint *)(DAT_0000e998 + 0x148) | 2;      /* EXTMODE 边沿 */
+  *(volatile uint *)(base + 0x14c) = *(volatile uint *)(base + 0x14c) & 0xfffffffd;          /* EXTPOLAR 下降沿 */
+  *(volatile uint *)(base + 0x140) = *(volatile uint *)(base + 0x140) | 2;  /* EXTINT 清 */
   nvic_enable_irq(0x13);                                    /* NVIC EINT1_IRQ=19 */
   return;
 }
@@ -191,11 +191,11 @@ void eint2_init(void)
   int base;
 
   base = DAT_0000e9a4;
-  *(uint *)(DAT_0000e9a4 + 0x10) = *(uint *)(DAT_0000e9a4 + 0x10) | 0x1000000; /* PINSEL4 P2.12=EINT2（bit24=1、bit25=0） */
-  *(uint *)(base + 0x10) = *(uint *)(base + 0x10) & 0xfdffffff;
+  *(volatile uint *)(DAT_0000e9a4 + 0x10) = *(volatile uint *)(DAT_0000e9a4 + 0x10) | 0x1000000; /* PINSEL4 P2.12=EINT2（bit24=1、bit25=0） */
+  *(volatile uint *)(base + 0x10) = *(volatile uint *)(base + 0x10) & 0xfdffffff;
   base = DAT_0000e998;
-  *(uint *)(DAT_0000e998 + 0x148) = *DAT_0000e9a8 | 4;      /* EXTMODE 边沿 */
-  *(uint *)(base + 0x14c) = *(uint *)(base + 0x14c) & 0xfffffffb;          /* EXTPOLAR 下降沿 */
+  *(volatile uint *)(DAT_0000e998 + 0x148) = *DAT_0000e9a8 | 4;      /* EXTMODE 边沿 */
+  *(volatile uint *)(base + 0x14c) = *(volatile uint *)(base + 0x14c) & 0xfffffffb;          /* EXTPOLAR 下降沿 */
   nvic_enable_irq(0x14);                                    /* NVIC EINT2_IRQ=20 */
   return;
 }
@@ -207,11 +207,11 @@ void eint3_init(void)
   int base;
 
   base = DAT_0000e9a4;
-  *(uint *)(DAT_0000e9a4 + 0x10) = *(uint *)(DAT_0000e9a4 + 0x10) | 0x4000000; /* PINSEL4 P2.13=EINT3（bit26=1、bit27=0） */
-  *(uint *)(base + 0x10) = *(uint *)(base + 0x10) & 0xf7ffffff;
+  *(volatile uint *)(DAT_0000e9a4 + 0x10) = *(volatile uint *)(DAT_0000e9a4 + 0x10) | 0x4000000; /* PINSEL4 P2.13=EINT3（bit26=1、bit27=0） */
+  *(volatile uint *)(base + 0x10) = *(volatile uint *)(base + 0x10) & 0xf7ffffff;
   base = DAT_0000e998;
-  *(uint *)(DAT_0000e998 + 0x148) = *DAT_0000e9a8 | 8;      /* EXTMODE 边沿 */
-  *(uint *)(base + 0x14c) = *(uint *)(base + 0x14c) & 0xfffffff7;          /* EXTPOLAR 下降沿 */
+  *(volatile uint *)(DAT_0000e998 + 0x148) = *DAT_0000e9a8 | 8;      /* EXTMODE 边沿 */
+  *(volatile uint *)(base + 0x14c) = *(volatile uint *)(base + 0x14c) & 0xfffffff7;          /* EXTPOLAR 下降沿 */
   nvic_enable_irq(0x15);                                    /* NVIC EINT3_IRQ=21 */
   return;
 }
@@ -221,10 +221,10 @@ void eint3_init(void)
 void fio1_pin22_ctrl(int level)
 {
   if (level < 1) {
-    *(uint *)(PTR_DAT_0000e988 + 0x3c) = *(uint *)(PTR_DAT_0000e988 + 0x3c) | 0x400000;
+    *(volatile uint *)(PTR_DAT_0000e988 + 0x3c) = *(volatile uint *)(PTR_DAT_0000e988 + 0x3c) | 0x400000;
   }
   else {
-    *(uint *)(PTR_DAT_0000e988 + 0x38) = *(uint *)(PTR_DAT_0000e988 + 0x38) | 0x400000;
+    *(volatile uint *)(PTR_DAT_0000e988 + 0x38) = *(volatile uint *)(PTR_DAT_0000e988 + 0x38) | 0x400000;
   }
   return;
 }
@@ -234,10 +234,10 @@ void fio1_pin22_ctrl(int level)
 void fio0_pin22_ctrl(int level)
 {
   if (level < 1) {
-    *(uint *)(PTR_DAT_0000e988 + 0x1c) = *(uint *)(PTR_DAT_0000e988 + 0x1c) | 0x400000;
+    *(volatile uint *)(PTR_DAT_0000e988 + 0x1c) = *(volatile uint *)(PTR_DAT_0000e988 + 0x1c) | 0x400000;
   }
   else {
-    *(uint *)(PTR_DAT_0000e988 + 0x18) = *(uint *)(PTR_DAT_0000e988 + 0x18) | 0x400000;
+    *(volatile uint *)(PTR_DAT_0000e988 + 0x18) = *(volatile uint *)(PTR_DAT_0000e988 + 0x18) | 0x400000;
   }
   return;
 }
@@ -679,97 +679,97 @@ void output_stage(void)
         }
         if (((uint)(*DAT_0000f764 * ANGLE_SCALE) < *DAT_0000f760 ||
              *DAT_0000f764 * ANGLE_SCALE - *DAT_0000f760 == 0) && (*DAT_0000f768 == '\0')) {
-          *(int *)PTR_out_setpoint_0000fb98 = *DAT_0000fb94 * ANGLE_SCALE;
+          *(volatile int *)PTR_out_setpoint_0000fb98 = *DAT_0000fb94 * ANGLE_SCALE;
         }
-        if ((*(uint *)PTR_out_setpoint_0000fb98 <= (uint)(*DAT_0000fb9c * ANGLE_SCALE)) &&
+        if ((*(volatile uint *)PTR_out_setpoint_0000fb98 <= (uint)(*DAT_0000fb9c * ANGLE_SCALE)) &&
            (*DAT_0000fba0 == '\0')) {
-          *(int *)PTR_out_setpoint_0000fb98 = *DAT_0000fb9c * ANGLE_SCALE;
+          *(volatile int *)PTR_out_setpoint_0000fb98 = *DAT_0000fb9c * ANGLE_SCALE;
         }
       }
     }
-    if (((*g_cfg_word == '\0') && (*(int *)PTR_input_locked_0000fba8 != 0)) &&
+    if (((*g_cfg_word == '\0') && (*(volatile int *)PTR_input_locked_0000fba8 != 0)) &&
        (*DAT_0000fbac == '\x01')) {
       /* —— 运行联锁解除：全部输出复位 —— */
       gpio_outputs_set();
-      *(undefined4 *)PTR_flag_68_0000fbb0 = 0;
-      *(undefined4 *)PTR_flag_6c_0000fbb4 = 0;
-      *(undefined4 *)PTR_flag_70_0000fbb8 = 0;
-      *(undefined4 *)PTR_out_setpoint_0000fb98 = 0;
+      *(volatile undefined4 *)PTR_flag_68_0000fbb0 = 0;
+      *(volatile undefined4 *)PTR_flag_6c_0000fbb4 = 0;
+      *(volatile undefined4 *)PTR_flag_70_0000fbb8 = 0;
+      *(volatile undefined4 *)PTR_out_setpoint_0000fb98 = 0;
       fio0_pin22_ctrl(0);
       fio1_pin22_ctrl(0);
-      *(undefined4 *)PTR_input_locked_0000fba8 = 0;
+      *(volatile undefined4 *)PTR_input_locked_0000fba8 = 0;
       *PTR_flag_3c_0000fbbc = 0;
     }
-    if (((*g_cfg_word == '\0') && (*(int *)PTR_input_locked_0000fba8 != 0)) ||
+    if (((*g_cfg_word == '\0') && (*(volatile int *)PTR_input_locked_0000fba8 != 0)) ||
        (*DAT_0000fbc0 < 10)) {
       /* —— 停机斜坡（逐拍降频）—— */
-      if (*(int *)PTR_input_locked_0000fba8 == 5) {
-        *(undefined4 *)PTR_input_locked_0000fba8 = 4;
-        *(uint *)PTR_flag_6c_0000fbb4 = *(uint *)PTR_out_setpoint_0000fb98 / 100;
+      if (*(volatile int *)PTR_input_locked_0000fba8 == 5) {
+        *(volatile undefined4 *)PTR_input_locked_0000fba8 = 4;
+        *(volatile uint *)PTR_flag_6c_0000fbb4 = *(volatile uint *)PTR_out_setpoint_0000fb98 / 100;
       }
       ramp_cnt = PTR_flag_68_0000fbb0;
       if (*DAT_0000fbc4 == 0) {
         gpio_outputs_set();
-        *(undefined4 *)PTR_flag_68_0000fbb0 = 0;
-        *(undefined4 *)PTR_flag_6c_0000fbb4 = 0;
-        *(undefined4 *)PTR_flag_70_0000fbb8 = 0;
-        *(undefined4 *)PTR_out_setpoint_0000fb98 = 0;
+        *(volatile undefined4 *)PTR_flag_68_0000fbb0 = 0;
+        *(volatile undefined4 *)PTR_flag_6c_0000fbb4 = 0;
+        *(volatile undefined4 *)PTR_flag_70_0000fbb8 = 0;
+        *(volatile undefined4 *)PTR_out_setpoint_0000fb98 = 0;
         if (*g_cfg_word == '\0') {
           fio0_pin22_ctrl(0);
           fio1_pin22_ctrl(0);
         }
-        *(undefined4 *)PTR_input_locked_0000fba8 = 0;
+        *(volatile undefined4 *)PTR_input_locked_0000fba8 = 0;
         *PTR_flag_3c_0000fbbc = 0;
       }
       else {
-        *(int *)PTR_flag_68_0000fbb0 =
+        *(volatile int *)PTR_flag_68_0000fbb0 =
              (int)(((ulonglong)(TRIG_PERIOD - (uint)(*DAT_0000fb9c * ANGLE_SCALE) / 100) / 0x32) /
                   (ulonglong)*DAT_0000fbc4);
-        if (*(uint *)ramp_cnt < *(uint *)PTR_flag_6c_0000fbb4) {
-          *(undefined4 *)PTR_input_locked_0000fba8 = 4;
+        if (*(volatile uint *)ramp_cnt < *(volatile uint *)PTR_flag_6c_0000fbb4) {
+          *(volatile undefined4 *)PTR_input_locked_0000fba8 = 4;
           if (*DAT_0000fbc8 == '\0') {
             *PTR_flag_3c_0000fbbc = 1;
           }
-          *(int *)PTR_flag_6c_0000fbb4 = *(int *)PTR_flag_6c_0000fbb4 - *(int *)PTR_flag_68_0000fbb0;
+          *(volatile int *)PTR_flag_6c_0000fbb4 = *(volatile int *)PTR_flag_6c_0000fbb4 - *(volatile int *)PTR_flag_68_0000fbb0;
           if (*DAT_0000fbc8 == '\x01') {
-            *(uint *)PTR_flag_70_0000fbb8 =
-                 (uint)(*DAT_0000fb9c * ANGLE_SCALE) / 100 + *(int *)PTR_flag_6c_0000fbb4;
+            *(volatile uint *)PTR_flag_70_0000fbb8 =
+                 (uint)(*DAT_0000fb9c * ANGLE_SCALE) / 100 + *(volatile int *)PTR_flag_6c_0000fbb4;
           }
           if (*DAT_0000fbc8 == '\0') {
-            *(undefined4 *)PTR_flag_70_0000fbb8 = *(undefined4 *)PTR_flag_6c_0000fbb4;
+            *(volatile undefined4 *)PTR_flag_70_0000fbb8 = *(volatile undefined4 *)PTR_flag_6c_0000fbb4;
           }
-          *(int *)PTR_out_setpoint_0000fb98 = *(int *)PTR_flag_70_0000fbb8 * 100;
-          if (((uint)(*DAT_0000fb94 * ANGLE_SCALE) < *(uint *)PTR_out_setpoint_0000fb98 ||
-               *DAT_0000fb94 * ANGLE_SCALE - *(uint *)PTR_out_setpoint_0000fb98 == 0) &&
+          *(volatile int *)PTR_out_setpoint_0000fb98 = *(volatile int *)PTR_flag_70_0000fbb8 * 100;
+          if (((uint)(*DAT_0000fb94 * ANGLE_SCALE) < *(volatile uint *)PTR_out_setpoint_0000fb98 ||
+               *DAT_0000fb94 * ANGLE_SCALE - *(volatile uint *)PTR_out_setpoint_0000fb98 == 0) &&
              (*DAT_0000fba0 == '\0')) {
-            *(int *)PTR_out_setpoint_0000fb98 = *DAT_0000fb94 * ANGLE_SCALE;
+            *(volatile int *)PTR_out_setpoint_0000fb98 = *DAT_0000fb94 * ANGLE_SCALE;
           }
-          if ((*(uint *)PTR_out_setpoint_0000fb98 <= (uint)(*DAT_0000fb9c * ANGLE_SCALE)) &&
+          if ((*(volatile uint *)PTR_out_setpoint_0000fb98 <= (uint)(*DAT_0000fb9c * ANGLE_SCALE)) &&
              (*DAT_0000fba0 == '\0')) {
             gpio_outputs_set();
-            *(undefined4 *)PTR_flag_68_0000fbb0 = 0;
-            *(undefined4 *)PTR_flag_6c_0000fbb4 = 0;
-            *(undefined4 *)PTR_flag_70_0000fbb8 = 0;
-            *(undefined4 *)PTR_out_setpoint_0000fb98 = 0;
+            *(volatile undefined4 *)PTR_flag_68_0000fbb0 = 0;
+            *(volatile undefined4 *)PTR_flag_6c_0000fbb4 = 0;
+            *(volatile undefined4 *)PTR_flag_70_0000fbb8 = 0;
+            *(volatile undefined4 *)PTR_out_setpoint_0000fb98 = 0;
             if (*g_cfg_word == '\0') {
               fio0_pin22_ctrl(0);
               fio1_pin22_ctrl(0);
             }
-            *(undefined4 *)PTR_input_locked_0000fba8 = 0;
+            *(volatile undefined4 *)PTR_input_locked_0000fba8 = 0;
             *PTR_flag_3c_0000fbbc = 0;
           }
         }
         else {
           gpio_outputs_set();
-          *(undefined4 *)PTR_flag_68_0000fbb0 = 0;
-          *(undefined4 *)PTR_flag_6c_0000fbb4 = 0;
-          *(undefined4 *)PTR_flag_70_0000fbb8 = 0;
-          *(undefined4 *)PTR_out_setpoint_0000fb98 = 0;
+          *(volatile undefined4 *)PTR_flag_68_0000fbb0 = 0;
+          *(volatile undefined4 *)PTR_flag_6c_0000fbb4 = 0;
+          *(volatile undefined4 *)PTR_flag_70_0000fbb8 = 0;
+          *(volatile undefined4 *)PTR_out_setpoint_0000fb98 = 0;
           if (*g_cfg_word == '\0') {
             fio0_pin22_ctrl(0);
             fio1_pin22_ctrl(0);
           }
-          *(undefined4 *)PTR_input_locked_0000fba8 = 0;
+          *(volatile undefined4 *)PTR_input_locked_0000fba8 = 0;
           *PTR_flag_3c_0000fbbc = 0;
         }
       }
@@ -782,12 +782,12 @@ void output_stage(void)
 void run_stop_preset(void)
 {
   if (*g_cfg_word == '\x01') {
-    *(int *)PTR_out_setpoint_0000fb98 = DAT_0000fbcc[0xfa] * 100;
-    *(undefined4 *)PTR_input_locked_0000fba8 = 5;
+    *(volatile int *)PTR_out_setpoint_0000fb98 = DAT_0000fbcc[0xfa] * 100;
+    *(volatile undefined4 *)PTR_input_locked_0000fba8 = 5;
   }
   if (*g_cfg_word == '\0') {
-    *(undefined4 *)PTR_out_setpoint_0000fb98 = *DAT_0000fbcc;
-    *(undefined4 *)PTR_input_locked_0000fba8 = 0;
+    *(volatile undefined4 *)PTR_out_setpoint_0000fb98 = *DAT_0000fbcc;
+    *(volatile undefined4 *)PTR_input_locked_0000fba8 = 0;
     fio0_pin22_ctrl(0);
     fio1_pin22_ctrl(0);
   }
@@ -797,7 +797,7 @@ void run_stop_preset(void)
 /* 0x0000F9E8 —— EINT1 ISR：清中断，置 input_state=2（正转），eint1_flag=1 */
 void EINT1_IRQHandler(void)
 {
-  *(uint *)(PTR_DAT_0000fbd4 + 0x140) = *(uint *)PTR_DAT_0000fbd0 | 2;   /* EXTINT 清 EINT1 */
+  *(volatile uint *)(PTR_DAT_0000fbd4 + 0x140) = *(volatile uint *)PTR_DAT_0000fbd0 | 2;   /* EXTINT 清 EINT1 */
   if (*g_input_state == '\0') {
     *g_input_state = 2;
   }
@@ -808,7 +808,7 @@ void EINT1_IRQHandler(void)
 /* 0x0000FA0A —— EINT2 ISR：清中断，置 input_state=1（反转），eint2_flag=1 */
 void EINT2_IRQHandler(void)
 {
-  *(uint *)(PTR_DAT_0000fbd4 + 0x140) = *(uint *)PTR_DAT_0000fbd0 | 4;   /* EXTINT 清 EINT2 */
+  *(volatile uint *)(PTR_DAT_0000fbd4 + 0x140) = *(volatile uint *)PTR_DAT_0000fbd0 | 4;   /* EXTINT 清 EINT2 */
   if (*g_input_state == '\0') {
     *g_input_state = 1;
   }
@@ -829,8 +829,8 @@ void EINT3_IRQHandler(void)
   volatile uint8_t *ptr;
   volatile uint8_t *out_scale;
 
-  *(uint *)(PTR_DAT_0000fbd4 + 0x140) = *(uint *)PTR_DAT_0000fbd0 | 8;   /* EXTINT 清 EINT3 */
-  if (*(int *)PTR_input_locked_0000fba8 == 0) {
+  *(volatile uint *)(PTR_DAT_0000fbd4 + 0x140) = *(volatile uint *)PTR_DAT_0000fbd0 | 8;   /* EXTINT 清 EINT3 */
+  if (*(volatile int *)PTR_input_locked_0000fba8 == 0) {
     if (*g_input_state == '\x01') {
       *g_mode_byte = 1;
     }
@@ -846,110 +846,110 @@ void EINT3_IRQHandler(void)
     *ptr = 0;
     if ((0x60 < (byte)*g_phase_cnt) && ((byte)*g_phase_cnt < 0x68)) {
       *g_freq_hz = 0x32;                 /* '2' = 50Hz 档 */
-      *(undefined4 *)PTR_hold_count_0000fbf8 = 0;
+      *(volatile undefined4 *)PTR_hold_count_0000fbf8 = 0;
     }
     if ((0x51 < (byte)*g_phase_cnt) && ((byte)*g_phase_cnt < 0x56)) {
       *g_freq_hz = 0x3c;                 /* '<' = 60Hz 档 */
-      *(undefined4 *)PTR_hold_count_0000fbf8 = 0;
+      *(volatile undefined4 *)PTR_hold_count_0000fbf8 = 0;
     }
     ptr = PTR_hold_count_0000fbf8;
     if (((((byte)*g_phase_cnt < 0x61) || (0x67 < (byte)*g_phase_cnt)) &&
         (*g_freq_hz == '2')) &&
-       (*(int *)PTR_hold_count_0000fbf8 = *(int *)PTR_hold_count_0000fbf8 + 1, 4 < *(uint *)ptr))
+       (*(volatile int *)PTR_hold_count_0000fbf8 = *(volatile int *)PTR_hold_count_0000fbf8 + 1, 4 < *(volatile uint *)ptr))
     {
       /* —— 50Hz 相位保持超时 → 停机复位 —— */
-      *(undefined4 *)ptr = 0;
+      *(volatile undefined4 *)ptr = 0;
       *g_freq_hz = 0;
       *g_cfg_word = 0;
       gpio_outputs_set();
-      *(undefined4 *)PTR_flag_68_0000fbb0 = 0;
-      *(undefined4 *)PTR_flag_6c_0000fbb4 = 0;
-      *(undefined4 *)PTR_flag_70_0000fbb8 = 0;
-      *(undefined4 *)PTR_out_setpoint_0000fb98 = 0;
+      *(volatile undefined4 *)PTR_flag_68_0000fbb0 = 0;
+      *(volatile undefined4 *)PTR_flag_6c_0000fbb4 = 0;
+      *(volatile undefined4 *)PTR_flag_70_0000fbb8 = 0;
+      *(volatile undefined4 *)PTR_out_setpoint_0000fb98 = 0;
       fio0_pin22_ctrl(0);
       fio1_pin22_ctrl(0);
-      *(undefined4 *)PTR_input_locked_0000fba8 = 0;
+      *(volatile undefined4 *)PTR_input_locked_0000fba8 = 0;
       *PTR_flag_3c_0000fbbc = 0;
-      *(uint *)PTR_out_param_0000fbfc = *(uint *)PTR_out_param_0000fbfc | 0x2000;
+      *(volatile uint *)PTR_out_param_0000fbfc = *(volatile uint *)PTR_out_param_0000fbfc | 0x2000;
     }
     ptr = PTR_hold_count_0000fbf8;
     if ((((byte)*g_phase_cnt < 0x52) || (0x55 < (byte)*g_phase_cnt)) &&
        ((*g_freq_hz == '<' &&
-        (*(int *)PTR_hold_count_0000fbf8 = *(int *)PTR_hold_count_0000fbf8 + 1, 4 < *(uint *)ptr)
+        (*(volatile int *)PTR_hold_count_0000fbf8 = *(volatile int *)PTR_hold_count_0000fbf8 + 1, 4 < *(volatile uint *)ptr)
         ))) {
       /* —— 60Hz 相位保持超时 → 停机复位 —— */
-      *(undefined4 *)ptr = 0;
+      *(volatile undefined4 *)ptr = 0;
       *g_freq_hz = 0;
       *g_cfg_word = 0;
       gpio_outputs_set();
-      *(undefined4 *)PTR_flag_68_0000fbb0 = 0;
-      *(undefined4 *)PTR_flag_6c_0000fbb4 = 0;
-      *(undefined4 *)PTR_flag_70_0000fbb8 = 0;
-      *(undefined4 *)PTR_out_setpoint_0000fb98 = 0;
+      *(volatile undefined4 *)PTR_flag_68_0000fbb0 = 0;
+      *(volatile undefined4 *)PTR_flag_6c_0000fbb4 = 0;
+      *(volatile undefined4 *)PTR_flag_70_0000fbb8 = 0;
+      *(volatile undefined4 *)PTR_out_setpoint_0000fb98 = 0;
       fio0_pin22_ctrl(0);
       fio1_pin22_ctrl(0);
-      *(undefined4 *)PTR_input_locked_0000fba8 = 0;
+      *(volatile undefined4 *)PTR_input_locked_0000fba8 = 0;
       *PTR_flag_3c_0000fbbc = 0;
-      *(uint *)PTR_out_param_0000fbfc = *(uint *)PTR_out_param_0000fbfc | 0x2000;
+      *(volatile uint *)PTR_out_param_0000fbfc = *(volatile uint *)PTR_out_param_0000fbfc | 0x2000;
     }
     *g_phase_cnt = 0;
   }
   ptr = PTR_DAT_0001000c;
-  if (((*(uint *)PTR_input_locked_00010000 < 2) || (7 < *(uint *)PTR_input_locked_00010000)) ||
-     ((*(int *)PTR_out_param_00010004 != 0 || ((byte)*g_freq_hz < 0x32)))) {
+  if (((*(volatile uint *)PTR_input_locked_00010000 < 2) || (7 < *(volatile uint *)PTR_input_locked_00010000)) ||
+     ((*(volatile int *)PTR_out_param_00010004 != 0 || ((byte)*g_freq_hz < 0x32)))) {
     gpio_outputs_set();                               /* 非法态/停机 → 复位输出 */
   }
   else {
     /* —— 输出预置：根据 freq_hz + out_phase 计算触发参数 —— */
-    *(undefined4 *)(PTR_DAT_0001000c + 4) = 2;
-    *(undefined4 *)ptr = 0xff;
+    *(volatile undefined4 *)(PTR_DAT_0001000c + 4) = 2;
+    *(volatile undefined4 *)ptr = 0xff;
     ptr = g_out_scale;
     if (*g_out_phase == '\0') {
       if (*g_freq_hz == '2') {
         /* 50Hz、单相出 */
-        *(undefined4 *)g_out_scale = *(undefined4 *)PTR_out_setpoint_00010014;
+        *(volatile undefined4 *)g_out_scale = *(volatile undefined4 *)PTR_out_setpoint_00010014;
         out_scale = g_out_scale;
-        *(uint *)g_out_scale = (uint)(*(int *)ptr * 0x58) / 100;
+        *(volatile uint *)g_out_scale = (uint)(*(volatile int *)ptr * 0x58) / 100;
         ptr = g_out_scale;
-        *(uint *)g_out_scale = *(uint *)out_scale / 100;
-        if (0x2730 < *(uint *)ptr) {
-          *(undefined4 *)g_out_scale = 0x2730;
+        *(volatile uint *)g_out_scale = *(volatile uint *)out_scale / 100;
+        if (0x2730 < *(volatile uint *)ptr) {
+          *(volatile undefined4 *)g_out_scale = 0x2730;
         }
-        *(uint *)PTR_out_div_0001001c =
-             (uint)((0x2731 - *(int *)g_out_scale) * 10) / 0x22d;
+        *(volatile uint *)PTR_out_div_0001001c =
+             (uint)((0x2731 - *(volatile int *)g_out_scale) * 10) / 0x22d;
         if (*g_mode_byte == '\x01') {
-          *(uint *)(PTR_DAT_0001000c + 0x18) =
-               (*(int *)PTR_out_freq_adj_00010024 * 10 + 0x1800 +
-               (uint)(byte)*g_out_fine * 0x38) - *(int *)g_out_scale;
+          *(volatile uint *)(PTR_DAT_0001000c + 0x18) =
+               (*(volatile int *)PTR_out_freq_adj_00010024 * 10 + 0x1800 +
+               (uint)(byte)*g_out_fine * 0x38) - *(volatile int *)g_out_scale;
         }
         if (*g_mode_byte == '\x02') {
-          *(uint *)(PTR_DAT_0001000c + 0x18) =
-               (*(int *)PTR_out_freq_adj_00010024 * 10 + 0x1814 +
-               (uint)(byte)*g_out_fine * 0x38) - *(int *)g_out_scale;
+          *(volatile uint *)(PTR_DAT_0001000c + 0x18) =
+               (*(volatile int *)PTR_out_freq_adj_00010024 * 10 + 0x1814 +
+               (uint)(byte)*g_out_fine * 0x38) - *(volatile int *)g_out_scale;
         }
       }
       ptr = g_out_scale;
       if (*g_freq_hz == '<') {
         /* 60Hz、单相出 */
-        *(undefined4 *)g_out_scale = *(undefined4 *)PTR_out_setpoint_00010014;
+        *(volatile undefined4 *)g_out_scale = *(volatile undefined4 *)PTR_out_setpoint_00010014;
         out_scale = g_out_scale;
-        *(uint *)g_out_scale = (uint)(*(int *)ptr * 0x50) / 100;
+        *(volatile uint *)g_out_scale = (uint)(*(volatile int *)ptr * 0x50) / 100;
         ptr = g_out_scale;
-        *(uint *)g_out_scale = *(uint *)out_scale / 100;
-        if (0x23a0 < *(uint *)ptr) {
-          *(undefined4 *)g_out_scale = 0x23a0;
+        *(volatile uint *)g_out_scale = *(volatile uint *)out_scale / 100;
+        if (0x23a0 < *(volatile uint *)ptr) {
+          *(volatile undefined4 *)g_out_scale = 0x23a0;
         }
-        *(uint *)PTR_out_div_0001001c =
-             (uint)((0x23a1 - *(int *)g_out_scale) * 10) / 0x1fb;
+        *(volatile uint *)PTR_out_div_0001001c =
+             (uint)((0x23a1 - *(volatile int *)g_out_scale) * 10) / 0x1fb;
         if (*g_mode_byte == '\x01') {
-          *(uint *)(PTR_DAT_0001000c + 0x18) =
-               (*(int *)PTR_out_freq_adj_00010024 * 10 + 0x11d7 +
-               (uint)(byte)*g_out_fine * 0x33) - *(int *)g_out_scale;
+          *(volatile uint *)(PTR_DAT_0001000c + 0x18) =
+               (*(volatile int *)PTR_out_freq_adj_00010024 * 10 + 0x11d7 +
+               (uint)(byte)*g_out_fine * 0x33) - *(volatile int *)g_out_scale;
         }
         if (*g_mode_byte == '\x02') {
-          *(uint *)(PTR_DAT_0001000c + 0x18) =
-               (*(int *)PTR_out_freq_adj_00010024 * 10 + 0x11eb +
-               (uint)(byte)*g_out_fine * 0x33) - *(int *)g_out_scale;
+          *(volatile uint *)(PTR_DAT_0001000c + 0x18) =
+               (*(volatile int *)PTR_out_freq_adj_00010024 * 10 + 0x11eb +
+               (uint)(byte)*g_out_fine * 0x33) - *(volatile int *)g_out_scale;
         }
       }
     }
@@ -957,53 +957,53 @@ void EINT3_IRQHandler(void)
     if (*g_out_phase == '\x01') {
       if (*g_freq_hz == '2') {
         /* 50Hz、三相出 */
-        *(undefined4 *)g_out_scale = *(undefined4 *)PTR_out_setpoint_00010014;
+        *(volatile undefined4 *)g_out_scale = *(volatile undefined4 *)PTR_out_setpoint_00010014;
         out_scale = g_out_scale;
-        *(uint *)g_out_scale = (uint)(*(int *)ptr << 7) / 100;
+        *(volatile uint *)g_out_scale = (uint)(*(volatile int *)ptr << 7) / 100;
         ptr = g_out_scale;
-        *(uint *)g_out_scale = *(uint *)out_scale / 100;
-        if (0x3903 < *(uint *)ptr) {
-          *(undefined4 *)g_out_scale = 0x3903;
+        *(volatile uint *)g_out_scale = *(volatile uint *)out_scale / 100;
+        if (0x3903 < *(volatile uint *)ptr) {
+          *(volatile undefined4 *)g_out_scale = 0x3903;
         }
-        *(uint *)PTR_out_div_0001001c =
-             (uint)((0x3904 - *(int *)g_out_scale) * 10) / 0x32b;
+        *(volatile uint *)PTR_out_div_0001001c =
+             (uint)((0x3904 - *(volatile int *)g_out_scale) * 10) / 0x32b;
         if (*g_mode_byte == '\x01') {
-          *(uint *)(PTR_DAT_0001000c + 0x18) =
-               (*(int *)PTR_out_freq_adj_00010024 * 10 + 0x2ab5 +
-               (uint)(byte)*g_out_fine * 0x38) - *(int *)g_out_scale;
+          *(volatile uint *)(PTR_DAT_0001000c + 0x18) =
+               (*(volatile int *)PTR_out_freq_adj_00010024 * 10 + 0x2ab5 +
+               (uint)(byte)*g_out_fine * 0x38) - *(volatile int *)g_out_scale;
         }
         if (*g_mode_byte == '\x02') {
-          *(uint *)(PTR_DAT_0001000c + 0x18) =
-               (*(int *)PTR_out_freq_adj_00010024 * 10 + 0x2ac9 +
-               (uint)(byte)*g_out_fine * 0x38) - *(int *)g_out_scale;
+          *(volatile uint *)(PTR_DAT_0001000c + 0x18) =
+               (*(volatile int *)PTR_out_freq_adj_00010024 * 10 + 0x2ac9 +
+               (uint)(byte)*g_out_fine * 0x38) - *(volatile int *)g_out_scale;
         }
       }
       ptr = g_out_scale;
       if (*g_freq_hz == '<') {
         /* 60Hz、三相出 */
-        *(undefined4 *)g_out_scale = *(undefined4 *)PTR_out_setpoint_00010014;
+        *(volatile undefined4 *)g_out_scale = *(volatile undefined4 *)PTR_out_setpoint_00010014;
         out_scale = g_out_scale;
-        *(uint *)g_out_scale = (uint)(*(int *)ptr * 0x70) / 100;
+        *(volatile uint *)g_out_scale = (uint)(*(volatile int *)ptr * 0x70) / 100;
         ptr = g_out_scale;
-        *(uint *)g_out_scale = *(uint *)out_scale / 100;
-        if (0x31e0 < *(uint *)ptr) {
-          *(undefined4 *)g_out_scale = 0x31e0;
+        *(volatile uint *)g_out_scale = *(volatile uint *)out_scale / 100;
+        if (0x31e0 < *(volatile uint *)ptr) {
+          *(volatile undefined4 *)g_out_scale = 0x31e0;
         }
-        *(uint *)PTR_out_div_0001001c =
-             (uint)((0x31e1 - *(int *)g_out_scale) * 10) / 0x2c5;
+        *(volatile uint *)PTR_out_div_0001001c =
+             (uint)((0x31e1 - *(volatile int *)g_out_scale) * 10) / 0x2c5;
         if (*g_mode_byte == '\x01') {
-          *(uint *)(PTR_DAT_0001000c + 0x18) =
-               (*(int *)PTR_out_freq_adj_00010024 * 10 + 0x20af +
-               (uint)(byte)*g_out_fine * 0x33) - *(int *)g_out_scale;
+          *(volatile uint *)(PTR_DAT_0001000c + 0x18) =
+               (*(volatile int *)PTR_out_freq_adj_00010024 * 10 + 0x20af +
+               (uint)(byte)*g_out_fine * 0x33) - *(volatile int *)g_out_scale;
         }
         if (*g_mode_byte == '\x02') {
-          *(uint *)(PTR_DAT_0001000c + 0x18) =
-               (*(int *)PTR_out_freq_adj_00010024 * 10 + 0x20b9 +
-               (uint)(byte)*g_out_fine * 0x33) - *(int *)g_out_scale;
+          *(volatile uint *)(PTR_DAT_0001000c + 0x18) =
+               (*(volatile int *)PTR_out_freq_adj_00010024 * 10 + 0x20b9 +
+               (uint)(byte)*g_out_fine * 0x33) - *(volatile int *)g_out_scale;
         }
       }
     }
-    *(undefined4 *)(PTR_DAT_0001000c + 4) = 1;
+    *(volatile undefined4 *)(PTR_DAT_0001000c + 4) = 1;
   }
   return;
 }
@@ -1015,14 +1015,14 @@ void TIMER2_IRQHandler(void)
   volatile uint8_t *timer_base;
 
   timer_base = PTR_DAT_0001000c;
-  *(undefined4 *)PTR_DAT_0001000c = 0xff;             /* TIMER1 IR 清中断 */
-  *(undefined4 *)(timer_base + 4) = 2;
+  *(volatile undefined4 *)PTR_DAT_0001000c = 0xff;             /* TIMER1 IR 清中断 */
+  *(volatile undefined4 *)(timer_base + 4) = 2;
   *PTR_disp_scan_0001002c = 0;
   timer_base = PTR_DAT_00010030;
-  *(undefined4 *)(PTR_DAT_00010030 + 4) = 2;
-  *(undefined4 *)timer_base = 0xff;
-  *(undefined4 *)(timer_base + 0x18) = 0x36;              /* MR0=0x36 触发周期 */
-  *(undefined4 *)(timer_base + 4) = 1;
+  *(volatile undefined4 *)(PTR_DAT_00010030 + 4) = 2;
+  *(volatile undefined4 *)timer_base = 0xff;
+  *(volatile undefined4 *)(timer_base + 0x18) = 0x36;              /* MR0=0x36 触发周期 */
+  *(volatile undefined4 *)(timer_base + 4) = 1;
   return;
 }
 
@@ -1037,23 +1037,23 @@ void TIMER1_IRQHandler(void)
   volatile uint8_t *fio2;
 
   fio1 = PTR_DAT_00010030;
-  *(undefined4 *)PTR_DAT_00010030 = 0xff;
-  *(undefined4 *)(fio1 + 4) = 2;
+  *(volatile undefined4 *)PTR_DAT_00010030 = 0xff;
+  *(volatile undefined4 *)(fio1 + 4) = 2;
   fio1 = PTR_disp_scan_0001002c;
   *PTR_disp_scan_0001002c = *PTR_disp_scan_0001002c + '\x01';
   if ((uint)(byte)*fio1 == ((byte)*fio1 / 0x28) * 0x28) {
     if (*g_freq_hz == '2') {
-      *(undefined4 *)(PTR_DAT_00010030 + 0x18) = 0x488;
+      *(volatile undefined4 *)(PTR_DAT_00010030 + 0x18) = 0x488;
     }
     if (*g_freq_hz == '<') {
-      *(undefined4 *)(PTR_DAT_00010030 + 0x18) = 0x261;
+      *(volatile undefined4 *)(PTR_DAT_00010030 + 0x18) = 0x261;
     }
   }
   else {
-    *(undefined4 *)(PTR_DAT_00010030 + 0x18) = 0x36;
+    *(volatile undefined4 *)(PTR_DAT_00010030 + 0x18) = 0x36;
   }
   if ((byte)*PTR_disp_scan_0001002c < 0xf1) {
-    *(undefined4 *)(PTR_DAT_00010030 + 4) = 1;
+    *(volatile undefined4 *)(PTR_DAT_00010030 + 4) = 1;
   }
   fio2 = PTR_DAT_00010454;
   fio1 = PTR_DAT_00010034;
@@ -1062,30 +1062,30 @@ void TIMER1_IRQHandler(void)
     if (*g_mode_byte == '\x01') {
       if ((uint)(byte)*PTR_disp_scan_0001002c == ((int)(uint)(byte)*PTR_disp_scan_0001002c >> 1) * 2
          ) {
-        *(uint *)(PTR_DAT_00010454 + 0x58) = *(uint *)(PTR_DAT_00010454 + 0x58) | 0x200;
-        *(uint *)(fio2 + 0x18) = *(uint *)(fio2 + 0x18) | 0x80000;
-        *(uint *)(fio2 + 0x58) = *(uint *)(fio2 + 0x58) | 0x20;
-        *(uint *)(fio2 + 0x58) = *(uint *)(fio2 + 0x58) | 0x40;
+        *(volatile uint *)(PTR_DAT_00010454 + 0x58) = *(volatile uint *)(PTR_DAT_00010454 + 0x58) | 0x200;
+        *(volatile uint *)(fio2 + 0x18) = *(volatile uint *)(fio2 + 0x18) | 0x80000;
+        *(volatile uint *)(fio2 + 0x58) = *(volatile uint *)(fio2 + 0x58) | 0x20;
+        *(volatile uint *)(fio2 + 0x58) = *(volatile uint *)(fio2 + 0x58) | 0x40;
       }
       else {
-        *(uint *)(PTR_DAT_00010034 + 0x5c) = *(uint *)(PTR_DAT_00010034 + 0x5c) | 0x200;
-        *(uint *)(fio1 + 0x1c) = *(uint *)(fio1 + 0x1c) | 0x80000;
-        *(uint *)(fio1 + 0x5c) = *(uint *)(fio1 + 0x5c) | 0x20;
-        *(uint *)(fio1 + 0x5c) = *(uint *)(fio1 + 0x5c) | 0x40;
+        *(volatile uint *)(PTR_DAT_00010034 + 0x5c) = *(volatile uint *)(PTR_DAT_00010034 + 0x5c) | 0x200;
+        *(volatile uint *)(fio1 + 0x1c) = *(volatile uint *)(fio1 + 0x1c) | 0x80000;
+        *(volatile uint *)(fio1 + 0x5c) = *(volatile uint *)(fio1 + 0x5c) | 0x20;
+        *(volatile uint *)(fio1 + 0x5c) = *(volatile uint *)(fio1 + 0x5c) | 0x40;
       }
     }
     else if ((uint)(byte)*PTR_disp_scan_00010458 ==
              ((int)(uint)(byte)*PTR_disp_scan_00010458 >> 1) * 2) {
-      *(uint *)(PTR_DAT_00010454 + 0x18) = *(uint *)(PTR_DAT_00010454 + 0x18) | 0x20000;
-      *(uint *)(fio2 + 0x18) = *(uint *)(fio2 + 0x18) | 0x10000;
-      *(uint *)(fio2 + 0x58) = *(uint *)(fio2 + 0x58) | 0x80;
-      *(uint *)(fio2 + 0x18) = *(uint *)(fio2 + 0x18) | 0x100;
+      *(volatile uint *)(PTR_DAT_00010454 + 0x18) = *(volatile uint *)(PTR_DAT_00010454 + 0x18) | 0x20000;
+      *(volatile uint *)(fio2 + 0x18) = *(volatile uint *)(fio2 + 0x18) | 0x10000;
+      *(volatile uint *)(fio2 + 0x58) = *(volatile uint *)(fio2 + 0x58) | 0x80;
+      *(volatile uint *)(fio2 + 0x18) = *(volatile uint *)(fio2 + 0x18) | 0x100;
     }
     else {
-      *(uint *)(PTR_DAT_00010454 + 0x1c) = *(uint *)(PTR_DAT_00010454 + 0x1c) | 0x20000;
-      *(uint *)(fio2 + 0x1c) = *(uint *)(fio2 + 0x1c) | 0x10000;
-      *(uint *)(fio2 + 0x5c) = *(uint *)(fio2 + 0x5c) | 0x80;
-      *(uint *)(fio2 + 0x1c) = *(uint *)(fio2 + 0x1c) | 0x100;
+      *(volatile uint *)(PTR_DAT_00010454 + 0x1c) = *(volatile uint *)(PTR_DAT_00010454 + 0x1c) | 0x20000;
+      *(volatile uint *)(fio2 + 0x1c) = *(volatile uint *)(fio2 + 0x1c) | 0x10000;
+      *(volatile uint *)(fio2 + 0x5c) = *(volatile uint *)(fio2 + 0x5c) | 0x80;
+      *(volatile uint *)(fio2 + 0x1c) = *(volatile uint *)(fio2 + 0x1c) | 0x100;
     }
   }
   fio1 = PTR_DAT_00010454;
@@ -1094,30 +1094,30 @@ void TIMER1_IRQHandler(void)
     if (*g_mode_byte == '\x01') {
       if ((uint)(byte)*PTR_disp_scan_00010458 == ((int)(uint)(byte)*PTR_disp_scan_00010458 >> 1) * 2
          ) {
-        *(uint *)(PTR_DAT_00010454 + 0x18) = *(uint *)(PTR_DAT_00010454 + 0x18) | 0x10000;
-        *(uint *)(fio1 + 0x18) = *(uint *)(fio1 + 0x18) | 0x80000;
-        *(uint *)(fio1 + 0x18) = *(uint *)(fio1 + 0x18) | 0x100;
-        *(uint *)(fio1 + 0x58) = *(uint *)(fio1 + 0x58) | 0x40;
+        *(volatile uint *)(PTR_DAT_00010454 + 0x18) = *(volatile uint *)(PTR_DAT_00010454 + 0x18) | 0x10000;
+        *(volatile uint *)(fio1 + 0x18) = *(volatile uint *)(fio1 + 0x18) | 0x80000;
+        *(volatile uint *)(fio1 + 0x18) = *(volatile uint *)(fio1 + 0x18) | 0x100;
+        *(volatile uint *)(fio1 + 0x58) = *(volatile uint *)(fio1 + 0x58) | 0x40;
       }
       else {
-        *(uint *)(PTR_DAT_00010454 + 0x1c) = *(uint *)(PTR_DAT_00010454 + 0x1c) | 0x10000;
-        *(uint *)(fio1 + 0x1c) = *(uint *)(fio1 + 0x1c) | 0x80000;
-        *(uint *)(fio1 + 0x1c) = *(uint *)(fio1 + 0x1c) | 0x100;
-        *(uint *)(fio1 + 0x5c) = *(uint *)(fio1 + 0x5c) | 0x40;
+        *(volatile uint *)(PTR_DAT_00010454 + 0x1c) = *(volatile uint *)(PTR_DAT_00010454 + 0x1c) | 0x10000;
+        *(volatile uint *)(fio1 + 0x1c) = *(volatile uint *)(fio1 + 0x1c) | 0x80000;
+        *(volatile uint *)(fio1 + 0x1c) = *(volatile uint *)(fio1 + 0x1c) | 0x100;
+        *(volatile uint *)(fio1 + 0x5c) = *(volatile uint *)(fio1 + 0x5c) | 0x40;
       }
     }
     else if ((uint)(byte)*PTR_disp_scan_00010458 ==
              ((int)(uint)(byte)*PTR_disp_scan_00010458 >> 1) * 2) {
-      *(uint *)(PTR_DAT_00010454 + 0x18) = *(uint *)(PTR_DAT_00010454 + 0x18) | 0x80000;
-      *(uint *)(fio1 + 0x18) = *(uint *)(fio1 + 0x18) | 0x10000;
-      *(uint *)(fio1 + 0x58) = *(uint *)(fio1 + 0x58) | 0x40;
-      *(uint *)(fio1 + 0x18) = *(uint *)(fio1 + 0x18) | 0x100;
+      *(volatile uint *)(PTR_DAT_00010454 + 0x18) = *(volatile uint *)(PTR_DAT_00010454 + 0x18) | 0x80000;
+      *(volatile uint *)(fio1 + 0x18) = *(volatile uint *)(fio1 + 0x18) | 0x10000;
+      *(volatile uint *)(fio1 + 0x58) = *(volatile uint *)(fio1 + 0x58) | 0x40;
+      *(volatile uint *)(fio1 + 0x18) = *(volatile uint *)(fio1 + 0x18) | 0x100;
     }
     else {
-      *(uint *)(PTR_DAT_00010454 + 0x1c) = *(uint *)(PTR_DAT_00010454 + 0x1c) | 0x80000;
-      *(uint *)(fio1 + 0x1c) = *(uint *)(fio1 + 0x1c) | 0x10000;
-      *(uint *)(fio1 + 0x5c) = *(uint *)(fio1 + 0x5c) | 0x40;
-      *(uint *)(fio1 + 0x1c) = *(uint *)(fio1 + 0x1c) | 0x100;
+      *(volatile uint *)(PTR_DAT_00010454 + 0x1c) = *(volatile uint *)(PTR_DAT_00010454 + 0x1c) | 0x80000;
+      *(volatile uint *)(fio1 + 0x1c) = *(volatile uint *)(fio1 + 0x1c) | 0x10000;
+      *(volatile uint *)(fio1 + 0x5c) = *(volatile uint *)(fio1 + 0x5c) | 0x40;
+      *(volatile uint *)(fio1 + 0x1c) = *(volatile uint *)(fio1 + 0x1c) | 0x100;
     }
   }
   fio1 = PTR_DAT_00010454;
@@ -1126,30 +1126,30 @@ void TIMER1_IRQHandler(void)
     if (*g_mode_byte == '\x01') {
       if ((uint)(byte)*PTR_disp_scan_00010458 == ((int)(uint)(byte)*PTR_disp_scan_00010458 >> 1) * 2
          ) {
-        *(uint *)(PTR_DAT_00010454 + 0x18) = *(uint *)(PTR_DAT_00010454 + 0x18) | 0x10000;
-        *(uint *)(fio1 + 0x18) = *(uint *)(fio1 + 0x18) | 0x20000;
-        *(uint *)(fio1 + 0x18) = *(uint *)(fio1 + 0x18) | 0x100;
-        *(uint *)(fio1 + 0x58) = *(uint *)(fio1 + 0x58) | 0x80;
+        *(volatile uint *)(PTR_DAT_00010454 + 0x18) = *(volatile uint *)(PTR_DAT_00010454 + 0x18) | 0x10000;
+        *(volatile uint *)(fio1 + 0x18) = *(volatile uint *)(fio1 + 0x18) | 0x20000;
+        *(volatile uint *)(fio1 + 0x18) = *(volatile uint *)(fio1 + 0x18) | 0x100;
+        *(volatile uint *)(fio1 + 0x58) = *(volatile uint *)(fio1 + 0x58) | 0x80;
       }
       else {
-        *(uint *)(PTR_DAT_00010454 + 0x1c) = *(uint *)(PTR_DAT_00010454 + 0x1c) | 0x10000;
-        *(uint *)(fio1 + 0x1c) = *(uint *)(fio1 + 0x1c) | 0x20000;
-        *(uint *)(fio1 + 0x1c) = *(uint *)(fio1 + 0x1c) | 0x100;
-        *(uint *)(fio1 + 0x5c) = *(uint *)(fio1 + 0x5c) | 0x80;
+        *(volatile uint *)(PTR_DAT_00010454 + 0x1c) = *(volatile uint *)(PTR_DAT_00010454 + 0x1c) | 0x10000;
+        *(volatile uint *)(fio1 + 0x1c) = *(volatile uint *)(fio1 + 0x1c) | 0x20000;
+        *(volatile uint *)(fio1 + 0x1c) = *(volatile uint *)(fio1 + 0x1c) | 0x100;
+        *(volatile uint *)(fio1 + 0x5c) = *(volatile uint *)(fio1 + 0x5c) | 0x80;
       }
     }
     else if ((uint)(byte)*PTR_disp_scan_00010458 ==
              ((int)(uint)(byte)*PTR_disp_scan_00010458 >> 1) * 2) {
-      *(uint *)(PTR_DAT_00010454 + 0x18) = *(uint *)(PTR_DAT_00010454 + 0x18) | 0x80000;
-      *(uint *)(fio1 + 0x58) = *(uint *)(fio1 + 0x58) | 0x200;
-      *(uint *)(fio1 + 0x58) = *(uint *)(fio1 + 0x58) | 0x40;
-      *(uint *)(fio1 + 0x58) = *(uint *)(fio1 + 0x58) | 0x20;
+      *(volatile uint *)(PTR_DAT_00010454 + 0x18) = *(volatile uint *)(PTR_DAT_00010454 + 0x18) | 0x80000;
+      *(volatile uint *)(fio1 + 0x58) = *(volatile uint *)(fio1 + 0x58) | 0x200;
+      *(volatile uint *)(fio1 + 0x58) = *(volatile uint *)(fio1 + 0x58) | 0x40;
+      *(volatile uint *)(fio1 + 0x58) = *(volatile uint *)(fio1 + 0x58) | 0x20;
     }
     else {
-      *(uint *)(PTR_DAT_00010454 + 0x1c) = *(uint *)(PTR_DAT_00010454 + 0x1c) | 0x80000;
-      *(uint *)(fio1 + 0x5c) = *(uint *)(fio1 + 0x5c) | 0x200;
-      *(uint *)(fio1 + 0x5c) = *(uint *)(fio1 + 0x5c) | 0x40;
-      *(uint *)(fio1 + 0x5c) = *(uint *)(fio1 + 0x5c) | 0x20;
+      *(volatile uint *)(PTR_DAT_00010454 + 0x1c) = *(volatile uint *)(PTR_DAT_00010454 + 0x1c) | 0x80000;
+      *(volatile uint *)(fio1 + 0x5c) = *(volatile uint *)(fio1 + 0x5c) | 0x200;
+      *(volatile uint *)(fio1 + 0x5c) = *(volatile uint *)(fio1 + 0x5c) | 0x40;
+      *(volatile uint *)(fio1 + 0x5c) = *(volatile uint *)(fio1 + 0x5c) | 0x20;
     }
   }
   fio1 = PTR_DAT_00010454;
@@ -1158,30 +1158,30 @@ void TIMER1_IRQHandler(void)
     if (*g_mode_byte == '\x01') {
       if ((uint)(byte)*PTR_disp_scan_00010458 == ((int)(uint)(byte)*PTR_disp_scan_00010458 >> 1) * 2
          ) {
-        *(uint *)(PTR_DAT_00010454 + 0x18) = *(uint *)(PTR_DAT_00010454 + 0x18) | 0x8000;
-        *(uint *)(fio1 + 0x18) = *(uint *)(fio1 + 0x18) | 0x20000;
-        *(uint *)(fio1 + 0x18) = *(uint *)(fio1 + 0x18) | 0x80;
-        *(uint *)(fio1 + 0x58) = *(uint *)(fio1 + 0x58) | 0x80;
+        *(volatile uint *)(PTR_DAT_00010454 + 0x18) = *(volatile uint *)(PTR_DAT_00010454 + 0x18) | 0x8000;
+        *(volatile uint *)(fio1 + 0x18) = *(volatile uint *)(fio1 + 0x18) | 0x20000;
+        *(volatile uint *)(fio1 + 0x18) = *(volatile uint *)(fio1 + 0x18) | 0x80;
+        *(volatile uint *)(fio1 + 0x58) = *(volatile uint *)(fio1 + 0x58) | 0x80;
       }
       else {
-        *(uint *)(PTR_DAT_00010454 + 0x1c) = *(uint *)(PTR_DAT_00010454 + 0x1c) | 0x8000;
-        *(uint *)(fio1 + 0x1c) = *(uint *)(fio1 + 0x1c) | 0x20000;
-        *(uint *)(fio1 + 0x1c) = *(uint *)(fio1 + 0x1c) | 0x80;
-        *(uint *)(fio1 + 0x5c) = *(uint *)(fio1 + 0x5c) | 0x80;
+        *(volatile uint *)(PTR_DAT_00010454 + 0x1c) = *(volatile uint *)(PTR_DAT_00010454 + 0x1c) | 0x8000;
+        *(volatile uint *)(fio1 + 0x1c) = *(volatile uint *)(fio1 + 0x1c) | 0x20000;
+        *(volatile uint *)(fio1 + 0x1c) = *(volatile uint *)(fio1 + 0x1c) | 0x80;
+        *(volatile uint *)(fio1 + 0x5c) = *(volatile uint *)(fio1 + 0x5c) | 0x80;
       }
     }
     else if ((uint)(byte)*PTR_disp_scan_00010458 ==
              ((int)(uint)(byte)*PTR_disp_scan_00010458 >> 1) * 2) {
-      *(uint *)(PTR_DAT_00010454 + 0x18) = *(uint *)(PTR_DAT_00010454 + 0x18) | 0x40000;
-      *(uint *)(fio1 + 0x58) = *(uint *)(fio1 + 0x58) | 0x200;
-      *(uint *)(fio1 + 0x58) = *(uint *)(fio1 + 0x58) | 0x100;
-      *(uint *)(fio1 + 0x58) = *(uint *)(fio1 + 0x58) | 0x20;
+      *(volatile uint *)(PTR_DAT_00010454 + 0x18) = *(volatile uint *)(PTR_DAT_00010454 + 0x18) | 0x40000;
+      *(volatile uint *)(fio1 + 0x58) = *(volatile uint *)(fio1 + 0x58) | 0x200;
+      *(volatile uint *)(fio1 + 0x58) = *(volatile uint *)(fio1 + 0x58) | 0x100;
+      *(volatile uint *)(fio1 + 0x58) = *(volatile uint *)(fio1 + 0x58) | 0x20;
     }
     else {
-      *(uint *)(PTR_DAT_00010454 + 0x1c) = *(uint *)(PTR_DAT_00010454 + 0x1c) | 0x40000;
-      *(uint *)(fio1 + 0x5c) = *(uint *)(fio1 + 0x5c) | 0x200;
-      *(uint *)(fio1 + 0x5c) = *(uint *)(fio1 + 0x5c) | 0x100;
-      *(uint *)(fio1 + 0x5c) = *(uint *)(fio1 + 0x5c) | 0x20;
+      *(volatile uint *)(PTR_DAT_00010454 + 0x1c) = *(volatile uint *)(PTR_DAT_00010454 + 0x1c) | 0x40000;
+      *(volatile uint *)(fio1 + 0x5c) = *(volatile uint *)(fio1 + 0x5c) | 0x200;
+      *(volatile uint *)(fio1 + 0x5c) = *(volatile uint *)(fio1 + 0x5c) | 0x100;
+      *(volatile uint *)(fio1 + 0x5c) = *(volatile uint *)(fio1 + 0x5c) | 0x20;
     }
   }
   fio2 = PTR_DAT_00010640;
@@ -1191,30 +1191,30 @@ void TIMER1_IRQHandler(void)
     if (*g_mode_byte == '\x01') {
       if ((uint)(byte)*PTR_disp_scan_00010458 == ((int)(uint)(byte)*PTR_disp_scan_00010458 >> 1) * 2
          ) {
-        *(uint *)(PTR_DAT_00010454 + 0x18) = *(uint *)(PTR_DAT_00010454 + 0x18) | 0x8000;
-        *(uint *)(fio1 + 0x18) = *(uint *)(fio1 + 0x18) | 0x40000;
-        *(uint *)(fio1 + 0x18) = *(uint *)(fio1 + 0x18) | 0x80;
-        *(uint *)(fio1 + 0x58) = *(uint *)(fio1 + 0x58) | 0x100;
+        *(volatile uint *)(PTR_DAT_00010454 + 0x18) = *(volatile uint *)(PTR_DAT_00010454 + 0x18) | 0x8000;
+        *(volatile uint *)(fio1 + 0x18) = *(volatile uint *)(fio1 + 0x18) | 0x40000;
+        *(volatile uint *)(fio1 + 0x18) = *(volatile uint *)(fio1 + 0x18) | 0x80;
+        *(volatile uint *)(fio1 + 0x58) = *(volatile uint *)(fio1 + 0x58) | 0x100;
       }
       else {
-        *(uint *)(PTR_DAT_00010454 + 0x1c) = *(uint *)(PTR_DAT_00010454 + 0x1c) | 0x8000;
-        *(uint *)(fio1 + 0x1c) = *(uint *)(fio1 + 0x1c) | 0x40000;
-        *(uint *)(fio1 + 0x1c) = *(uint *)(fio1 + 0x1c) | 0x80;
-        *(uint *)(fio1 + 0x5c) = *(uint *)(fio1 + 0x5c) | 0x100;
+        *(volatile uint *)(PTR_DAT_00010454 + 0x1c) = *(volatile uint *)(PTR_DAT_00010454 + 0x1c) | 0x8000;
+        *(volatile uint *)(fio1 + 0x1c) = *(volatile uint *)(fio1 + 0x1c) | 0x40000;
+        *(volatile uint *)(fio1 + 0x1c) = *(volatile uint *)(fio1 + 0x1c) | 0x80;
+        *(volatile uint *)(fio1 + 0x5c) = *(volatile uint *)(fio1 + 0x5c) | 0x100;
       }
     }
     else if ((uint)(byte)*PTR_disp_scan_00010458 ==
              ((int)(uint)(byte)*PTR_disp_scan_00010458 >> 1) * 2) {
-      *(uint *)(PTR_DAT_00010640 + 0x18) = *(uint *)(PTR_DAT_00010640 + 0x18) | 0x40000;
-      *(uint *)(fio2 + 0x18) = *(uint *)(fio2 + 0x18) | 0x8000;
-      *(uint *)(fio2 + 0x58) = *(uint *)(fio2 + 0x58) | 0x100;
-      *(uint *)(fio2 + 0x18) = *(uint *)(fio2 + 0x18) | 0x80;
+      *(volatile uint *)(PTR_DAT_00010640 + 0x18) = *(volatile uint *)(PTR_DAT_00010640 + 0x18) | 0x40000;
+      *(volatile uint *)(fio2 + 0x18) = *(volatile uint *)(fio2 + 0x18) | 0x8000;
+      *(volatile uint *)(fio2 + 0x58) = *(volatile uint *)(fio2 + 0x58) | 0x100;
+      *(volatile uint *)(fio2 + 0x18) = *(volatile uint *)(fio2 + 0x18) | 0x80;
     }
     else {
-      *(uint *)(PTR_DAT_00010454 + 0x1c) = *(uint *)(PTR_DAT_00010454 + 0x1c) | 0x40000;
-      *(uint *)(fio1 + 0x1c) = *(uint *)(fio1 + 0x1c) | 0x8000;
-      *(uint *)(fio1 + 0x5c) = *(uint *)(fio1 + 0x5c) | 0x100;
-      *(uint *)(fio1 + 0x1c) = *(uint *)(fio1 + 0x1c) | 0x80;
+      *(volatile uint *)(PTR_DAT_00010454 + 0x1c) = *(volatile uint *)(PTR_DAT_00010454 + 0x1c) | 0x40000;
+      *(volatile uint *)(fio1 + 0x1c) = *(volatile uint *)(fio1 + 0x1c) | 0x8000;
+      *(volatile uint *)(fio1 + 0x5c) = *(volatile uint *)(fio1 + 0x5c) | 0x100;
+      *(volatile uint *)(fio1 + 0x1c) = *(volatile uint *)(fio1 + 0x1c) | 0x80;
     }
   }
   fio1 = PTR_DAT_00010640;
@@ -1223,30 +1223,30 @@ void TIMER1_IRQHandler(void)
     if (*g_mode_byte == '\x01') {
       if ((uint)(byte)*PTR_disp_scan_00010644 == ((int)(uint)(byte)*PTR_disp_scan_00010644 >> 1) * 2
          ) {
-        *(uint *)(PTR_DAT_00010640 + 0x58) = *(uint *)(PTR_DAT_00010640 + 0x58) | 0x200;
-        *(uint *)(fio1 + 0x18) = *(uint *)(fio1 + 0x18) | 0x40000;
-        *(uint *)(fio1 + 0x58) = *(uint *)(fio1 + 0x58) | 0x20;
-        *(uint *)(fio1 + 0x58) = *(uint *)(fio1 + 0x58) | 0x100;
+        *(volatile uint *)(PTR_DAT_00010640 + 0x58) = *(volatile uint *)(PTR_DAT_00010640 + 0x58) | 0x200;
+        *(volatile uint *)(fio1 + 0x18) = *(volatile uint *)(fio1 + 0x18) | 0x40000;
+        *(volatile uint *)(fio1 + 0x58) = *(volatile uint *)(fio1 + 0x58) | 0x20;
+        *(volatile uint *)(fio1 + 0x58) = *(volatile uint *)(fio1 + 0x58) | 0x100;
       }
       else {
-        *(uint *)(PTR_DAT_00010640 + 0x5c) = *(uint *)(PTR_DAT_00010640 + 0x5c) | 0x200;
-        *(uint *)(fio1 + 0x1c) = *(uint *)(fio1 + 0x1c) | 0x40000;
-        *(uint *)(fio1 + 0x5c) = *(uint *)(fio1 + 0x5c) | 0x20;
-        *(uint *)(fio1 + 0x5c) = *(uint *)(fio1 + 0x5c) | 0x100;
+        *(volatile uint *)(PTR_DAT_00010640 + 0x5c) = *(volatile uint *)(PTR_DAT_00010640 + 0x5c) | 0x200;
+        *(volatile uint *)(fio1 + 0x1c) = *(volatile uint *)(fio1 + 0x1c) | 0x40000;
+        *(volatile uint *)(fio1 + 0x5c) = *(volatile uint *)(fio1 + 0x5c) | 0x20;
+        *(volatile uint *)(fio1 + 0x5c) = *(volatile uint *)(fio1 + 0x5c) | 0x100;
       }
     }
     else if ((uint)(byte)*PTR_disp_scan_00010644 ==
              ((int)(uint)(byte)*PTR_disp_scan_00010644 >> 1) * 2) {
-      *(uint *)(PTR_DAT_00010640 + 0x18) = *(uint *)(PTR_DAT_00010640 + 0x18) | 0x20000;
-      *(uint *)(fio1 + 0x18) = *(uint *)(fio1 + 0x18) | 0x8000;
-      *(uint *)(fio1 + 0x58) = *(uint *)(fio1 + 0x58) | 0x80;
-      *(uint *)(fio1 + 0x18) = *(uint *)(fio1 + 0x18) | 0x80;
+      *(volatile uint *)(PTR_DAT_00010640 + 0x18) = *(volatile uint *)(PTR_DAT_00010640 + 0x18) | 0x20000;
+      *(volatile uint *)(fio1 + 0x18) = *(volatile uint *)(fio1 + 0x18) | 0x8000;
+      *(volatile uint *)(fio1 + 0x58) = *(volatile uint *)(fio1 + 0x58) | 0x80;
+      *(volatile uint *)(fio1 + 0x18) = *(volatile uint *)(fio1 + 0x18) | 0x80;
     }
     else {
-      *(uint *)(PTR_DAT_00010640 + 0x1c) = *(uint *)(PTR_DAT_00010640 + 0x1c) | 0x20000;
-      *(uint *)(fio1 + 0x1c) = *(uint *)(fio1 + 0x1c) | 0x8000;
-      *(uint *)(fio1 + 0x5c) = *(uint *)(fio1 + 0x5c) | 0x80;
-      *(uint *)(fio1 + 0x1c) = *(uint *)(fio1 + 0x1c) | 0x80;
+      *(volatile uint *)(PTR_DAT_00010640 + 0x1c) = *(volatile uint *)(PTR_DAT_00010640 + 0x1c) | 0x20000;
+      *(volatile uint *)(fio1 + 0x1c) = *(volatile uint *)(fio1 + 0x1c) | 0x8000;
+      *(volatile uint *)(fio1 + 0x5c) = *(volatile uint *)(fio1 + 0x5c) | 0x80;
+      *(volatile uint *)(fio1 + 0x1c) = *(volatile uint *)(fio1 + 0x1c) | 0x80;
     }
   }
   if (0xf0 < (byte)*PTR_disp_scan_00010644) {

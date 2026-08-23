@@ -6,8 +6,9 @@
 > 关联文档：`docs/LPC1765_PC6M_Debug_Guide.md`（P12 调试接口）、`LPC1769_68_67_66_65_64_63.pdf`（数据手册）、
 > `firmware/README.md`（构建）、`docs/HARDWARE_VERIFICATION_2026-08-20.md`（硬件印证）
 >
-> **前提警示**：当前 `firmware.bin`（63.6KB）为**阶段1-3 可编译骨架**，还在 W1–W7 行为等价路上，
-> **还不是**能带动整块 SCR 板的功能性固件。因此本文把 W8 拆成两段：
+> **当前状态（2026-08-23）**：当前固件已完成关键离线差分验证：`output_stage` 144/144、
+> `state_machine` 115/115、测试套件 11/11。它已不再是早期“可编译骨架”，但仍未完成整机验证。
+> 可以开始断开门极与功率负载的 SWD/控制电冒烟及示波器空载测试，禁止直接跳到 SCR 带载。
 > - **第Ⅰ段（现在就能做）**：调试/烧写链冒烟——只证明「J-Link↔P12↔LPC1765 能连、能写、能跑任意程序」。
 > - **第Ⅱ段（待 W7 出全功能固件后才做）**：整板实测——触发脉冲波形 + reg44/45 标定 + 闭环行为。
 
@@ -94,7 +95,7 @@ W8 是目标B 的**最终验收**，用硬件事实回答三件事（全部要�
 5. 仅用于测量触发逻辑时，用**信号发生器/低压参考**喂同步，不用真市电过零（见 §6.2 步 3）。
 6. **记录并备份原始固件**：先 `device info` 读取 CPU/Flash 型号、CRP 保护状态，并**完整 dump 原 Flash 存多份副本**。
    - 严禁 `Unlock` / `Recover` / `Mass Erase`（LPC17xx 有 CRP1/2/3，解除较高保护会整片擦除，原固件不可恢复）。
-   - 即使只写部分扇区也可能破坏向量表/配置；**确认可覆盖前不要 loadbin**。
+   - 即使只写部分扇区也可能破坏向量表/配置；**确认可覆盖前不要执行 `LoadFile`**。
 7. TCK/SWDCLK 数据手册注 15：**外部需下拉**。若连接不稳，先降 SWD 速度（100 kHz）再逐步提速，并检查原板是否已有下拉。
 
 ---
@@ -103,7 +104,7 @@ W8 是目标B 的**最终验收**，用硬件事实回答三件事（全部要�
 
 | 类别 | 规格 / 型号建议 | 用途 | 是否必需 |
 |---|---|---|---|
-| **硬件调试器** | **SEGGER J-Link（已确认选用）**，需支持 LPC1765/Cortex-M3、SWD、3.3V 目标电平；无 J-Link 时退而用 CMSIS-DAP / LPC-Link2。避免廉价 ST-Link 克隆 | 第Ⅰ段烧写/调试，第Ⅱ段运行与单步 | **必需** |
+| **硬件调试器** | **SEGGER J-Link（已确认选用）**，需支持 LPC1765/Cortex-M3、SWD、3.3V 目标电平 | 第Ⅰ段烧写/调试，第Ⅱ段运行与单步 | **必需** |
 | 排针/探针 | 与 P12 对齐的单排 1×8 排针或探针夹具；24cm 杜邦线 4 根 | 连接 P12 | 必需 |
 | **示波器** | 建议 ≥100 MHz、≥2 通道、带自动时序测量（脉宽/频率/占空比/相位差）；最好 4 通道（3 相 + 1 同步更省事） | 测 12° 触发脉冲 | 第Ⅱ段必需（第Ⅰ段可选） |
 | 无源探头 | 10× 探头 ×2（或 ×4）；测量 MCU GPIO 用 3.3V 兼容探笔 | 探 P0.x/P2.x 触发脚 | 第Ⅱ段必需 |
@@ -114,7 +115,7 @@ W8 是目标B 的**最终验收**，用硬件事实回答三件事（全部要�
 | 隔离电源 | 3.3V 隔离供电 + 5V（如需外围） | 保证电脑 USB 地与市电地不构成回路 | 必需 |
 | 万用表 | 通断/直流 | P12 方向核对、供电校验 | 必需 |
 
-> 无示波器时的替代：有 MCUXpresso/Keil + 调试器时，可在变量窗口/内存窗口读 `TIMER2.MR0`、`out_freq_adj`、触发 GPIO 寄存器（FIO0SET/FIO0DIR），间接验证触发时序（弱于波形，但可先做）。
+> 无示波器时的替代：用 **J-Link GDBServer + `arm-none-eabi-gdb`**（或 J-Link Commander `mem32`）读 `TIMER2.MR0`、`out_freq_adj`、触发 GPIO 寄存器（FIO0SET/FIO0DIR），间接验证触发时序（弱于波形，但可先做）。
 
 ---
 
@@ -123,17 +124,28 @@ W8 是目标B 的**最终验收**，用硬件事实回答三件事（全部要�
 | 软件 | 版本/用途 | 用于 |
 |---|---|---|
 | **ARM GNU Toolchain** | `arm-none-eabi-gcc 14.2.Rel1`（`-mcpu=cortex-m3 -mthumb`） | 构建固件（`firmware/build.sh`） |
-| **J-Link Commander**（`JLink.exe` / `JLinkExe`） | SEGGER，随 J-Link 驱动安装；CLI 识别/烧写/运行/单步 | **第Ⅰ段主工具**（命令见 §6 第Ⅰ段） |
-| **J-Flash / J-Flash Lite** | SEGGER 免费；GUI 或 CLI 烧 `.hex`，带地址/校验管控 | 第Ⅰ段烧 `.hex`（比 Commander 直观） |
+| **J-Link Commander**（`JLink.exe` / `JLinkExe`） | SEGGER 免费 J-Link 软件包内含；CLI 识别/备份/烧写/运行/单步 | **第Ⅰ段主工具**（HEX/ELF 用 `LoadFile`；BIN 用 `LoadFile 文件.bin 0x0`；无需另装 J-Flash） |
 | **J-Link GDBServer**（可选） | SEGGER；配合 `arm-none-eabi-gdb` 做源码级单步/读内存 | 第Ⅰ段详调 `TIMER2.MR0` 等内存 |
-| OpenOCD + GDB（仅当改换 CMSIS-DAP 才需要） | `openocd -f interface/cmsis-dap.cfg -f target/lpc1765.cfg`；本项目用 J-Link 故**不装** | 备用，非当前路径 |
-| **Keil MDK / MCUXpresso / IAR EW**（可选） | 有现成 license 才用；工程需按 LPC1765 256KB 建，不能按 LPC1768/69 的 512KB 建 | GUI 调试/变量观察 |
-| **Modbus 主机软件** | `Modbus Poll`（商业）、`QModMaster`、`Simply Modbus`（免费），或 **`pymodbus` + 自写 Python** | 第Ⅱ段读近实时 reg40-45、写 reg51-55 |
-| `pymodbus` / `minimalmodbus` | Python 库（串口 RTU master） | 脚本化批量标定/记录曲线 |
-| 串口终端/RS485 监视 | 支持 RS485、可设速率；`Simple Serial Port Terminal`、Python `pyserial` | 抓 UART3 原始帧/CRC 校验核对 |
-| **示波器软件** | 各家自带（Rigol/Picoscope/Keysight）；带**自动测量**脉宽/频率/相位差 + **截图导出** | 第Ⅱ段抓 12° 脉冲并存证 |
+| **minimalmodbus + pyserial** | Python 库（串口 RTU master），与本项目 `tools/w8_modbus_test.py` 一致 | 第Ⅱ段读近实时 reg40-45、写 reg51-55（脚本化批量标定/记录曲线） |
+| **串口终端/RS485 监视** | Python `pyserial`（`w8_serial_detect.py` 列端口）；不另装 GUI 串口助手 | 抓 UART3 原始帧/CRC 校验核对 |
+| **示波器软件** | 随示波器带；带**自动测量**脉宽/频率/相位差 + **截图导出** | 第Ⅱ段抓 12° 脉冲并存证 |
 | **逻辑分析仪软件** | PulseView/sigrok（Saleae 兼容），用 PWM/串口解码 | 第Ⅱ段解 6 路触发时序/解 Modbus 帧 |
 | Git/`git` | 每次实测后 commit 波形结果、修改的 reg54/55 记录 | 过程留痕 |
+
+### 5.1 免费软件官方下载地址
+
+| 软件 | 官方地址 | 本项目选择 |
+|---|---|---|
+| Arm GNU Toolchain | [Windows x64 14.2.Rel1 官方安装器](https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-mingw-w64-x86_64-arm-none-eabi.exe) / [Arm 官方发布页](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads) | 固定 14.2.Rel1、Windows、`arm-none-eabi`，不要在实测前升级 |
+| SEGGER J-Link Software Pack | [SEGGER 官方下载页](https://www.segger.com/downloads/jlink/) | 免费供 J-Link/J-Trace 硬件用户使用；包含 Commander、GDB Server 和驱动 |
+| Python | [Python 3.12.10 Windows x64 官方安装器](https://www.python.org/ftp/python/3.12.10/python-3.12.10-amd64.exe) / [版本说明](https://www.python.org/downloads/release/python-31210/) | 64-bit Python 3.12 |
+| MinimalModbus | [官方安装文档](https://minimalmodbus.readthedocs.io/en/stable/installation.html) / [PyPI](https://pypi.org/project/MinimalModbus/) | `python -m pip install minimalmodbus` |
+| pySerial | [PyPI 官方包页](https://pypi.org/project/pyserial/) | `python -m pip install pyserial` |
+| Git for Windows | [Git 官方下载](https://git-scm.com/download/win) | 用于版本管理与测试留痕 |
+| PulseView / sigrok | [PulseView 0.4.2 Windows x64 官方安装器](https://sigrok.org/download/binary/pulseview/pulseview-0.4.2-64bit-static-release-installer.exe) / [sigrok 官方下载](https://sigrok.org/wiki/Downloads) | 可选，仅用于兼容逻辑分析仪的多路数字时序 |
+
+以上软件均可免费使用。当前方案不要求购买 Keil、J-Flash、Ozone、付费 Modbus 工具或付费
+示波器分析软件。J-Link 调试器和测量仪器本身属于硬件成本，不属于“免费软件”。
 
 **关键软件配置**（第Ⅰ段）：
 
@@ -177,12 +189,13 @@ W8 是目标B 的**最终验收**，用硬件事实回答三件事（全部要�
 4. **备份原始 Flash**：`savebin backup_orig.bin, 0x00000000, 0x40000`（LPC1765 Flash = 256 KB = 0x40000）。
 5. **写一个最小 blink**（点亮 P0.x / P1.x LED；向量表/SP 正确）：
    ```
-   loadbin blink.hex 0x00000000   ; 或 loadbin blink.bin 0x00000000
+   loadfile blink.hex             ; HEX 自带地址
+   loadfile blink.bin 0x00000000  ; BIN 必须指定起始地址 0
    r                              ; 复位
    g                              ; 运行（Go）
    ```
    目标板 LED 闪烁 = **烧写/运行链打通**。若复位后死机：`mem32 0x0,4` 看前 4 字（应为 SP/Reset/IRQ），必要时接 RESET 线 + 重启工具勾选 `Connect under reset` 复查向量表。
-   （GUI 替代：J-Flash Lite → 选 `NXP LPC1765` + SWD → 拖入 `.hex` → `Program` → `Start`。）
+   （烧写一律走 J-Link Commander CLI 的 `LoadFile`，见上；无需 GUI。）
 6. **单步/断点**：J-Link 内 `halt`、`setbp 0x<addr>`、`go`，命中后 `st`（单步）/`mem`（读内存）/`regs`（读寄存器），证明调试链路可用。
 
 **第Ⅰ段通过标准**：能 `connect`、能读设备 ID、能备份原 Flash、能烧 blink 且复位后运行、能断点单步。
@@ -213,16 +226,16 @@ W8 是目标B 的**最终验收**，用硬件事实回答三件事（全部要�
 
 1. **连通 RS485**：USB-RS485 → 板上 RS485 端子（A+/B-，ADM2483 隔离后端）；确认从机地址 reg47（默认=1）；用 0x03 读 reg40-45 确认有实时值。
 
-   **Modbus 命令样例**（QModMaster 图形化；或 `pymodbus` 脚本，CRC 自动）：
+   **Modbus 命令样例**（`minimalmodbus` 脚本，CRC 自动；与本项目 `tools/w8_modbus_test.py` 一致）：
    ```python
-   from pymodbus.client import ModbusSerialClient
-   c = ModbusSerialClient(port="COM5", baudrate=9600, parity="N", stopbits=1, bytesize=8, timeout=1)
-   c.connect()
-   rr = c.read_holding_registers(0x28, 6, slave=1)   # 读 reg40-45（起 0x28=40，长 6）
-   vals = rr.registers                                   # [reg40,reg41,reg42,reg43,reg44,reg45]
-   c.write_register(0x37, 0x1100, slave=1)               # 写 reg55=0x1100(4352) 标定 Uf
-   c.write_register(0x36, 0x1100, slave=1)               # 写 reg54=0x1100(4352) 标定 IF
-   c.close()
+   import minimalmodbus
+   c = minimalmodbus.Instrument("COM5", 1)              # 串口, 从站地址(reg47)
+   c.serial.baudrate = 9600; c.serial.bytesize = 8
+   c.serial.parity = "N";  c.serial.stopbits = 1
+   c.serial.timeout = 1
+   vals = [c.read_register(r, 0, 3) for r in range(0x28, 0x2E)]  # 读 reg40-45（reg40=0x28）
+   c.write_register(0x37, 0x1100, 0, 6)                 # 写 reg55=0x1100(4352) 标定 Uf
+   c.write_register(0x36, 0x1100, 0, 6)                 # 写 reg54=0x1100(4352) 标定 IF
    ```
    > **本固件 PDU 寄存器地址 = 寄存器号本身**（已由 0x2F→reg47、0x36→reg54、0x37→reg55 实锤）：reg40-45 → 0x28..0x2D（reg44=0x2C、reg45=0x2D）。先读确认从机地址（reg47 已改则 `slave=` 用改后的值）。
 
@@ -266,4 +279,4 @@ W8 是目标B 的**最终验收**，用硬件事实回答三件事（全部要�
 
 ## 9. 一句话结论
 
-**P12 是已确证的 LPC1765 调试口（SWD 四线：P12-1/2/6/8），用一个支持 LPC1765/Cortex-M3 的 J-Link（或 CMSIS-DAP）即可安全地识别、备份、烧写与调试；W8 现可先做调试链冒烟（blink），待 W7 全功能固件后再做整板触发脉冲实测与 reg44/45 标定；全程遵守「断开高压、隔离 3.3V 供电、CRP 未解锁前不擦原固件」三项铁律。**
+**P12 是已确证的 LPC1765 调试口（SWD 四线：P12-1/2/6/8）。使用 SEGGER J-Link 先核对 CRP、制作并校验两份原固件备份；确认可恢复后，按“控制电冒烟→三相过零空载波形→Modbus/标定→低压负载→带载”的顺序推进。全程遵守「断开高压、门极/功率级隔离、未确认可恢复前不擦写」三项铁律。**

@@ -1,4 +1,4 @@
-# CLAUDE.md — LPC1765FBD100 固件逆向工程
+# AGENTS.md — LPC1765FBD100 固件逆向工程
 
 > 本文件是本项目的**自包含索引**。任何 AI 在任意对话中接手本项目，先读本文件即可快速恢复上下文并继续。
 > 配套文档：`PROJECT_SUMMARY_2026-08-21.md`（全史）、`README.md`（模块布局）、`APPLICATION_GUIDE_2026-08-21.md`（应用指南）、`DATA_SEGMENT_2026-08-21.md`（数据段清单）、`WORK_GUIDE_2026-08-21.md`（工作指导）。
@@ -33,7 +33,7 @@
 
 ```
 decompiled/
-├── CLAUDE.md                      ← 本文件（入口）
+├── AGENTS.md                      ← 本文件（入口）
 ├── PROJECT_SUMMARY_2026-08-21.md  ← 项目全史（开始→过程→结果）
 ├── README.md                      ← 模块布局 + 内存映射速查 + 功能结论
 ├── APPLICATION_GUIDE_2026-08-21.md ← 应用指南（逆向结论怎么用：Modbus/菜单/诊断/定制/实测）

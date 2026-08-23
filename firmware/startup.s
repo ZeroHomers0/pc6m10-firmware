@@ -13,12 +13,11 @@
     .cpu cortex-m3
     .thumb
 
-/* ── 初始栈顶：链接脚本符号 _estack（=0x10006768，复刻原 iar_init_core 最终 SP）── */
+/* ── 初始栈顶：原始复位向量 0x100029C8 ── */
 
 /* ═══════════════ 向量表（flash 0x0）═══════════════ */
     .section .isr_vector,"a",%progbits
     .type   g_pfnVectors, %object
-    .size   g_pfnVectors, . - g_pfnVectors
 
 g_pfnVectors:
     .word   _estack
@@ -28,7 +27,7 @@ g_pfnVectors:
     .word   MemManage_Handler
     .word   BusFault_Handler
     .word   UsageFault_Handler
-    .word   0                           /* 保留 */
+    .word   _vector_checksum            /* LPC Boot ROM 用户代码校验 */
     .word   0
     .word   0
     .word   0
@@ -37,7 +36,7 @@ g_pfnVectors:
     .word   0
     .word   PendSV_Handler
     .word   SysTick_Handler
-/* IRQ0-36（LPC176x 向量顺序） */
+/* IRQ0-34（LPC1765 向量顺序） */
     .word   WDT_IRQHandler              /* IRQ0  */
     .word   TIMER0_IRQHandler           /* IRQ1  */
     .word   TIMER1_IRQHandler           /* IRQ2  */
@@ -61,20 +60,19 @@ g_pfnVectors:
     .word   EINT2_IRQHandler            /* IRQ20 */
     .word   EINT3_IRQHandler            /* IRQ21 */
     .word   ADC0_IRQHandler             /* IRQ22 */
-    .word   I2S0_IRQHandler             /* IRQ23 */
-    .word   BOD_IRQHandler              /* IRQ24 */
-    .word   ETHERNET_IRQHandler         /* IRQ25 */
-    .word   USB_IRQHandler              /* IRQ26 */
-    .word   CAN_IRQHandler              /* IRQ27 */
-    .word   DMA_IRQHandler              /* IRQ28 */
-    .word   I2S1_IRQHandler             /* IRQ29 */
-    .word   ENET_MAC_IRQHandler         /* IRQ30 */
-    .word   RIT_IRQHandler              /* IRQ31 */
-    .word   MCPWM_IRQHandler            /* IRQ32 */
-    .word   QEI_IRQHandler              /* IRQ33 */
-    .word   PLL1_IRQHandler             /* IRQ34 */
-    .word   USBActivity_IRQHandler      /* IRQ35 */
-    .word   CANActivity_IRQHandler      /* IRQ36 */
+    .word   BOD_IRQHandler              /* IRQ23 */
+    .word   USB_IRQHandler              /* IRQ24 */
+    .word   CAN_IRQHandler              /* IRQ25 */
+    .word   DMA_IRQHandler              /* IRQ26 */
+    .word   I2S_IRQHandler              /* IRQ27 */
+    .word   ETHERNET_IRQHandler         /* IRQ28 */
+    .word   RIT_IRQHandler              /* IRQ29 */
+    .word   MCPWM_IRQHandler            /* IRQ30 */
+    .word   QEI_IRQHandler              /* IRQ31 */
+    .word   PLL1_IRQHandler             /* IRQ32 */
+    .word   USBActivity_IRQHandler      /* IRQ33 */
+    .word   CANActivity_IRQHandler      /* IRQ34 */
+    .size   g_pfnVectors, . - g_pfnVectors
 
 /* ═══════════════ Reset_Handler ═══════════════ */
     .section .text.Reset_Handler,"ax",%progbits
@@ -157,14 +155,12 @@ zero_done:
     weak_handler RTC_IRQHandler
     weak_handler EINT0_IRQHandler
     weak_handler ADC0_IRQHandler
-    weak_handler I2S0_IRQHandler
     weak_handler BOD_IRQHandler
     weak_handler ETHERNET_IRQHandler
     weak_handler USB_IRQHandler
     weak_handler CAN_IRQHandler
     weak_handler DMA_IRQHandler
-    weak_handler I2S1_IRQHandler
-    weak_handler ENET_MAC_IRQHandler
+    weak_handler I2S_IRQHandler
     weak_handler RIT_IRQHandler
     weak_handler MCPWM_IRQHandler
     weak_handler QEI_IRQHandler

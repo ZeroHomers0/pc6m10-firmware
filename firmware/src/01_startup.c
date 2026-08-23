@@ -74,7 +74,7 @@ void run_stop_preset(void);
 void WDT_IRQHandler(void)
 {
   WDMOD = WDMOD & 0xfb;
-  *(int *)PTR_wdt_timeout_count_00000244 = *(int *)PTR_wdt_timeout_count_00000244 + 1;
+  *(volatile int *)PTR_wdt_timeout_count_00000244 = *(volatile int *)PTR_wdt_timeout_count_00000244 + 1;
   return;
 }
 
@@ -82,7 +82,7 @@ void WDT_IRQHandler(void)
 /* 0x00000200 —— 看门狗初始化（timeout_cnt=超时计数值，main 里传 200） */
 void wdt_init(uint timeout_cnt)
 {
-  *(undefined4 *)PTR_wdt_timeout_count_00000244 = 0;
+  *(volatile undefined4 *)PTR_wdt_timeout_count_00000244 = 0;
   NVIC_ISER0 = 1;                       /* 使能 WDT IRQ（IRQ0） */
   WDTC = (timeout_cnt & 0x1ffff) << 0xd;    /* WDTC：看门狗定时值 */
   WDMOD = 3;                            /* WDEN+WDRESET */
@@ -106,7 +106,7 @@ void wd_feed(void)
 /* 0x00000248 —— TIMER0 初始化：MR0=1999（节拍周期），匹配中断 IRQ0 */
 void timer0_init(void)
 {
-  *(uint *)(DAT_000002d8 + 0xc4) = *g_pconp | 2;  /* PCONP |= 2：TIMER0 上电 */
+  *(volatile uint *)(DAT_000002d8 + 0xc4) = *g_pconp | 2;  /* PCONP |= 2：TIMER0 上电 */
   TIMER0->TCR = 2;            /* 复位 TC/PC（先复位再配置） */
   TIMER0->PR = 0x18;          /* 预分频 24 */
   TIMER0->MR0 = 1999;         /* MR0 = 1999（节拍周期） */
@@ -199,14 +199,14 @@ void SystemInit(void)
 /* 0x00000598 —— 长延时（6000×1000 空循环，用于等待电源稳定） */
 void long_delay(void)
 {
-  undefined4 j;
-  undefined4 i;
+  volatile uint32_t i;
+  volatile uint32_t j;
 
-  for (i = 0; i < 6000; i = i + 1) {
-    for (j = 0; j < 1000; j = j + 1) {
+  for (i = 0; i < 6000; i++) {
+    for (j = 0; j < 1000; j++) {
+      /* 原固件空转延时；volatile 防止 -Os 删除。 */
     }
   }
-  return;
 }
 
 
@@ -334,7 +334,8 @@ void main(void)
 /* 0x000007A8 —— 简单延时（loops×50 空循环） */
 void Delay(int loops)
 {
-  for (loops = loops * 0x32; loops != 0; loops = loops + -1) {
+  volatile int count = loops * 50;
+  while (count != 0) {
+    count--;
   }
-  return;
 }

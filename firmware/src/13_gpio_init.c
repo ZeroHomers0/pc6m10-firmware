@@ -33,11 +33,11 @@ void gpio2_init(void)
   int fio_base;
 
   fio_base = DAT_0001087c;                          /* FIO 池基址 0x2009C000 */
-  *(uint *)(DAT_0001087c + 0x40) = *(uint *)(DAT_0001087c + 0x40) | 0x10;  /* FIO2DIR P2.4=输出 */
-  *(uint *)(fio_base + 0x40) = *(uint *)(fio_base + 0x40) | 8;                   /* FIO2DIR P2.3=输出 */
-  *(uint *)(fio_base + 0x40) = *(uint *)(fio_base + 0x40) | 2;                   /* FIO2DIR P2.1=输出 */
-  *(uint *)(fio_base + 0x40) = *(uint *)(fio_base + 0x40) & 0xfffffffb;          /* FIO2DIR P2.2=改输入（双向） */
-  *(uint *)(fio_base + 0x58) = *(uint *)(fio_base + 0x58) | 0x10;                /* FIO2SET P2.4=高 */
-  *(uint *)(fio_base + 0x58) = *(uint *)(fio_base + 0x58) | 8;                   /* FIO2SET P2.3=高 */
-  *(uint *)(fio_base + 0x58) = *(uint *)(fio_base + 0x58) | 2;                   /* FIO2SET P2.1=高 */
+  *(volatile uint *)(DAT_0001087c + 0x40) = *(volatile uint *)(DAT_0001087c + 0x40) | 0x10;  /* FIO2DIR P2.4=输出 */
+  *(volatile uint *)(fio_base + 0x40) = *(volatile uint *)(fio_base + 0x40) | 8;                   /* FIO2DIR P2.3=输出 */
+  *(volatile uint *)(fio_base + 0x40) = *(volatile uint *)(fio_base + 0x40) | 2;                   /* FIO2DIR P2.1=输出 */
+  *(volatile uint *)(fio_base + 0x40) = *(volatile uint *)(fio_base + 0x40) & 0xfffffffb;          /* FIO2DIR P2.2=改输入（双向） */
+  *(volatile uint *)(fio_base + 0x58) = *(volatile uint *)(fio_base + 0x58) | 0x10;                /* FIO2SET P2.4=高 */
+  *(volatile uint *)(fio_base + 0x58) = *(volatile uint *)(fio_base + 0x58) | 8;                   /* FIO2SET P2.3=高 */
+  *(volatile uint *)(fio_base + 0x58) = *(volatile uint *)(fio_base + 0x58) | 2;                   /* FIO2SET P2.1=高 */
 }

@@ -1,7 +1,7 @@
 # SETUP_WINDOWS — 另一台电脑从零搭好目标B环境
 
 > 日期：2026-08-22 ｜ 用在哪：把「能编译 firmware + 跑 W8 实测」的环境搬到**另一台 Windows 电脑**
-> 一键脚本：`tools/setup_windows.bat`（双击）或 `tools/setup_windows.ps1`（PowerShell）
+> 推荐按本文固定版本手动安装。`tools/setup_windows.bat/.ps1` 使用包管理器最新版本，不能保证可重复构建，暂不作为基线安装方式。
 > 配套：`W8_SOFTWARE_OPERATION.md`（W8 要哪些软件、每步怎么操作）
 
 ---
@@ -13,7 +13,7 @@
 | 要做的活 | 需要什么 | 有没有强电风险 |
 |---|---|---|
 | **A. 编译固件**（改代码→出 `firmware.hex/.bin`） | ARM GCC 工具链 + Git Bash + Python | 无（纯编译） |
-| **B. W8 硬件实测**（读出电器数据、抓波形、下载烧录） | USB-RS485 + 示波器 + 信号发生器 + Python(minimalmodbus) | **有(L3 阶段)** |
+| **B. W8 硬件实测**（读出电器数据、抓波形、下载烧录） | **J-Link** + USB-RS485 + 示波器 + 信号发生器 + Python(minimalmodbus) | **有(L3 阶段)** |
 
 - 如果你只是**改代码/编译**，装前面的工具链 + Python 就够（下面 1~4 项）。
 - 如果你要**上真机实测**（W8），还要预留那批**硬件仪器**（见 §分页 `W8_SOFTWARE_OPERATION.md`）。
@@ -27,25 +27,27 @@
 | # | 软件 | Winget 包名 | 为什么 |
 |---|---|---|---|
 | 1 | **Git for Windows** | `Git.Git` | 提供 `bash`（build.sh 是 bash 脚本，必需） |
-| 2 | **ARM GNU Embedded Toolchain** | `Arm.GnuArmEmbeddedToolchain` | `arm-none-eabi-gcc` 编译 Cortex-M3 → hex/bin |
-| 3 | **Python 3.13** | `Python.Python.3.13` | 跑验证脚本 + W8 Modbus 测试 |
+| 2 | **Arm GNU Toolchain 14.2.Rel1** | 官方固定版本安装包 | 与当前冻结构建一致 |
+| 3 | **Python 3.12.10 x64** | 官方固定版本安装包 | 跑验证脚本 + W8 Modbus 测试 |
 | 4 | **(pip) minimalmodbus + pyserial** | 由 pip 装 | W8 阶段 B 的 Modbus 通信 |
+| 5 | **SEGGER J-Link 驱动**（含 `J-Link Commander`） | 无 winget 包（SEGGER 官网安装包） | W8 阶段 A 的 SWD 识别/备份/烧写/调试 |
 
-> 这些都可从 **winget**（Windows 官方包管理器）一键获得，见下面两种方式。
+> Git 可用 winget 安装；编译器和 Python 应使用下文已核验的官方固定版本链接。J-Link 从 SEGGER 官网安装。
 
 ---
 
-## 2. 方式 A：一键脚本（推荐，最省事）
+## 2. 方式 A：固定版本手动安装（推荐，可重复）
 
 **在另一台电脑上：**
-1. 把 `decompiled` 整个项目目录拷过去（含 `firmware/`、`tools/`、`LPC1765.bin`、`docs/`…）。
-2. 双击 `decompiled\tools\setup_windows.bat`（会弹 UAC 权限确认，点**是**）。
-3. 脚本会自动：
-   - 装 Git + ARM GCC + Python（用 winget）
-   - 用 pip 装 minimalmodbus + pyserial
-   - **自动定位 `arm-none-eabi-gcc.exe` 实际路径，改写 `firmware/build.sh` 里的 `TC=` 一行**（这样即使版本号目录不同也不会编译失败）
-   - 尝试跑一次 `bash build.sh` 验证
-4. 看到最后一行提示后，**重开一个终端**（让新命令进入 PATH），进入 `firmware/` 跑 `bash build.sh`。
+1. 安装 [Git for Windows](https://git-scm.com/download/win)。
+2. 安装 [Arm GNU Toolchain 14.2.Rel1 x64 官方安装包](https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-mingw-w64-x86_64-arm-none-eabi.exe)。
+3. 安装 [Python 3.12.10 x64 官方安装包](https://www.python.org/ftp/python/3.12.10/python-3.12.10-amd64.exe)，勾选加入 PATH。
+4. 执行 `py -3.12 -m pip install minimalmodbus pyserial`。
+5. 安装 [SEGGER J-Link Software and Documentation Pack](https://www.segger.com/downloads/jlink/)。
+6. 重开终端，进入 `firmware/` 执行 `bash build.sh`。
+
+> ⚠ 一键脚本**不装 J-Link**（它只装 Git + ARM GCC + Python + minimalmodbus/pyserial）。W8 阶段 A 要烧写/调试时，请**另外**从 SEGGER 官网装 J-Link 驱动（`JLink_Windows_*.exe`，含 `J-Link Commander`）。
+
 
 ### 脚本会自动处理的坑
 - **`build.sh` 的路径是硬编码的**：`TC="/c/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin"`。另一台电脑版本号可能不同 → 不改就会编译失败。脚本安装后**自动改写这一行**为它找到的真实路径。
@@ -94,7 +96,7 @@ TC="/c/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin"
 cd /d/code/LPC1765FBD100/decompiled/firmware
 bash build.sh
 # 预期末尾： OK: firmware.elf / firmware.hex / firmware.bin
-# 正常应看到 text 60268  data 3388  bss 2188
+# 正常应看到 text 61900  data 3000  bss 2188
 ```
 
 ```bash
@@ -131,6 +133,12 @@ python --version              # 应显示 Python 3.13.x
 
 **Q：另一台电脑要不要装 Ghidra？**
 A：只做编译 + W8 实测**不需要**。Ghidra 只在逆向那台电脑上用（分析原 bin）。
+
+**Q：要不要装 J-Link 驱动？**
+A：**只编译固件不用**。要上机烧写/调试（W8 阶段 A）才需要；从 SEGGER 官网装 J-Link 驱动（含 `J-Link Commander`），不通过 winget、也不在一键脚本里。操作见 `W8_SOFTWARE_OPERATION.md §A`。
+
+**Q：要不要装 J-Flash / 其它 IDE（Keil / MCUXpresso / IAR 等）？**
+A：**都不用**。`J-Link Commander` 的 `loadbin` 即可烧 `.hex/.bin`；无需 J-Flash、OpenOCD 或 IDE。
 
 **Q：能不能不装 Python？**
 A：编译固件不需要 Python（build.sh 是 bash+gcc）。但**跑 verify_ 验证脚本、W8 的 Modbus 测试**需要。建议装上。
