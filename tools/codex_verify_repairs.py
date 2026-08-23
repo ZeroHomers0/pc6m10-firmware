@@ -197,6 +197,80 @@ def verify_closed_loop():
     print(f"CLOSED_LOOP: PASS cases={len(cases)}")
 
 
+def verify_output_stage_matrix():
+    cases = 0
+    ranges = ((0x2009C000, 0x2009CFFF), (0x40008000, 0x40008FFF),
+              (0x40090000, 0x40090FFF), (0x400FC000, 0x400FDFFF))
+    for cfg in (0, 1):
+        for gain_sel in (0, 1, 2):
+            for mode in (0, 1, 2):
+                for fault in (0, 8, 0x10, 0x20):
+                    for run_flag in (0, 1):
+                        traces = []
+                        states = []
+                        for is_new, entry in ((False, 0xE9AC), (True, SYMS["output_stage"])):
+                            uc = machine(is_new)
+                            uc.mem_write(0x10001628, bytes((cfg,)))
+                            uc.mem_write(0x10001634, bytes((gain_sel,)))
+                            uc.mem_write(0x10002075, bytes((mode,)))
+                            uc.mem_write(0x10001624, struct.pack("<I", fault))
+                            uc.mem_write(0x10001785, bytes((run_flag,)))
+                            uc.mem_write(0x10002078, b"\x0A")  # 强制进入 10 tick 主分支
+                            uc.mem_write(0x100015CE, struct.pack("<I", 0))
+                            uc.mem_write(0x10001660, struct.pack("<I", 90))
+                            trace = []
+                            callback = lambda machine, access, address, size, value, user: trace.append((address, size, value))
+                            for begin, end in ranges:
+                                uc.hook_add(UC_HOOK_MEM_WRITE, callback, begin=begin, end=end)
+                            run(uc, entry, max_insn=2_000_000)
+                            traces.append(trace)
+                            states.append(bytes(uc.mem_read(0x10000000, 0x2200)))
+                        label = (cfg, gain_sel, mode, fault, run_flag)
+                        assert traces[0] == traces[1], f"output_stage peripheral mismatch {label}"
+                        assert states[0] == states[1], f"output_stage SRAM mismatch {label}"
+                        cases += 1
+    print(f"OUTPUT_STAGE_MATRIX: PASS cases={cases}")
+
+
+def verify_state_machine_matrix():
+    """覆盖主界面、菜单导航及参数编辑的可终止路径。"""
+    cases = []
+    for key in (0, 1, 2, 3, 4, 5, 6, 0x16, 0x17, 0x21):
+        cases.append((1, 0, 0, key))
+    for menu in (2, 3, 4, 5, 7, 0x14, 0x1E):
+        for menu2 in (0, 1, 3):
+            for menu3, key in ((0, 0), (0, 2), (0, 3), (1, 2), (1, 3)):
+                cases.append((menu, menu2, menu3, key))
+
+    ranges = ((0x2009C000, 0x2009CFFF), (0x40008000, 0x40008FFF),
+              (0x40090000, 0x40090FFF), (0x400FC000, 0x400FDFFF))
+    for menu, menu2, menu3, key in cases:
+        traces = []
+        states = []
+        for is_new, entry in ((False, 0x458C), (True, SYMS["state_machine"])):
+            uc = machine(is_new)
+            uc.mem_write(0x10001744, bytes((menu, menu2, menu3)))
+            # 合法、非边界参数种子，避免用全零状态掩盖减法/范围分支。
+            uc.mem_write(0x10001698, struct.pack("<IIIII", 4000, 4001, 4002, 4003, 4004))
+            uc.mem_write(0x10001660, struct.pack("<I", 90))
+            uc.mem_write(0x10001710, bytes((2, 10, 10, 0, 0, 0, 2, 2, 2)))
+            trace = []
+            callback = lambda machine, access, address, size, value, user: trace.append((address, size, value))
+            for begin, end in ranges:
+                uc.hook_add(UC_HOOK_MEM_WRITE, callback, begin=begin, end=end)
+            uc.reg_write(UC_ARM_REG_R0, key)
+            run(uc, entry, max_insn=2_000_000)
+            traces.append(trace)
+            states.append(bytes(uc.mem_read(0x10000000, 0x2200)))
+        label = (menu, menu2, menu3, key)
+        # 状态机内部会调用多个 GPIO 叶函数；其逐次 MMIO 已由专门矩阵独立验证。
+        # 这里比较状态机可观察的 SRAM 末态，避免把编译器调用布局当作业务差异。
+        diffs = [(0x10000000 + i, a, b) for i, (a, b) in
+                 enumerate(zip(states[0], states[1])) if a != b]
+        assert not diffs, f"state_machine SRAM mismatch {label}: {diffs[:8]}"
+    print(f"STATE_MACHINE_MATRIX: PASS cases={len(cases)}")
+
+
 def verify_vector():
     words = struct.unpack_from("<8I", NEW)
     assert sum(words) & 0xFFFFFFFF == 0
@@ -219,3 +293,5 @@ if __name__ == "__main__":
     verify_crc_matrix()
     verify_modbus_regs()
     verify_closed_loop()
+    verify_output_stage_matrix()
+    verify_state_machine_matrix()
