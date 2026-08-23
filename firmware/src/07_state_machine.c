@@ -7,7 +7,7 @@
  *
  * 函数：0x0000458C-0xAB44（UI 状态机主分发，MENU 驱动）
  * 调用点：main() 主循环 state_machine(*key)
- * 分发链（顺序 if 级联，遇 return 即返回；§说明见 tools/_SM_W1B_PROGRESS.md）：
+ * 分发链（顺序 if 级联，遇 return 即返回；历史说明见 docs/history/_SM_W1B_PROGRESS.md）：
  *   entry(0x458C)→case1(0x4B16)→caseA(0x541C)→case62(0x5572)→case63(0x5748)
  *   →case2(0x6134)→case3(0x69D6)→case4(0x7C1A)→case5(0x8780)→case6(0x8C1A)
  *   →case7(0x910C)→case8(0x9A84)→caseB(0x9C5C)→case9(0x9D86)→case5A(0x9E14)

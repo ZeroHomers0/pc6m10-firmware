@@ -22,3 +22,4 @@ tools/_ghidra_proj/
 *.pyc
 __pycache__/
 *.csv
+*.lnk

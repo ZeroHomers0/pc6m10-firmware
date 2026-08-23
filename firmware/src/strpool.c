@@ -1,4 +1,4 @@
-/* 自动生成：tools/gen_strpool.py（目标B W7a）。勿手改。
+/* 自动生成：tools/generation/generate_string_pool.py（目标B W7a）。勿手改。
  * GBK 字符串表 blob + 簇表 + strpool_map。
  * 反编译把 disp_string 第一实参直传原固件 flash 字符串地址；
  * GCC 重链接后该地址是指令字节。strpool_map 把 flash 地址映射到本 blob 内偏移。

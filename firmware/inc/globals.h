@@ -1,4 +1,4 @@
-/* 自动生成：tools/gen_globals.py（目标B 阶段2）。勿手改。
+/* 自动生成：tools/generation/generate_globals.py（目标B 阶段2）。勿手改。
  * 每个符号初值 = LPC1765.bin flash 字面量池内容。类型默认 uint32_t；
  * 访问宽度（byte/word）与符号语义不一致由阶段4在 src 修正。 */
 #ifndef GLOBALS_H

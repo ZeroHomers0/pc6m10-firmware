@@ -650,7 +650,7 @@ undefined4 modbus_write_multi(undefined4 *src_val,uint reg_addr)
  *
  * ★ 说明：该函数为本固件最大函数之一，C 语言反编译结果超过 MCP 5s 传输上限
  *   （连续 6 次超时），因此改为「反汇编精读还原」：完整反汇编已另存为
- *   decompiled/08_modbus_dispatch_asm.txt（5161 条指令），此处给出流程还原、
+ *   evidence/reverse/disassembly/08_modbus_dispatch_asm.txt（5161 条指令），此处给出流程还原、
  *   关键数据区与代表性代码段。寄存器读/写值映射见 modbus_read_reg 与
  *   modbus_write_multi（reg 0x00-0x3F → 0x1000B4B8..0x1000B590；
  *   reg 0x2B-0x3D → 0x1000B984..0x1000B9C4）。

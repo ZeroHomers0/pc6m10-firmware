@@ -3,7 +3,7 @@
  *
  * GCC 方案替代原 IAR 启动链（Reset→iar_program_start→iar_data_init→main）。
  * 顺序：
- *   1. 拷贝原始固件 SRAM 镜像（docs/_data_image.bin，VMA=0x10000000，LMA=flash）
+ *   1. 拷贝原始固件 SRAM 镜像（firmware/assets/ram_data_image.bin，VMA=0x10000000，LMA=flash）
  *      —— 恢复反编译代码绝对指针指向的 .data 初始值
  *   2. 清零原始 .bss 区（0x1000213C-0x100029C8）
  *   3. 拷贝本固件 C 代码 .data + 清零 .bss（链接器符号）
