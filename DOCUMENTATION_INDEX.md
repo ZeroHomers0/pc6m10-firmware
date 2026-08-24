@@ -23,6 +23,7 @@
 2. `docs/w8/W8_PRE_HARDWARE_VALIDATION_2026-08-23.md`
 3. `docs/w8/W8_HARDWARE_TEST_2026-08-22.md`
 4. `docs/w8/W8_SOFTWARE_OPERATION.md`
+5. `docs/w8/W8_JLINK_DEBUG_2026-08-24.md`
 
 ## 证据与历史
 
