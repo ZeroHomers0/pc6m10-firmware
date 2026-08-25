@@ -24,6 +24,7 @@
 3. `docs/w8/W8_HARDWARE_TEST_2026-08-22.md`
 4. `docs/w8/W8_SOFTWARE_OPERATION.md`
 5. `docs/w8/W8_JLINK_DEBUG_2026-08-24.md`
+6. `docs/w8/W8_ISP_FLASH_2026-08-26.md`（SWD 不可用 → ISP 备份/烧录替代路径）
 
 ## 证据与历史
 
