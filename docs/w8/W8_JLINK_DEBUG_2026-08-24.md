@@ -26,7 +26,7 @@ SWDIO/SWCLK 实为 **P1.30/P1.29**（由 PINSEL3 `0x4002C00C` 控制）。`adc_i
 | 调试器 | SEGGER J-Link ARM-OB STM32，V7.00，S/N 20090928，**编译于 2012-08-22** |
 | J-Link 软件 | J-Link Commander / J-Flash / JLinkARM.dll **V9.70**（2026 版软件，老硬件） |
 | 目标固件 | 仓库金标准 `LPC1765.bin` SHA-256 `DD629EAC…3F65`；当前 `firmware.bin` `F032EFB7…AA44` |
-| 调试接口 | P12：1=VTref、2=GND、6=SWDIO、8=SWCLK（P12-3 **不是**复位脚） |
+| 调试接口 | P12：1=VTref、2=GND、3=P2.10(ISP)、6=SWDIO、7=nRESET、8=SWCLK（P12-7 **是**复位脚、P12-3 是 ISP 引导脚） |
 | 阶段 | W8 阶段 0（原固件备份）前置 —— 必须先能连上才可读取/备份 |
 
 ## 2. 现状症状（已确认）
@@ -140,8 +140,8 @@ CRP=`0xFFFFFFFF` 无保护，与 J-Link 无关。初判「固件侧 SWD 开放 /
 
 | 目标 | 路径 |
 |---|---|
-| 调试/断点/看寄存器 | **connect-under-reset**：找 MCU 真正的 nRESET（复位按钮/复位电容那根线，P12-3 不是），
-  手动拉低保持 → J-Link connect → 再松开。复位窗口内 CPU 停住、P1.30/P1.29 回到 SWD 功能，才能抢进连接。 |
+| 调试/断点/看寄存器 | **connect-under-reset**：把 J-Link 复位线接 **P12-7(nRESET)**，用 J-Link 的
+  connect under reset。复位窗口内 CPU 停住、SWD 脚回到原功能，才能抢进连接。 |
 | 烧录/备份/刷固件 | **ISP（Flash Magic）**：P2.10 拉低 + UART0（P0.0/P0.1），完全绕过 SWD，不依赖 J-Link。 |
 | 在线诊断（不改固件）| 直接用板子现有 Modbus/UART3 口读 reg40–45 测量值，不需 SWD。 |
 
