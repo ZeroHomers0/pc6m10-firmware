@@ -59,6 +59,10 @@ python tools/verification/verify_firmware_equivalence.py
 - UART3 经 ADM2483 实现 Modbus RTU，从站支持 0x03/0x06/0x10，寄存器 1..63。
 - P0.20=RLY3 备用、P0.21=RLY2 报警、P0.22=RLY1 运行；P1.20..23 为状态 LED。
 - P12 SWD：1=VTref、2=GND、6=SWDIO、8=SWCLK，P12-3 不是复位。
+- SWD 调试脚被固件复用（2026-08-26 定论，证据见 `docs/w8/W8_JLINK_DEBUG_2026-08-24.md` §3.1）：
+  P1.30(SWDIO)→AD0.4 电压反馈（`adc_init`，PINSEL3[29:28]=3）、P1.29(SWCLK)→RS485 DE/RE（`uart3_init`）。
+  两者在 `main()` 初始化即执行 → 出厂固件 SWD 连不上属设计冲突，非 J-Link 问题。
+  进调试需 connect-under-reset（另接 nRESET）；烧录/备份可走 ISP（P2.10 拉低 + UART0 P0.0/P0.1）。
 
 ## 关键限制与下一步
 
