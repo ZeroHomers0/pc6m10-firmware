@@ -1,6 +1,6 @@
 # 文档索引
 
-> 最后更新：2026-08-24。当前进度优先级：`AGENTS.md` → 本文 → `docs/project/PROJECT_STATUS.md` → 历史文档。
+> 最后更新：2026-08-26。当前进度优先级：`AGENTS.md` → 本文 → `docs/project/PROJECT_STATUS.md` → 历史文档。
 
 ## 当前文档
 
@@ -24,7 +24,8 @@
 3. `docs/w8/W8_HARDWARE_TEST_2026-08-22.md`
 4. `docs/w8/W8_SOFTWARE_OPERATION.md`
 5. `docs/w8/W8_JLINK_DEBUG_2026-08-24.md`
-6. `docs/w8/W8_ISP_FLASH_2026-08-26.md`（SWD 不可用 → ISP 备份/烧录替代路径）
+6. `docs/w8/W8_ISP_FLASH_2026-08-26.md`（ISP 擦除、SWD 恢复、自编译固件 CRP 风险与实机经验）
+7. `docs/w8/W8_POST_FLASH_2026-08-26.md`（自编译固件 CRP 修复后 SWD 烧写入板、MEMMAP 排查与板上状态）
 
 ## 证据与历史
 

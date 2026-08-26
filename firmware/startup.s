@@ -74,6 +74,18 @@ g_pfnVectors:
     .word   CANActivity_IRQHandler      /* IRQ34 */
     .size   g_pfnVectors, . - g_pfnVectors
 
+/* ═══════════════ Code Read Protection word（flash 0x2FC）═══════════════ */
+/* LPC17xx 把 flash 偏移 0x2FC 的 32 位字当代码读保护控制字。必须保持
+   0xFFFFFFFF（无保护）；否则 Boot ROM 按未定义值启用保护（至少 CRP1），
+   SWD 调试和 ISP 对 Flash 的读写都会受限。链接脚本（lpc1765.ld）把本段
+   固定放在 0x2FC..0x2FF，使 .text 从 0x300 开始，普通代码绕开该地址。 */
+    .section .crp,"a",%progbits
+    .global   _crp_word
+    .type     _crp_word, %object
+_crp_word:
+    .word     0xFFFFFFFF
+    .size     _crp_word, . - _crp_word
+
 /* ═══════════════ Reset_Handler ═══════════════ */
     .section .text.Reset_Handler,"ax",%progbits
     .global Reset_Handler

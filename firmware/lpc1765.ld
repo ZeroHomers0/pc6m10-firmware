@@ -33,6 +33,15 @@ SECTIONS
     . = ALIGN(4);
   } > FLASH
 
+  /* ── LPC17xx 代码读保护（CRP）控制字：flash 偏移 0x2FC 的 32 位字 ──
+   * 必须为 0xFFFFFFFF（无保护）。固定放在 0x2FC..0x2FF，让 .text 从 0x300
+   * 开始，普通代码绕开该地址（否则 wd_feed 这类指令字节会被 Boot ROM 误读
+   * 为 CRP 值，启用非预期保护）。 */
+  .crp 0x2FC :
+  {
+    KEEP(*(.crp))
+  } > FLASH
+
   .text :
   {
     *(.text*)            /* 含 Reset_Handler */

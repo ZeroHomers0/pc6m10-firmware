@@ -8,8 +8,11 @@
 `LPC1765.bin`（262144 B）是所有等价验证的金标准。
 
 - GCC 可编译工程：`firmware/`，Arm GNU Toolchain 14.2.Rel1。
-- 当前构建：`text 61936 / data 3000 / bss 2188`。
-- 当前 `firmware.bin` SHA-256：`F032EFB70BB3942C4999D7C1F2D0DEBB64125F004C4E19405CAB0DD08F5EAA44`。
+- 当前构建：`text 61940 / data 3000 / bss 2188`。
+- 当前 `firmware.bin` SHA-256：`A61324DFB4841615F937A4EE798AA31B3DDCF519899C2ED037A2C0773DDA820E`。
+- 自编译固件已于 2026-08-26 完成 CRP 布局修复（`0x2FC` 显式保留 `0xFFFFFFFF`，见
+  `firmware/lpc1765.ld`、`firmware/startup.s`、`firmware/build.sh`）并经 J-Link SWD 烧写入板、
+  全镜像校验通过；过程见 `docs/w8/W8_POST_FLASH_2026-08-26.md`。
 - 测试：11/11 模块；输出级 144/144、状态机 115/115、TIMER1 126 例、Modbus 65 读/320 写均 PASS。
 - 离线结果允许进入断开门极与功率负载的 W8 分级实测，不代表带载 100% 等价。
 
@@ -68,4 +71,5 @@ python tools/verification/verify_firmware_equivalence.py
 ## 关键限制与下一步
 
 Ghidra MCP 对超大函数有 5 秒超时；完整指令证据已保存于 `evidence/reverse/disassembly/`。
-当前下一步只有 W8：先备份与控制电冒烟，再做三相空载波形、Modbus/ADC 标定、低压限流，最后才评估带载。
+当前下一步只有 W8：原固件已备份、新固件已烧写，先做控制电冒烟，再做三相空载波形、
+Modbus/ADC 标定、低压限流，最后才评估带载。

@@ -36,6 +36,8 @@ echo "== 链接 =="
 
 echo "== 产物 =="
 "$OBJCOPY" -O ihex firmware.elf firmware.hex
-"$OBJCOPY" -O binary firmware.elf firmware.bin
+# --gap-fill 0xFF：CRP 占位引入的 0xCC..0x2FB 间隙（以及任何未用区）以 0xFF
+# 填充，与 Flash 擦除态一致，避免 J-Link 把无关的 0x00 写进该区域。
+"$OBJCOPY" --gap-fill 0xFF -O binary firmware.elf firmware.bin
 "$TC/arm-none-eabi-size" firmware.elf
 echo "OK: firmware.elf / firmware.hex / firmware.bin"
