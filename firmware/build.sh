@@ -7,7 +7,28 @@
 set -e
 cd "$(dirname "$0")"
 
-TC="/c/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin"
+# 工具链自动定位：约定版本(14.2 rel1)优先 → 常见安装目录最新版本 → PATH
+TC=""
+TC_OLD="/c/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin"
+if [ -d "$TC_OLD" ]; then
+  TC="$TC_OLD"
+else
+  for base in "/c/Program Files (x86)/Arm GNU Toolchain arm-none-eabi" \
+              "/c/Program Files/Arm GNU Toolchain arm-none-eabi"; do
+    if [ -d "$base" ]; then
+      TC=$(find "$base" -maxdepth 2 -name bin -type d 2>/dev/null | sort -V | tail -1)
+      [ -n "$TC" ] && break
+    fi
+  done
+fi
+if [ -z "$TC" ] && command -v arm-none-eabi-gcc >/dev/null 2>&1; then
+  TC="$(dirname "$(command -v arm-none-eabi-gcc)")"
+fi
+if [ -z "$TC" ]; then
+  echo "错误: 找不到 Arm GNU Toolchain（arm-none-eabi-gcc）。" >&2
+  echo "       请先运行根目录 install_deps.bat 自动安装。" >&2
+  exit 1
+fi
 CC="$TC/arm-none-eabi-gcc"
 OBJCOPY="$TC/arm-none-eabi-objcopy"
 

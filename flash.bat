@@ -19,9 +19,17 @@ rem ============================================================
 
 setlocal
 set "ROOT=%~dp0"
-rem J-Link: 优先项目内打包版 tools\jlink（免安装），退回本机安装版
+rem J-Link: 项目打包版 tools\jlink（免安装）优先；其次自动探测常见安装目录；最后 PATH
 set "JLINK=%ROOT%tools\jlink\JLink.exe"
-if not exist "%JLINK%" set "JLINK=D:\software\SEGGER\JLink_V970\JLink.exe"
+if not exist "%JLINK%" (
+    set "JLINK="
+    for /d %%d in ("%ProgramFiles%\SEGGER\JLink_V*" "%ProgramFiles(x86)%\SEGGER\JLink_V*") do (
+        if exist "%%d\JLink.exe" set "JLINK=%%d\JLink.exe"
+    )
+    if not defined JLINK (
+        for /f "delims=" %%i in ('where JLink.exe 2^>nul') do if not defined JLINK set "JLINK=%%i"
+    )
+)
 set "BIN=%ROOT%firmware\firmware.bin"
 set "BAK=%ROOT%backup\auto_pre_flash.bin"
 set "SCRIPT=%TEMP%\flash_firmware.jlink"
@@ -61,13 +69,25 @@ if not defined JLINK_OK (
     pause
     exit /b 1
 )
-echo [检查] J-Link 连接正常（Found SW-DP）。
+echo [检查] J-Link 连接正常，芯片 SW-DP:
+type "%CHKLOG%" | findstr /i "Found SW-DP"
 
 call :gen_script
 
-echo [烧写] 固件 : %BIN%
-echo [烧写] 备份 : %BAK%
-echo [烧写] 前置 : 市电/门极/功率负载已断开？仅控制电？
+rem ---- ② 烧写前确认（整片擦除不可逆，防误烧旧版固件）----
+echo.
+echo [固件] 即将烧写:
+for %%f in ("%BIN%") do (
+    echo   文件名 : %%~nxf
+    echo   构建时间: %%~tf
+    echo   大小   : %%~zf 字节
+)
+echo [备份] 烧写前自动备份当前 Flash 到: %BAK%
+echo [前置] 市电/门极/功率负载已断开？仅控制电？
+echo.
+choice /c YN /m "即将整片擦除并烧写，继续 Y / 取消 N"
+if errorlevel 2 goto cancel
+
 echo.
 echo [烧写] 开始（约 10~30 秒，请勿断电/拔线）...
 "%JLINK%" -device LPC1765 -if SWD -speed 4000 -CommanderScript "%SCRIPT%" > "%LOG%" 2>&1
@@ -94,6 +114,11 @@ echo        本次烧写前 Flash 备份: %BAK%
 pause
 exit /b 0
 
+:cancel
+echo [取消] 未烧写，板上固件保持不变。
+pause
+exit /b 0
+
 :check
 if not exist "%JLINK%" (
     echo [错误] 找不到 J-Link: %JLINK%
@@ -103,7 +128,8 @@ if not exist "%JLINK%" (
 echo [检查] 探测 J-Link 连接（校验驱动/接线，不烧写）...
 call :check_link
 if defined JLINK_OK (
-    echo [OK] J-Link 已识别（Found SW-DP），驱动与接线正常。
+    echo [OK] J-Link 已识别，驱动与接线正常。芯片 SW-DP:
+    type "%CHKLOG%" | findstr /i "Found SW-DP"
 ) else (
     echo [失败] 未检测到 J-Link。
     echo        日志: %CHKLOG%

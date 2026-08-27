@@ -21,6 +21,8 @@
 - 全程中文交流。
 - 反编译、反汇编和硬件原始资料属于证据，不得因为当前未引用而删除。
 - 修改源码后必须以原始 BIN 做 A/B 执行级验证，不能仅依赖手写模型。
+- J-Link 一律调用仓库打包版 `tools/jlink/JLink.exe`（免安装），禁止依赖本机其他安装路径；
+  工具链由 `build.bat`/`build.sh` 自动探测（约定版本优先）。
 - 上机严格执行 `docs/w8/W8_HARDWARE_TEST_2026-08-22.md`，不得跨级带载。
 - `docs/history/` 只保存历史结论；当前状态以本文件、`DOCUMENTATION_INDEX.md` 和 W8 预验证记录为准。
 
