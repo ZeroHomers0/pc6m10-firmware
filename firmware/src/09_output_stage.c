@@ -133,23 +133,27 @@ void gpio_outputs_set(void)
   return;
 }
 
-/* 0x0000E816 —— TIMER1 初始化（IRQ2）：MR0=999、匹配中断+复位、预分频 2
+/* 0x0000E816 —— TIMER1 初始化（IRQ2）：TCR 复位、PR=0x18 预分频、MR0=999、
+ *   匹配中断+复位（MCR=3）。元素索引×4 = 寄存器字节偏移（TIMER 寄存器 4 字节对齐，
+ *   与原厂 0xE816 反汇编逐地址一致）：[0]=IR、[1]=TCR、[2]=TC、[3]=PR、[5]=MCR、[6]=MR0。
  *   局部：timer1 = DAT_0000e990 → 指向 TIMER1（0x40008000） */
 void timer1_init(void)
 {
   volatile uint32_t *timer1;
 
   timer1 = DAT_0000e990;                              /* TIMER1 0x40008000 */
-  DAT_0000e990[1] = 2;                                /* PR=2 */
-  timer1[3] = 0x18;                                   /* MCR：MR0 中断+复位 */
-  timer1[6] = 999;                                    /* MR0=999 */
-  *timer1 = 0xff;                                     /* IR 清中断 */
-  timer1[5] = 3;                                      /* TCR：使能+复位 */
+  DAT_0000e990[1] = 2;                                /* TCR=2：TC 复位（原厂 0xE81C） */
+  timer1[3] = 0x18;                                   /* PR=0x18：预分频（原厂 0xE820） */
+  timer1[6] = 999;                                    /* MR0=999 匹配值（原厂 0xE826） */
+  *timer1 = 0xff;                                     /* IR 清中断（原厂 0xE82A） */
+  timer1[5] = 3;                                      /* MCR=3：MR0 匹配中断+复位（原厂 0xE82E） */
   nvic_enable_irq(2);                                 /* NVIC TIMER1_IRQ */
   return;
 }
 
-/* 0x0000E838 —— TIMER2 初始化（IRQ3）：PCONP TMR2、MR0=999、匹配中断+复位
+/* 0x0000E838 —— TIMER2 初始化（IRQ3）：PCONP TMR2、TCR 复位、PR=0x18 预分频、
+ *   MR0=999、匹配中断+复位（MCR=3）。元素索引×4 = 寄存器字节偏移（TIMER 寄存器
+ *   4 字节对齐，与原厂 0xE838 反汇编逐地址一致）。
  *   局部：timer2 = DAT_0000e99c → 指向 TIMER2（0x40090000） */
 void timer2_init(void)
 {
@@ -157,11 +161,11 @@ void timer2_init(void)
 
   *(volatile uint *)(DAT_0000e998 + 0xc4) = *g_pconp | 0x400000;   /* PCONP bit22 TMR2 */
   timer2 = DAT_0000e99c;                              /* TIMER2 0x40090000 */
-  DAT_0000e99c[1] = 2;
-  timer2[3] = 0x18;
-  timer2[6] = 999;
-  *timer2 = 0xff;
-  timer2[5] = 3;
+  DAT_0000e99c[1] = 2;                                /* TCR=2：TC 复位（原厂 0xE84E） */
+  timer2[3] = 0x18;                                   /* PR=0x18：预分频（原厂 0xE854） */
+  timer2[6] = 999;                                    /* MR0=999 匹配值（原厂 0xE85A） */
+  *timer2 = 0xff;                                     /* IR 清中断（原厂 0xE860） */
+  timer2[5] = 3;                                      /* MCR=3：MR0 匹配中断+复位（原厂 0xE866） */
   nvic_enable_irq(3);                                 /* NVIC TIMER2_IRQ（反汇编 0xE868 核 r0=3） */
   return;
 }
