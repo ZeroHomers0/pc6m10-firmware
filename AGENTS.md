@@ -33,7 +33,7 @@ LPC1765.bin                 原始固件金标准
 firmware/                   当前可编译、可修改工程
 docs/project/               当前应用、数据段和项目状态
 docs/analysis/              模块级逆向结论
-docs/w8/                    实机验证四份权威文档
+docs/w8/                    实机验证：W8_TEST_MASTER.md 为唯一流程+进度权威，其余为记录/规范
 docs/history/               历史计划、进度与审计
 evidence/hardware/          BOM、接线表、手册等原始硬件证据
 evidence/reverse/           原始反编译、反汇编和过程报告
