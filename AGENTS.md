@@ -84,8 +84,11 @@ python tools/verification/verify_firmware_equivalence.py
 
 ## 已确证硬件事实
 
-- G1-G6=P0.17/P0.15/P0.18、P2.9/P2.19/P2.16；12 脉波扩展=P2.8/P2.7/P2.6/P2.5、P0.8/P0.7。
-- EINT1/2/3=P2.11/P2.12/P2.13；TIMER2 编程触发角，TIMER1 240 步扫描输出触发窗口。
+- G1-G6=P0.17/P0.15/P0.18、P2.9/P0.19/P0.16；12 脉波扩展=P2.8/P2.7/P2.6/P2.5、P0.8/P0.7。
+  （2026-08-27 修正：G5=P0.19、G6=P0.16，非 P2.19/P2.16——据 pin_config/TIMER1 ISR 位写 +
+   HARDWARE_VERIFICATION_2026-08-20 §二.2 + PROGRESS_2026-08-20 §4k 三处一致。）
+- EINT1/2/3=P2.11/P2.12/P2.13；TIMER2 编程触发角（单次延时），TIMER1 240 步扫描生成 6 窗口
+  触发脉冲序列（非显示扫描）；封锁安全态=gpio_outputs_set() 全部触发脚置高。
 - EEPROM 为 AT24C02C @0x53，GPIO 模拟 I2C：SDA=P0.10、SCL=P0.11。
 - UART3 经 ADM2483 实现 Modbus RTU，从站支持 0x03/0x06/0x10，寄存器 1..63。
 - P0.20=RLY3 备用、P0.21=RLY2 报警、P0.22=RLY1 运行；P1.20..23 为状态 LED。
