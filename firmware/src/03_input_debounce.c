@@ -50,61 +50,61 @@ undefined1 input_scan_state(void)
 
   scan_cnt = DAT_00001978;
   /* —— 任一输入未就绪（P1.16/P1.17/P0.28/P0.27/P2.9/P2.8 为 0）→ 进入扫描 —— */
-  if ((((((*(volatile uint *)(DAT_00001974 + 0x34) & 0x80000) == 0) ||
-        ((*(volatile uint *)(DAT_00001974 + 0x34) & 0x40000) == 0)) ||
-       ((*(volatile uint *)(DAT_00001974 + 0x14) & 0x40000000) == 0)) ||
-      (((*(volatile uint *)(DAT_00001974 + 0x14) & 0x20000000) == 0 ||
-       ((*(volatile uint *)(DAT_00001974 + 0x74) & 0x2000000) == 0)))) ||
-     ((*(volatile uint *)(DAT_00001974 + 0x74) & 0x4000000) == 0)) {
+  if ((((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) == 0) ||
+        ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) == 0)) ||
+       ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) == 0)) ||
+      (((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) == 0 ||
+       ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x2000000) == 0)))) ||
+     ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x4000000) == 0)) {
     *DAT_00001978 = *DAT_00001978 + 1;
     if (*scan_cnt == 0x19) {
       /* 连续 0x19 拍后锁存旋转方向（A/B 相组合，1..6） */
-      if ((((*(volatile uint *)(DAT_00001974 + 0x34) & 0x80000) == 0) &&
-          ((*(volatile uint *)(DAT_00001974 + 0x34) & 0x40000) != 0)) &&
-         (((*(volatile uint *)(DAT_00001974 + 0x14) & 0x40000000) != 0 &&
-          ((((*(volatile uint *)(DAT_00001974 + 0x14) & 0x20000000) != 0 &&
-            ((*(volatile uint *)(DAT_00001974 + 0x74) & 0x2000000) != 0)) &&
-           ((*(volatile uint *)(DAT_00001974 + 0x74) & 0x4000000) != 0)))))) {
+      if ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) == 0) &&
+          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) != 0)) &&
+         (((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) != 0 &&
+          ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) != 0 &&
+            ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x2000000) != 0)) &&
+           ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x4000000) != 0)))))) {
         *DAT_0000197c = 1;
       }
-      if (((((*(volatile uint *)(DAT_00001974 + 0x34) & 0x80000) != 0) &&
-           ((*(volatile uint *)(DAT_00001974 + 0x34) & 0x40000) == 0)) &&
-          (((*(volatile uint *)(DAT_00001974 + 0x14) & 0x40000000) != 0 &&
-           (((*(volatile uint *)(DAT_00001974 + 0x14) & 0x20000000) != 0 &&
-            ((*(volatile uint *)(DAT_00001974 + 0x74) & 0x2000000) != 0)))))) &&
-         ((*(volatile uint *)(DAT_00001974 + 0x74) & 0x4000000) != 0)) {
+      if (((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) != 0) &&
+           ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) == 0)) &&
+          (((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) != 0 &&
+           (((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) != 0 &&
+            ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x2000000) != 0)))))) &&
+         ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x4000000) != 0)) {
         *DAT_0000197c = 2;
       }
-      if (((((*(volatile uint *)(DAT_00001974 + 0x34) & 0x80000) != 0) &&
-           ((*(volatile uint *)(DAT_00001974 + 0x34) & 0x40000) != 0)) &&
-          ((*(volatile uint *)(DAT_00001974 + 0x14) & 0x40000000) == 0)) &&
-         ((((*(volatile uint *)(DAT_00001974 + 0x14) & 0x20000000) != 0 &&
-           ((*(volatile uint *)(DAT_00001974 + 0x74) & 0x2000000) != 0)) &&
-          ((*(volatile uint *)(DAT_00001974 + 0x74) & 0x4000000) != 0)))) {
+      if (((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) != 0) &&
+           ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) != 0)) &&
+          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) == 0)) &&
+         ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) != 0 &&
+           ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x2000000) != 0)) &&
+          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x4000000) != 0)))) {
         *DAT_0000197c = 3;
       }
-      if ((((*(volatile uint *)(DAT_00001974 + 0x34) & 0x80000) != 0) &&
-          ((*(volatile uint *)(DAT_00001974 + 0x34) & 0x40000) != 0)) &&
-         (((*(volatile uint *)(DAT_00001974 + 0x14) & 0x40000000) != 0 &&
-          ((((*(volatile uint *)(DAT_00001974 + 0x14) & 0x20000000) == 0 &&
-            ((*(volatile uint *)(DAT_00001974 + 0x74) & 0x2000000) != 0)) &&
-           ((*(volatile uint *)(DAT_00001974 + 0x74) & 0x4000000) != 0)))))) {
+      if ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) != 0) &&
+          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) != 0)) &&
+         (((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) != 0 &&
+          ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) == 0 &&
+            ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x2000000) != 0)) &&
+           ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x4000000) != 0)))))) {
         *DAT_0000197c = 4;
       }
-      if ((((*(volatile uint *)(DAT_00001974 + 0x34) & 0x80000) != 0) &&
-          ((*(volatile uint *)(DAT_00001974 + 0x34) & 0x40000) != 0)) &&
-         ((((*(volatile uint *)(DAT_00001974 + 0x14) & 0x40000000) != 0 &&
-           (((*(volatile uint *)(DAT_00001974 + 0x14) & 0x20000000) != 0 &&
-            ((*(volatile uint *)(DAT_00001974 + 0x74) & 0x2000000) == 0)))) &&
-          ((*(volatile uint *)(DAT_00001974 + 0x74) & 0x4000000) != 0)))) {
+      if ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) != 0) &&
+          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) != 0)) &&
+         ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) != 0 &&
+           (((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) != 0 &&
+            ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x2000000) == 0)))) &&
+          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x4000000) != 0)))) {
         *DAT_0000197c = 5;
       }
-      if ((((((*(volatile uint *)(DAT_00001974 + 0x34) & 0x80000) != 0) &&
-            ((*(volatile uint *)(DAT_00001974 + 0x34) & 0x40000) != 0)) &&
-           ((*(volatile uint *)(DAT_00001974 + 0x14) & 0x40000000) != 0)) &&
-          (((*(volatile uint *)(DAT_00001974 + 0x14) & 0x20000000) != 0 &&
-           ((*(volatile uint *)(DAT_00001974 + 0x74) & 0x2000000) != 0)))) &&
-         ((*(volatile uint *)(DAT_00001974 + 0x74) & 0x4000000) == 0)) {
+      if ((((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) != 0) &&
+            ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) != 0)) &&
+           ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) != 0)) &&
+          (((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) != 0 &&
+           ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x2000000) != 0)))) &&
+         ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x4000000) == 0)) {
         *DAT_0000197c = 6;
       }
     }
@@ -112,12 +112,12 @@ undefined1 input_scan_state(void)
       *DAT_00001978 = 0xf5;
       *DAT_0000197c = 0;
       cnt_p = DAT_00001980;
-      if ((((*(volatile uint *)(DAT_00001974 + 0x34) & 0x80000) == 0) &&
-          ((*(volatile uint *)(DAT_00001974 + 0x34) & 0x40000) != 0)) &&
-         (((*(volatile uint *)(DAT_00001974 + 0x14) & 0x40000000) != 0 &&
-          ((((*(volatile uint *)(DAT_00001974 + 0x14) & 0x20000000) != 0 &&
-            ((*(volatile uint *)(DAT_00001974 + 0x74) & 0x2000000) != 0)) &&
-           ((*(volatile uint *)(DAT_00001974 + 0x74) & 0x4000000) != 0)))))) {
+      if ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) == 0) &&
+          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) != 0)) &&
+         (((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) != 0 &&
+          ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) != 0 &&
+            ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x2000000) != 0)) &&
+           ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x4000000) != 0)))))) {
         *DAT_00001980 = *DAT_00001980 + 1;
         if (0xb < *cnt_p) {
           *cnt_p = 0xb;
@@ -127,28 +127,28 @@ undefined1 input_scan_state(void)
         }
       }
       cnt_p = DAT_00001980;
-      if ((((*(volatile uint *)(DAT_00001974 + 0x34) & 0x80000) != 0) &&
-          ((*(volatile uint *)(DAT_00001974 + 0x34) & 0x40000) == 0)) &&
-         ((((*(volatile uint *)(DAT_00001974 + 0x14) & 0x40000000) != 0 &&
-           (((*(volatile uint *)(DAT_00001974 + 0x14) & 0x20000000) != 0 &&
-            ((*(volatile uint *)(DAT_00001974 + 0x74) & 0x2000000) != 0)))) &&
-          ((*(volatile uint *)(DAT_00001974 + 0x74) & 0x4000000) != 0)))) {
+      if ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) != 0) &&
+          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) == 0)) &&
+         ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) != 0 &&
+           (((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) != 0 &&
+            ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x2000000) != 0)))) &&
+          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x4000000) != 0)))) {
         return 0x16;           /* 0x16 = 快加（A=1,B=0） */
       }
-      if (((((*(volatile uint *)(DAT_00001974 + 0x34) & 0x80000) != 0) &&
-           ((*(volatile uint *)(DAT_00001974 + 0x34) & 0x40000) != 0)) &&
-          ((*(volatile uint *)(DAT_00001974 + 0x14) & 0x40000000) == 0)) &&
-         ((((*(volatile uint *)(DAT_00001974 + 0x14) & 0x20000000) != 0 &&
-           ((*(volatile uint *)(DAT_00001974 + 0x74) & 0x2000000) != 0)) &&
-          ((*(volatile uint *)(DAT_00001974 + 0x74) & 0x4000000) != 0)))) {
+      if (((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) != 0) &&
+           ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) != 0)) &&
+          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) == 0)) &&
+         ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) != 0 &&
+           ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x2000000) != 0)) &&
+          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x4000000) != 0)))) {
         return 0x21;           /* 0x21 = 快减（P0.28=1,P0.27=1,P1.16=0） */
       }
-      if ((((*(volatile uint *)(DAT_00001974 + 0x34) & 0x80000) != 0) &&
-          ((*(volatile uint *)(DAT_00001974 + 0x34) & 0x40000) == 0)) &&
-         (((*(volatile uint *)(DAT_00001974 + 0x14) & 0x40000000) == 0 &&
-          ((((*(volatile uint *)(DAT_00001974 + 0x14) & 0x20000000) != 0 &&
-            ((*(volatile uint *)(DAT_00001974 + 0x74) & 0x2000000) != 0)) &&
-           ((*(volatile uint *)(DAT_00001974 + 0x74) & 0x4000000) != 0)))))) {
+      if ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) != 0) &&
+          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) == 0)) &&
+         (((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) == 0 &&
+          ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) != 0 &&
+            ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x2000000) != 0)) &&
+           ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x4000000) != 0)))))) {
         *DAT_00001980 = *DAT_00001980 + 1;
         if (0x1f < *cnt_p) {
           *cnt_p = 0x1f;
@@ -158,10 +158,10 @@ undefined1 input_scan_state(void)
         }
       }
       cnt_p = DAT_00001c10;
-      if ((((*(volatile uint *)(DAT_00001974 + 0x34) & 0x80000) == 0) &&
-          ((*(volatile uint *)(DAT_00001974 + 0x34) & 0x40000) != 0)) &&
-         ((((*(volatile uint *)(DAT_00001974 + 0x14) & 0x40000000) != 0 &&
-           (((*(volatile uint *)(DAT_00001974 + 0x14) & 0x20000000) == 0 &&
+      if ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) == 0) &&
+          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) != 0)) &&
+         ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) != 0 &&
+           (((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) == 0 &&
             ((*(volatile uint *)(DAT_00001c0c + 0x74) & 0x2000000) != 0)))) &&
           ((*(volatile uint *)(DAT_00001c0c + 0x74) & 0x4000000) != 0)))) {
         *DAT_00001c10 = *DAT_00001c10 + 1;
@@ -400,7 +400,7 @@ void gpio0_input_init(void)
 /* 0x000010FAE —— 读 P0.2 状态到 0x100010FD0（RUN/STOP 模式选择读取） */
 undefined4 read_input_p02(void)
 {
-  if ((*(volatile uint *)(DAT_00010fcc + 0x14) & 4) == 0) {
+  if ((*(volatile uint *)((uint32_t)DAT_00010fcc + 0x14) & 4) == 0) {
     *DAT_00010fd0 = 0;
   }
   else {

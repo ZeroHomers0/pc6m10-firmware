@@ -1,6 +1,6 @@
 # 文档索引
 
-> 最后更新：2026-08-26。当前进度优先级：`AGENTS.md` → 本文 → `docs/project/PROJECT_STATUS.md` → 历史文档。
+> 最后更新：2026-08-27。当前进度优先级：`AGENTS.md` → 本文 → `docs/project/PROJECT_STATUS.md` → 历史文档。
 
 ## 当前文档
 
@@ -26,6 +26,7 @@
 5. `docs/w8/W8_JLINK_DEBUG_2026-08-24.md`
 6. `docs/w8/W8_ISP_FLASH_2026-08-26.md`（ISP 擦除、SWD 恢复、自编译固件 CRP 风险与实机经验）
 7. `docs/w8/W8_POST_FLASH_2026-08-26.md`（自编译固件 CRP 修复后 SWD 烧写入板、MEMMAP 排查与板上状态）
+8. `docs/w8/W8_DISP_SEL_FIX_2026-08-27.md`（case1 首页上下键无效：三分支 FAULT 门控修复 + DISP_SEL=控制方式 破译）
 
 ## 证据与历史
 

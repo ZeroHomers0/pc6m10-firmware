@@ -234,13 +234,17 @@ void stub_ret(void)
  *     0x1000074C==1（失败）→ 0x10000750=0（锁机）；0x10000748++（重试计数）
  *     成功后 param_sync_live_to_eeprom()（参数同步）
  *
+ *   W8 调试（2026-08-26）：锁机判断前强制 *DAT_00000750=1，认证不再锁定。
+ *   0x1000072C 与状态机 SYNC_2C（07_state_machine.c）同址：=1 时跳过 RLY3/2/1
+ *   安全强制驱动，继电器走正常输出逻辑。
+ *
  * 分支：
- *   · 0x10000750==1（认证通过）：chk_p02_p03()<1（P0.2/P0.3 安全联锁未触发）
+ *   · 0x10000750==1（认证通过/强制放行）：chk_p02_p03()<1（P0.2/P0.3 安全联锁未触发）
  *     → 主循环：adc0_scan_channels→input_scan_state→adc0_scan_channels→
  *       state_machine→output_stage→wd_feed→uart3_rx_timeout_monitor→modbus_dispatch(0)
  *   · 0x10000750==1 但联锁触发 → 显示"急停/联锁错误"屏（disp_string 0x76C 区）死循环
  *     + freq_adjust_sync + run_stop_preset
- *   · 0x10000750==0（认证失败）→ 显示错误屏（0x754 区）死循环锁机 */
+ *   · 0x10000750==0（认证失败，正常不可达）→ 显示错误屏（0x754 区）死循环锁机 */
 void main(void)
 {
   volatile uint8_t *p_input_code;
@@ -281,8 +285,11 @@ void main(void)
   disp_splash_screen();
   auth_retry();
   wdt_init(200);
+  /* —— W8 调试（2026-08-26）：去除防抄板认证，强制放行。
+   *    忽略 auth_challenge/auth_retry 结果；1=放行、0=锁机（0x1000172C 与状态机 SYNC_2C 同址）。 */
+  *DAT_00000750 = 1;
   if (*DAT_00000750 == 0) {
-    /* —— 认证失败：锁机屏 —— */
+    /* —— 认证失败：锁机屏（W8 调试下已强制放行，正常不可达） —— */
     disp_clear();
     disp_string(0x754,0,4,0);
     disp_string(0x760,2,4,0);

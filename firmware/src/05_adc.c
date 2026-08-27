@@ -51,12 +51,14 @@ void adc0_start(void)
   return;
 }
 
-/* 0x00001FA6 —— 等转换完成（GDR bit31 DONE）并返回 12 位结果（>>4） */
+/* 0x00001FA6 —— 等转换完成（GDR bit31 DONE）并返回 12 位结果（>>4）
+ * 注意：g_adc 是 uint32_t*，不能直接 +4（会按元素偏移 +16 字节读到 AD0DR0）。
+ * 必须先转整数做字节偏移，才能读到 AD0GDR(0x40034004)。 */
 uint adc0_wait_done(void)
 {
   do {
-  } while ((*(volatile uint *)(g_adc + 4) & 0x80000000) == 0);
-  return (*(volatile uint *)(g_adc + 4) & 0xffff) >> 4;
+  } while ((*(volatile uint *)((uint)g_adc + 4) & 0x80000000) == 0);
+  return (*(volatile uint *)((uint)g_adc + 4) & 0xffff) >> 4;
 }
 
 /* 0x00001FBC —— 逐通道扫描：每通道 5 点循环采样存原始数组，
