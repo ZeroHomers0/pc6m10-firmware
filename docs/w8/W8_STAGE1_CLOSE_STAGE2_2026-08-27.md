@@ -45,7 +45,7 @@
 python tools/w8/w8_stack_sentinel.py gen --run-ms 60000 -o w8_sentinel.jlink
 
 # ② 执行（控制电下，板已连 J-Link）
-"/d/software/SEGGER/JLink_V970/JLink.exe" -device LPC1765 -if SWD -speed 4000 \
+"tools/jlink/JLink.exe" -device LPC1765 -if SWD -speed 4000 \
   -CommanderScript w8_sentinel.jlink > w8_sentinel.log
 
 # ③ 分析
