@@ -110,7 +110,7 @@ python tools/w8/w8_stack_sentinel.py analyze w8_sentinel.log
 - 触发输出：G1-G6 = **P0.17/P0.15/P0.18、P2.9/P2.19/P2.16**；
   12 脉波扩展 = P2.8/P2.7/P2.6/P2.5、P0.8/P0.7。
 
-### 3.3 验证点（对应 W8_HARDWARE_TEST §6）
+### 3.3 验证点（对应 W8_TEST_MASTER §4 阶段 2 的 2-1..2-6）
 
 | # | 验证点 | 判定标准 |
 |---|---|---|
@@ -133,7 +133,7 @@ python tools/w8/w8_stack_sentinel.py analyze w8_sentinel.log
 
 ---
 
-## 4. 记录模板（沿用 W8_HARDWARE_TEST §9）
+## 4. 记录模板（见 W8_HARDWARE_TEST §4）
 
 ```text
 [阶段/步骤]

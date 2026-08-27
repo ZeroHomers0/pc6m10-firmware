@@ -85,7 +85,7 @@ python tools/verification/verify_firmware_equivalence.py
 ## A. 阶段 A：J-Link 调试/烧写链路（现在可做）
 
 > 只证明「J-Link ↔ P12 ↔ LPC1765 能连、能读、能写、能跑」，不触碰 SCR/主整机。
-> 硬件接线、P12 引脚定义、预期值与通过标准见 `W8_HARDWARE_TEST_2026-08-22.md`。
+> 硬件接线、P12 引脚定义见 `W8_HARDWARE_TEST_2026-08-22.md`；各阶段通过标准见 `W8_TEST_MASTER.md`。
 
 ### A.1 连接（J-Link Commander 交互 CLI）
 装好 J-Link 驱动后打开仓库打包版 `tools\jlink\JLink.exe`（免安装 J-Link Commander，
