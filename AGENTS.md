@@ -23,8 +23,12 @@
 - 修改源码后必须以原始 BIN 做 A/B 执行级验证，不能仅依赖手写模型。
 - J-Link 一律调用仓库打包版 `tools/jlink/JLink.exe`（免安装），禁止依赖本机其他安装路径；
   工具链由 `build.bat`/`build.sh` 自动探测（约定版本优先）。
-- 上机严格执行 `docs/w8/W8_HARDWARE_TEST_2026-08-22.md`，不得跨级带载。
+- 上机按 `docs/w8/W8_TEST_MASTER.md` 分级推进，不得跨级带载（硬件接线/时序见
+  `docs/w8/W8_HARDWARE_TEST_2026-08-22.md`）。
 - `docs/history/` 只保存历史结论；当前状态以本文件、`DOCUMENTATION_INDEX.md` 和 W8 预验证记录为准。
+- 更新 `docs/w8/` 文档一律按「W8 文档职责分工」落位：进度/状态只维护在 `W8_TEST_MASTER.md`；
+  硬件事实改 `W8_HARDWARE_TEST_2026-08-22.md`；软件/仪器操作改 `W8_SOFTWARE_OPERATION.md`；
+  带日期文档只记录当时事实、不当作现状来源。
 
 ## 目录职责
 
@@ -40,6 +44,22 @@ evidence/reverse/           原始反编译、反汇编和过程报告
 test/                       静态与 Unicorn 执行级测试
 tools/                      审计、生成、Ghidra、维护、验证和 W8 工具；jlink/ 为打包 J-Link
 ```
+
+## W8 文档职责分工
+
+| 文档 | 职责（更新文档时的落位） |
+|---|---|
+| `W8_TEST_MASTER.md` | **唯一流程 + 进度权威**：阶段 0-4 必检项状态、通过标准、下一步、记录索引只在此维护 |
+| `W8_HARDWARE_TEST_2026-08-22.md` | 硬件规范：安全前提、P12 引脚/触发引脚、时序表、记录模板（无进度） |
+| `W8_SOFTWARE_OPERATION.md` | 软件操作手册：软件清单/安装/命令/示波器·信号源操作（活文档） |
+| `W8_ONBOARDING_2026-08-22.md` | 导航入口 + 三条停止线 |
+| 其余带日期文档 | 记录：问题时间线/专项排查/阶段执行步骤，只记录当时事实 |
+
+更新规则：
+- 进度或完成状态变化 → 只改 `W8_TEST_MASTER.md` 的表格；新实测证据 → 写入对应必检项「记录/证据」列并链接。
+- 硬件事实变化 → 改 `W8_HARDWARE_TEST_2026-08-22.md` 与 AGENTS.md「已确证硬件事实」。
+- 软件/脚本/命令变化 → 改 `W8_SOFTWARE_OPERATION.md`。
+- 带日期文档：不删不改写历史，可追加新事实；不得作为「当前状态」来源。
 
 ## 常用入口
 
