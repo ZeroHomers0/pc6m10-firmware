@@ -8,8 +8,8 @@
 `LPC1765.bin`（262144 B）是所有等价验证的金标准。
 
 - GCC 可编译工程：`firmware/`，Arm GNU Toolchain 14.2.Rel1。
-- 当前构建：`text 61940 / data 3000 / bss 2188`。
-- 当前 `firmware.bin` SHA-256：`A61324DFB4841615F937A4EE798AA31B3DDCF519899C2ED037A2C0773DDA820E`。
+- 当前构建：`text 61968 / data 3000 / bss 2188`。
+- 当前 `firmware.bin` SHA-256：`25676E62317091EA33D054D404E0D2C4E2C988C8CE4969E04E70395FC0A49C62`。
 - 自编译固件已于 2026-08-26 完成 CRP 布局修复（`0x2FC` 显式保留 `0xFFFFFFFF`，见
   `firmware/lpc1765.ld`、`firmware/startup.s`、`firmware/build.sh`）并经 J-Link SWD 烧写入板、
   全镜像校验通过；过程见 `docs/w8/W8_POST_FLASH_2026-08-26.md`。
