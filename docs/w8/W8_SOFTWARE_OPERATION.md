@@ -13,7 +13,7 @@
 | # | 软件 | 费用/必要性 | 用途 | 官方下载地址 |
 |---|---|---|---|---|
 | 1 | **Arm GNU Toolchain 14.2.Rel1 (`arm-none-eabi`)** | 免费；**必装并固定版本** | 唯一固件编译器，内含 `arm-none-eabi-gdb` | [Windows x64 14.2.Rel1 官方安装器](https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-mingw-w64-x86_64-arm-none-eabi.exe) / [Arm 官方发布页](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads) |
-| 2 | **SEGGER J-Link Software and Documentation Pack** | 软件免费供 J-Link/J-Trace 硬件用户使用；**上机必装** | 一次安装获得 USB 驱动、J-Link Commander、J-Link GDB Server；用于 SWD 连接、备份、烧录、校验和调试 | [SEGGER J-Link 官方下载页](https://www.segger.com/downloads/jlink/) |
+| 2 | **SEGGER J-Link 软件** | 软件免费供 J-Link/J-Trace 硬件用户使用；**本仓库已打包免安装最小集 `tools/jlink`**（`JLink.exe` + DLL + USB 驱动，全项目唯一调用路径，无需安装）；仅需 GDB Server 等附加功能时才装官方完整包 | 提供 `JLink.exe`（SWD 连接、备份、烧录、校验）与 USB 驱动；用于 P12 SWD 调试链路 | [SEGGER J-Link 官方下载页](https://www.segger.com/downloads/jlink/) |
 | 3 | **Python 3.12（64-bit）** | 免费；**必装** | 运行 Modbus、串口枚举和 CSV 波形分析脚本 | [Python 3.12.10 Windows x64 官方安装器](https://www.python.org/ftp/python/3.12.10/python-3.12.10-amd64.exe) / [版本说明页](https://www.python.org/downloads/release/python-31210/) |
 | 4 | **MinimalModbus** | 免费开源；阶段 B 必装 | Modbus-RTU 主站脚本 | [MinimalModbus 官方文档](https://minimalmodbus.readthedocs.io/en/stable/installation.html) / [PyPI 官方包页](https://pypi.org/project/MinimalModbus/) |
 | 5 | **pySerial** | 免费开源；阶段 B 必装 | Windows COM 口和 USB-RS485 通信 | [pySerial PyPI 官方包页](https://pypi.org/project/pyserial/) |
@@ -44,22 +44,30 @@ python -m pip show minimalmodbus pyserial
 
 > **只需标准库、无需第三方**：`tools/verify_*.py`（逆向验证脚本）——纯标准库直接跑。
 > **需要 pip 装**：W8 的 Modbus 脚本（依赖 minimalmodbus + pyserial），先装这两个包。
-> **J-Link** 由 SEGGER 官方安装包安装（**非 pip、非 winget**），装完自带 `J-Link Commander`。
+> **J-Link** 仓库已打包免安装最小集 `tools\jlink\JLink.exe`（**全项目 J-Link 唯一调用路径**，
+> 无需安装 J-Link 软件）；USB 驱动缺失时用 `install_deps.bat` 自动安装（官方驱动）。
 > HEX/ELF 用 `LoadFile`；BIN 用 `LoadFile 文件.bin 0x00000000`，无需另装 J-Flash。
 
 ### 1.2 Windows 环境安装与自检
 
-安装表中的 Git、Arm GNU Toolchain 14.2.Rel1、Python 3.12.10 和 SEGGER J-Link，重开终端，
-确认 `firmware/build.sh` 的 `TC=` 指向实际工具链目录，然后在项目根执行：
+**推荐一键安装**：双击根目录 `install_deps.bat`（自动请求管理员权限），依次检查并安装：
+
+1. **Git for Windows**（`build.bat` 需要 bash）—— 缺则用 **winget 自动安装**；
+2. **Arm GNU Toolchain 14.2.Rel1**（编译工具链）—— 缺则自动下载官方安装包并**静默安装**；
+3. **J-Link USB 驱动**（仓库自带 `tools\jlink` 打包驱动）—— 用 J-Link 实连探测，识别不到才自动装。
+
+也可按 §1.1 表手动安装（仅官方来源）。Git、Arm GNU Toolchain 14.2.Rel1、Python 3.12.10
+装好后重开终端，在项目根执行（J-Link 用打包版 `tools\jlink\JLink.exe`，无需安装软件）：
 
 ```bash
-cd firmware && bash build.sh && cd ..
 python test/run_tests.py
 python tools/verification/verify_firmware_equivalence.py
 ```
 
-通过标准：构建尺寸 `text 61936 / data 3000 / bss 2188`；`firmware.bin` SHA-256 为
-`F032EFB70BB3942C4999D7C1F2D0DEBB64125F004C4E19405CAB0DD08F5EAA44`；测试 11/11，独立验证器全 PASS。
+构建用根目录 `build.bat`（双击，自动探测工具链并显示耗时与 SHA-256）或
+`cd firmware && bash build.sh`。通过标准：构建尺寸 `text 61968 / data 3000 / bss 2188`；
+`firmware.bin` SHA-256 为 `25676E62317091EA33D054D404E0D2C4E2C988C8CE4969E04E70395FC0A49C62`；
+测试 11/11，独立验证器全 PASS。
 
 ### 1.3 硬件配套（跟软件配合用的仪器）
 
@@ -80,7 +88,8 @@ python tools/verification/verify_firmware_equivalence.py
 > 硬件接线、P12 引脚定义、预期值与通过标准见 `W8_HARDWARE_TEST_2026-08-22.md`。
 
 ### A.1 连接（J-Link Commander 交互 CLI）
-装好 J-Link 驱动后打开 `JLink.exe`（J-Link Commander），逐行输入：
+装好 J-Link 驱动后打开仓库打包版 `tools\jlink\JLink.exe`（免安装 J-Link Commander，
+全项目唯一调用路径；本机 SEGGER 安装版亦可），逐行输入：
 
 ```
 device LPC1765        ; 选芯片（也可先 "device LPC176x" 再确认）
@@ -119,7 +128,7 @@ st              ; 单步     mem / regs  读内存/寄存器
 | 现象 | 处置 |
 |---|---|
 | `connect` 失败 | 核对 P12-1/2/6/8 接线与共地；降到 100 kHz；给 TCK 补下拉（数据手册注15） |
-| 复位后死机 | `mem32 0x0,4` 看前 4 字（应为 SP/Reset/IRQ）；若需 `Connect under reset` 须从 MCU 第 17 脚/复位网络**另引 RESET**（P12-3 不是 nRESET，不能接） |
+| 复位后死机 | `mem32 0x0,4` 看前 4 字（应为 SP/Reset/IRQ）；若需 `Connect under reset` 用 **P12-7（nRESET，已引出）**，连接不成功时补 TCK 下拉（数据手册注15） |
 
 **阶段 A 通过标准**：能 `connect`、能读设备 ID、能备份原 Flash、能烧 blink 且复位后运行、能断点单步。
 
