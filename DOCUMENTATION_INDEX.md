@@ -28,6 +28,7 @@
 7. `docs/w8/W8_POST_FLASH_2026-08-26.md`（自编译固件 CRP 修复后 SWD 烧写入板、MEMMAP 排查与板上状态）
 8. `docs/w8/W8_DISP_SEL_FIX_2026-08-27.md`（case1 首页上下键无效：三分支 FAULT 门控修复 + DISP_SEL=控制方式 破译）
 9. `docs/w8/W8_ISSUE_LOG_2026-08-27.md`（烧录测试全流程问题回顾时间线，**暂未完结**，随调试持续追加）
+10. `docs/w8/W8_STAGE1_CLOSE_STAGE2_2026-08-27.md`（阶段1 收尾：SRAM 哨兵栈水位 + 继电器误吸合实机步骤；阶段2 三相同步启动清单）
 
 ## 证据与历史
 
