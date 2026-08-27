@@ -19,6 +19,20 @@ if exist "%ProgramFiles%\Git\bin\bash.exe" set "BASH=%ProgramFiles%\Git\bin\bash
 if exist "%ProgramFiles(x86)%\Git\bin\bash.exe" set "BASH=%ProgramFiles(x86)%\Git\bin\bash.exe"
 if exist "%LocalAppData%\Programs\Git\bin\bash.exe" set "BASH=%LocalAppData%\Programs\Git\bin\bash.exe"
 if not defined BASH (
+    for /f "tokens=2,*" %%j in ('reg query "HKLM\SOFTWARE\GitForWindows" /v InstallPath 2^>nul ^| findstr /i "InstallPath"') do if exist "%%k\bin\bash.exe" set "BASH=%%k\bin\bash.exe"
+)
+if not defined BASH (
+    for /f "tokens=2,*" %%j in ('reg query "HKCU\Software\GitForWindows" /v InstallPath 2^>nul ^| findstr /i "InstallPath"') do if exist "%%k\bin\bash.exe" set "BASH=%%k\bin\bash.exe"
+)
+if not defined BASH (
+    for /f "delims=" %%i in ('where git 2^>nul') do if not defined BASH (
+        set "GITROOT=%%i"
+        set "GITROOT=!GITROOT:\cmd\git.exe=!"
+        set "GITROOT=!GITROOT:\bin\git.exe=!"
+        if exist "!GITROOT!\bin\bash.exe" set "BASH=!GITROOT!\bin\bash.exe"
+    )
+)
+if not defined BASH (
     for /f "delims=" %%i in ('where bash 2^>nul') do if not defined BASH set "BASH=%%i"
 )
 if not defined BASH (
