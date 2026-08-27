@@ -120,7 +120,7 @@ uint8_t scan_run_stop(void);                              /* 03_input_debounce.c
  * case3 当前项值渲染 (0x7458-0x7A32 精简)：按项号 it 显示其值/枚举到 (row,0xb)。
  * 所有值串地址与枚举宽度均经 LPC1765.bin 校验，禁止臆造。
  * ========================================================================== */
-static void sm3_draw_item(uint32_t it, uint32_t row)
+static void sm3_draw_item(uint32_t it, uint32_t row, uint32_t attr)
 {
   volatile uint8_t  *b4c = (volatile uint8_t*)0x1000164c;
   volatile uint8_t  *b4d = (volatile uint8_t*)0x1000164d;
@@ -133,43 +133,56 @@ static void sm3_draw_item(uint32_t it, uint32_t row)
   volatile uint32_t *w60 = (volatile uint32_t*)0x10001660;
   switch (it) {
     case 0:
-      if (*CTRL_MODE == 0) { disp_string((int)0x6594, row, 0xb, 1); fio1_pin20_ctrl(1); fio1_pin21_ctrl(0); }
-      else if (*CTRL_MODE == 1) { disp_string((int)0x659c, row, 0xb, 1); fio1_pin20_ctrl(0); fio1_pin21_ctrl(1); }
-      else { disp_string((int)0x65a4, row, 0xb, 1); fio1_pin20_ctrl(0); fio1_pin21_ctrl(0); }
+      if (*CTRL_MODE == 0) { disp_string((int)0x6594, row, 0xb, attr); fio1_pin20_ctrl(1); fio1_pin21_ctrl(0); }
+      else if (*CTRL_MODE == 1) { disp_string((int)0x659c, row, 0xb, attr); fio1_pin20_ctrl(0); fio1_pin21_ctrl(1); }
+      else { disp_string((int)0x65a4, row, 0xb, attr); fio1_pin20_ctrl(0); fio1_pin21_ctrl(0); }
       break;
-    case 1: disp_uint4(*V_RANGE, row, 0xb, 1); break;
-    case 2: disp_uint4(*A_RANGE, row, 0xb, 1); break;
-    case 3: disp_uint4(*w40, row, 0xb, 1); break;
-    case 4: disp_uint4(*w48, row, 0xb, 1); break;
-    case 5: disp_uint4(*w44, row, 0xb, 1); break;
-    case 6: disp_number3(*b4c, row, 0xb, 1); break;
-    case 7: disp_number3(*b4d, row, 0xb, 1); break;
-    case 8: disp_number3(*w50, row, 0xb, 1); break;
-    case 9: disp_signed_angle(*b54, row, 0xb, 1); break;
+    case 1: disp_uint4(*V_RANGE, row, 0xb, attr); break;
+    case 2: disp_uint4(*A_RANGE, row, 0xb, attr); break;
+    case 3: disp_uint4(*w40, row, 0xb, attr); break;
+    case 4: disp_uint4(*w48, row, 0xb, attr); break;
+    case 5: disp_uint4(*w44, row, 0xb, attr); break;
+    case 6: disp_number3(*b4c, row, 0xb, attr); break;
+    case 7: disp_number3(*b4d, row, 0xb, attr); break;
+    case 8: disp_number3(*w50, row, 0xb, attr); break;
+    case 9: disp_signed_angle(*b54, row, 0xb, attr); break;
     case 10:
-      if (*DISP_SEL == 0) disp_string((int)0x7998, row, 0xb, 1);
-      else if (*DISP_SEL == 1) disp_string((int)0x79a0, row, 0xb, 1);
-      else disp_string((int)0x79a8, row, 0xb, 1);
+      if (*DISP_SEL == 0) disp_string((int)0x7998, row, 0xb, attr);
+      else if (*DISP_SEL == 1) disp_string((int)0x79a0, row, 0xb, attr);
+      else disp_string((int)0x79a8, row, 0xb, attr);
       break;
     case 11:
-      if (*b56 == 0) disp_string((int)0x79b4, row, 0xb, 1);
-      else disp_string((int)0x79bc, row, 0xb, 1);
+      if (*b56 == 0) disp_string((int)0x79b4, row, 0xb, attr);
+      else disp_string((int)0x79bc, row, 0xb, attr);
       break;
     case 12:
-      if (*ESTOP == 0) disp_string((int)0x6018, row, 0xb, 1);
-      else if (*ESTOP == 1) disp_string((int)0x6020, row, 0xb, 1);
-      else disp_string((int)0x6028, row, 0xb, 1);
+      if (*ESTOP == 0) disp_string((int)0x6018, row, 0xb, attr);
+      else if (*ESTOP == 1) disp_string((int)0x6020, row, 0xb, attr);
+      else disp_string((int)0x6028, row, 0xb, attr);
       break;
     case 13:
-      if (*FEEDBACK == 0) disp_string((int)0x6038, row, 0xb, 1);
-      else disp_string((int)0x6040, row, 0xb, 1);
+      if (*FEEDBACK == 0) disp_string((int)0x6038, row, 0xb, attr);
+      else disp_string((int)0x6040, row, 0xb, attr);
       break;
     case 14:
-      if (*INPUT_SEL == 0) disp_string((int)0x6048, row, 0xb, 1);
-      else disp_string((int)0x6050, row, 0xb, 1);
+      if (*INPUT_SEL == 0) disp_string((int)0x6048, row, 0xb, attr);
+      else disp_string((int)0x6050, row, 0xb, attr);
       break;
-    case 15: disp_number3(*w60, row, 0xb, 1); break;
+    case 15: disp_number3(*w60, row, 0xb, attr); break;
   }
+}
+
+/* =============================================================================
+ * case3 整页值渲染 (0x7458-0x7C1A)：TIMEOUT3 计数到 0xFB 后重绘当前页全部 4 项值，
+ * 当前项高亮(attr=1)、其余正常(attr=0)。原厂导航/编辑后仅重画标签会把值列清掉，
+ * 靠此公共尾部整页重绘恢复——正是"未选中行值被清除"的修复点。
+ * ========================================================================== */
+static void sm3_draw_page(uint32_t it)
+{
+  uint32_t page = it >> 2;
+  uint32_t k;
+  for (k = 0; k < 4; k++)
+    sm3_draw_item((page << 2) + k, k, ((page << 2) + k) == it ? 1 : 0);
 }
 
 /* =============================================================================
@@ -410,40 +423,59 @@ do_dispatch:
   /* ================= 分发链（MENU 值→case 段） ================= */
   if (*MENU == 1) {
     /* ---------- case1 运行状态屏 (0x4B16-0x541C) ---------- */
-    if (key == 0x17 && *RUN == 0) { *MENU = 0xc; return; }
+    if (key == 0x17 && *RUN == 0) {
+      *MENU = 0xc; *MENU2 = 0; *TIMEOUT = 0;
+      disp_clear();
+      disp_string((int)0x4d58, 0, 0, 0);
+      disp_string((int)0x4d6c, 1, 0, 0);
+      disp_string((int)0x4d80, 2, 0, 0);
+      disp_string((int)0x4d6c, 3, 0, 0);
+      disp_uint5(*(volatile uint32_t*)0x100015f8, 1, 3, 0);
+      disp_uint2(*(volatile uint32_t*)0x100015fc, 1, 0xa, 0);
+      disp_uint5(*(volatile uint32_t*)0x10001604, 3, 3, 0);
+      disp_uint2(*(volatile uint32_t*)0x10001608, 3, 0xa, 0);
+      return;
+    }
     if (key == 1 && *RUN == 0) {
       *MENU = 0xa;
+      *MENU2 = 0; *TIMEOUT = 0;
+      disp_clear();
       disp_string((int)0x4d9c, 1, 0, 0);
       disp_string((int)0x4dac, 3, 7, 0);
       *TIMEOUT2 = 0x3c; *IDLE = 0; return;
     }
     if (key == 0xe) {
       *MENU = 0x62;
+      *MENU2 = 0; *TIMEOUT = 0;
+      disp_clear();
       disp_string((int)0x4db4, 0, 0, 0);
       disp_string((int)0x4dc8, 1, 0, 0);
       disp_string((int)0x4dac, 3, 7, 0); return;
     }
-    if (key == 4 && *RUN == 0 && *FAULT != 0) { *MENU = 0x14; *TIMEOUT3 = 0x1f4; return; }
+    if (key == 4 && *RUN == 0 && *FAULT != 0) {
+      *MENU = 0x14; *TIMEOUT3 = 0x1f4;
+      *MENU2 = 0; *TIMEOUT = 0;
+      disp_clear(); return;
+    }
     (*IDLE)++;
     if (*IDLE >= 0x15e) {
       *IDLE = 0;
       if (*DISP_SEL == 0) disp_fixed_1dec(*FREQ, 0, 9, 0);
-      else if (*DISP_SEL == 1) disp_uint4(*TARGET, 0, 9, 0);
-      else disp_uint4(*MANUAL, 0, 9, 0);
+      else if (*DISP_SEL == 1) disp_fixed_1dec(*TARGET, 0, 9, 0);
+      else disp_fixed_1dec(*MANUAL, 0, 9, 0);
       disp_uint4(*(volatile uint32_t*)0x10001590, 1, 9, 0);
       disp_uint4(*(volatile uint32_t*)0x10001594, 2, 9, 0);
-      if (*FAULT != 0) { *STATUS = 0; disp_string((int)0x47dc, 3, 0, 0); }
-      else if (*RUN == 0 && *STATUS != 1) { *STATUS = 1; disp_string((int)0x47e8, 3, 0, 0); }
-      else if (*RUN != 0 && *STATUS != 2) { *STATUS = 2; disp_string((int)0x47f0, 3, 0, 0); }
+      if (*FAULT != 0) { *STATUS = 0; disp_string((int)0x47dc, 3, 0xa, 0); }
+      else if (*RUN == 0 && *STATUS != 1) { *STATUS = 1; disp_string((int)0x47e8, 3, 0xa, 0); }
       if (*CTRL_MODE == 0 && *DISP_MODE != 1) {
         *DISP_MODE = 1; fio1_pin20_ctrl(0); fio1_pin21_ctrl(0);
-        disp_string((int)0x47fc, 0, 0, 0);
+        disp_string((int)0x47fc, 3, 0, 0);
       } else if (*CTRL_MODE == 1 && *DISP_MODE != 2) {
         *DISP_MODE = 2; fio1_pin20_ctrl(0); fio1_pin21_ctrl(1);
-        disp_string((int)0x4804, 0, 0, 0);
+        disp_string((int)0x4804, 3, 0, 0);
       } else if (*CTRL_MODE == 2 && *DISP_MODE != 3) {
         *DISP_MODE = 3; fio1_pin20_ctrl(0); fio1_pin21_ctrl(0);
-        disp_string((int)0x480c, 0, 0, 0);
+        disp_string((int)0x480c, 3, 0, 0);
       }
     }
 
@@ -466,11 +498,11 @@ do_dispatch:
         if (*(volatile uint8_t*)0x10001658 == 1) {
           if (*DB_117 != 2 && *DISP_MODE != 1) {
             *DISP2 = 1; *CTRL_MODE = 0; fio1_pin20_ctrl(1); fio1_pin21_ctrl(0);
-            disp_string((int)0x47fc, 0, 0, 0);
+            disp_string((int)0x47fc, 3, 0, 0);
           }
           if (*DB_117 == 2 && *DISP_MODE != 2) {
             *DISP2 = 2; *CTRL_MODE = 1; fio1_pin20_ctrl(0); fio1_pin21_ctrl(1);
-            disp_string((int)0x4804, 0, 0, 0);
+            disp_string((int)0x4804, 3, 0, 0);
           }
         }
         if (*(volatile uint8_t*)0x10001658 == 2) {
@@ -479,18 +511,18 @@ do_dispatch:
         *DB_117 = debounce_p06();
         if (*DB_117 == 2 && *(volatile uint8_t*)0x10001657 == 0) {
           *RUN_REQ = 1; *RUN = 0; *STOP_PEND = 1; *STOP_REQ = 0;
-          if (*STAT1 == 0) { disp_string((int)0x47e8, 3, 0, 0); *STAT1 = 1; }
+          if (*STAT1 == 0) { disp_string((int)0x47e8, 3, 0xa, 0); *STAT1 = 1; }
           return;
         }
         /* ESTOP(0x10001657)==1/2：恒压切换/复位设置（逻辑同 RESET_MODE==1/2） */
         if (*(volatile uint8_t*)0x10001657 == 1) {
           if (*DB_117 != 2 && *DISP_MODE != 1) {
             *DISP2 = 1; *CTRL_MODE = 0; fio1_pin20_ctrl(1); fio1_pin21_ctrl(0);
-            disp_string((int)0x47fc, 0, 0, 0);
+            disp_string((int)0x47fc, 3, 0, 0);
           }
           if (*DB_117 == 2 && *DISP_MODE != 2) {
             *DISP2 = 2; *CTRL_MODE = 1; fio1_pin20_ctrl(0); fio1_pin21_ctrl(1);
-            disp_string((int)0x4804, 0, 0, 0);
+            disp_string((int)0x4804, 3, 0, 0);
           }
         }
         if (*(volatile uint8_t*)0x10001657 == 2) {
@@ -501,58 +533,61 @@ do_dispatch:
         if (*FAULT == 0 && *STOP_REQ == 0 && *(volatile uint8_t*)0x10001785 == 1 && *DISP_SEL == 0) {
           *(volatile uint8_t*)0x10001785 = 1; *STOP_REQ = 1; *STOP_PEND = 0; *RUN_REQ = 0;
           *RUN = 1; *STAT1 = 0; *TICK = 0; *MIN_NOW = 0; *HOUR_NOW = 0;
-          disp_string((int)0x47f0, 3, 0, 0);
+          disp_string((int)0x47f0, 3, 0xa, 0);
         }
         if (*FAULT == 0 && *STOP_PEND == 0 && *(volatile uint8_t*)0x10001785 == 0 && *DISP_SEL == 0) {
           *STOP_PEND = 1; *STOP_REQ = 0; *RUN = 0;
-          disp_string((int)0x47e8, 3, 0, 0);
+          disp_string((int)0x47e8, 3, 0xa, 0);
         }
         if (*RUN == 0 && *DISP_SEL != 0) *(volatile uint8_t*)0x10001785 = 0;
         if (*FAULT == 0 && *STOP_REQ == 0 && (key == 5 || *SCAN_STOP == 7)) {
           if (*(volatile uint8_t*)0x10001656 == 0) {
             *(volatile uint8_t*)0x10001785 = 1; *STOP_REQ = 1; *STOP_PEND = 0; *RUN_REQ = 0;
             *RUN = 1; *STAT1 = 0; *TICK = 0; *MIN_NOW = 0; *HOUR_NOW = 0;
-            disp_string((int)0x47f0, 3, 0, 0);
+            disp_string((int)0x47f0, 3, 0xa, 0);
           } else if (*SCAN_STOP == 7 && *(volatile uint8_t*)0x10001656 == 1 && *DISP_SEL != 0) {
             *(volatile uint8_t*)0x10001785 = 1; *STOP_REQ = 1; *STOP_PEND = 0; *RUN_REQ = 0;
             *RUN = 1; *STAT1 = 0; *TICK = 0; *MIN_NOW = 0; *HOUR_NOW = 0;
-            disp_string((int)0x47f0, 3, 0, 0);
+            disp_string((int)0x47f0, 3, 0xa, 0);
           }
         }
         if (*FAULT == 0 && *STOP_PEND == 0 && (key == 6 || *SCAN_STOP == 8)) {
           if (*(volatile uint8_t*)0x10001656 == 0) {
             *(volatile uint8_t*)0x10001785 = 0; *STOP_PEND = 1; *STOP_REQ = 0; *RUN = 0;
-            disp_string((int)0x47e8, 3, 0, 0);
+            disp_string((int)0x47e8, 3, 0xa, 0);
           } else if (*SCAN_STOP == 8 && *(volatile uint8_t*)0x10001656 == 1 && *DISP_SEL != 0) {
             *(volatile uint8_t*)0x10001785 = 0; *STOP_PEND = 1; *STOP_REQ = 0; *RUN = 0;
-            disp_string((int)0x47e8, 3, 0, 0);
+            disp_string((int)0x47e8, 3, 0xa, 0);
           }
         }
-        if (*DISP_SEL == 0) {
-          *TARGET = *FREQ;
-          if (*CTRL_MODE == 0) *TARGET_AMP = (*FREQ * *V_RANGE) / 1000;
-          else *TARGET_AMP = (*FREQ * *A_RANGE) / 1000;
-          *V_AMP = *TARGET_AMP; *V_AMP2 = *TARGET_AMP;
-        } else if (*DISP_SEL == 1) {
-          *V_AMP = *V_AMP2;
-        } else {
-          if (key == 2 || key == 0x16) {
-            (*MANUAL)++; if (*MANUAL > 0x3e8) *MANUAL = 0x3e8;
-            if (*MANUAL < 0xa) *MANUAL = 0xa;
-            disp_fixed_1dec(*MANUAL, 0, 9, 0);
-          }
-          if (key == 3 || key == 0x21) {
-            if (*MANUAL > 0xa) (*MANUAL)--;
-            else { *MANUAL = 1; (*MANUAL)--; }
-            disp_fixed_1dec(*MANUAL, 0, 9, 0);
-          }
-          *TARGET = *MANUAL;
-          if (*CTRL_MODE == 0) *(volatile uint32_t*)0x100015d4 = (*MANUAL * *V_RANGE) / 1000;
-          else *(volatile uint32_t*)0x100015d4 = (*MANUAL * *A_RANGE) / 1000;
-          *V_AMP = *(volatile uint32_t*)0x100015d4;   /* 0x541A→0x541E：仅 DISP_SEL==2 覆盖；0/1 走 0x4C1C→0x541C 跳过 */
-          *V_AMP2 = *(volatile uint32_t*)0x100015d4;
+      }
+      /* 0x52FA：DISP_SEL 三分支不受 FAULT 门控——原厂 0x52A2 在 FAULT!=0 时
+       * cbnz 跳到 0x52FA 仍执行三分支，仅 RUN/STOP 逻辑(0x52A8-0x52F6)被 FAULT 跳过。
+       * 若放回 FAULT==0 分支内，FAULT=7(缺相)时首页第一行上下键将永远不执行。 */
+      if (*DISP_SEL == 0) {
+        *TARGET = *FREQ;
+        if (*CTRL_MODE == 0) *TARGET_AMP = (*FREQ * *V_RANGE) / 1000;
+        else *TARGET_AMP = (*FREQ * *A_RANGE) / 1000;
+        *V_AMP = *TARGET_AMP; *V_AMP2 = *TARGET_AMP;
+      } else if (*DISP_SEL == 1) {
+        *V_AMP = *V_AMP2;
+      } else {
+        if (key == 2 || key == 0x16) {
+          (*MANUAL)++; if (*MANUAL > 0x3e8) *MANUAL = 0x3e8;
+          if (*MANUAL < 0xa) *MANUAL = 0xa;
+          disp_fixed_1dec(*MANUAL, 0, 9, 0);
         }
-    }
+        if (key == 3 || key == 0x21) {
+          if (*MANUAL > 0xa) (*MANUAL)--;
+          else { *MANUAL = 1; (*MANUAL)--; }
+          disp_fixed_1dec(*MANUAL, 0, 9, 0);
+        }
+        *TARGET = *MANUAL;
+        if (*CTRL_MODE == 0) *(volatile uint32_t*)0x100015d4 = (*MANUAL * *V_RANGE) / 1000;
+        else *(volatile uint32_t*)0x100015d4 = (*MANUAL * *A_RANGE) / 1000;
+        *V_AMP = *(volatile uint32_t*)0x100015d4;   /* 0x541A→0x541E：仅 DISP_SEL==2 覆盖；0/1 走 0x4C1C→0x541C 跳过 */
+        *V_AMP2 = *(volatile uint32_t*)0x100015d4;
+      }
     return;
   }
 
@@ -851,7 +886,6 @@ do_dispatch:
     volatile uint32_t *w50 = (volatile uint32_t*)0x10001650;
     volatile uint32_t *w60 = (volatile uint32_t*)0x10001660;
     uint32_t it = *MENU2;                              /* 项号 */
-    uint32_t row = it & 3;                             /* 页内行 0-3 */
 
     /* 原汇编公共尾部 0x7446-0x744E 对刷新计数加一。提前执行可保持所有
      * 提前返回/辅助绘制调用下的同一可观察结果；按键分支在下方写入最终值。 */
@@ -880,8 +914,8 @@ do_dispatch:
       if (key == 3) { (*MENU2)++; if (*MENU2 > 0xf) *MENU2 = 0xf; }
       else          { if (*MENU2 > 0) (*MENU2)--; }
       *TIMEOUT3 = 0xfb;
-      /* 重绘新项所在页标题(值列清空) + 当前项值 */
-      it = *MENU2; row = it & 3;
+      /* 重绘新项所在页标题(值列清空)；值由尾部整页重绘恢复 */
+      it = *MENU2;
       switch (it >> 2) {
         case 0: disp_string((int)0x6540,0,0,0); disp_string((int)0x6554,1,0,0);
                 disp_string((int)0x6568,2,0,0); disp_string((int)0x657c,3,0,0); break;
@@ -892,14 +926,13 @@ do_dispatch:
         default: disp_string((int)0x7084,0,0,0); disp_string((int)0x7098,1,0,0);
                 disp_string((int)0x70ac,2,0,0); disp_string((int)0x70c0,3,0,0); break;
       }
-      sm3_draw_item(it, row);
     }
 
     /* ---- key==2/0x16/3/0x21 且 *MENU3==1：修改当前项值 ---- */
     else if ((key == 2 || key == 0x16 || key == 3 || key == 0x21) && *MENU3 == 1) {
       *TIMEOUT = 0;
       *TIMEOUT3 = 0xfb;
-      it = *MENU2;  row = it & 3;
+      it = *MENU2;
       /* 步进：数字项 key==0x16 快加 +5、key==0x21 快减 -5 */
       if (it >= 1 && it <= 5) {
         if (key == 0x16) {                     /* 快加 +5 */
@@ -929,8 +962,6 @@ do_dispatch:
             else { if (*w44 > 0xa) (*w44)--; }
           }
         }
-        /* 显示当前项值 */
-        sm3_draw_item(it, row);
       } else {
         /* 非数字项(0,6..15)：key==2/0x16 +1、key==3/0x21 -1 */
         if (key == 3 || key == 0x21) {         /* 减 */
@@ -962,10 +993,11 @@ do_dispatch:
             case 15: (*w60)++; if (*w60 > 0xb4) *w60 = 0xb4; break;
           }
         }
-        /* 显示当前项(枚举/数项) */
-        sm3_draw_item(it, row);
       }
     }
+
+    /* ---- TIMEOUT3 计数到 0xFB：整页重绘当前页全部 4 项值(当前项高亮)，恢复被标签重绘清掉的值列 ---- */
+    if (*TIMEOUT3 == 0xfb) sm3_draw_page(*MENU2);
 
     /* ---- 编辑空闲超时：回到主屏 ---- */
     (*TIMEOUT)++;
