@@ -4,7 +4,7 @@ rem  install_deps.bat -- 一键安装构建/烧写依赖
 rem
 rem  1. Git for Windows（build.bat 依赖 bash）   -- 若缺则提示手动装
 rem  2. Arm GNU Toolchain 14.2.Rel1（gcc）       -- 若缺则下载官方 exe 静默安装
-rem  3. J-Link USB 驱动（tools\jlink 打包驱动）   -- 若 J-Link 无法识别则安装
+rem  3. J-Link USB 驱动（tools\jlink 打包驱动）   -- 若 J-Link 无法识别则安装并复测
 rem
 rem  用法: 双击运行（自动请求管理员权限）
 rem        -skip-toolchain   跳过工具链
@@ -87,7 +87,15 @@ if defined SKIP_DRV goto summary
 echo.
 echo [3/3] J-Link USB 驱动（tools\jlink 打包驱动）...
 set "JLINKEXE=%ROOT%tools\jlink\JLink.exe"
-if not exist "%JLINKEXE%" set "JLINKEXE=D:\software\SEGGER\JLink_V970\JLink.exe"
+if not exist "%JLINKEXE%" (
+    set "JLINKEXE="
+    for /d %%d in ("%ProgramFiles%\SEGGER\JLink_V*" "%ProgramFiles(x86)%\SEGGER\JLink_V*") do (
+        if exist "%%d\JLink.exe" set "JLINKEXE=%%d\JLink.exe"
+    )
+    if not defined JLINKEXE (
+        for /f "delims=" %%i in ('where JLink.exe 2^>nul') do if not defined JLINKEXE set "JLINKEXE=%%i"
+    )
+)
 set "CHK=%TEMP%\jlink_check.jlink"
 set "CHKLOG=%ROOT%backup\jlink_check.log"
 >  "%CHK%" echo device LPC1765
@@ -108,11 +116,18 @@ if not errorlevel 1 (
     pushd "%ROOT%tools\jlink\USBDriver\x64"
     dpinst_x64.exe /S /SA
     popd
-    echo       [提示] 驱动已尝试安装。请确认：
-    echo              - J-Link 已插入 USB
-    echo              - 板已接 J-Link（P12: 6=SWDIO 8=SWCLK 7=nRESET）并供电
-    echo              - 仍失败请换 USB 线/端口，或重插 J-Link
-    echo              可重跑本脚本验证，或用 flash.bat -check 复测
+    rem 重新探测，验证驱动是否生效
+    "%JLINKEXE%" -device LPC1765 -if SWD -speed 4000 -CommanderScript "%CHK%" > "%CHKLOG%" 2>&1
+    findstr /i "Found SW-DP" "%CHKLOG%" >nul 2>&1
+    if not errorlevel 1 (
+        echo       [OK] 驱动安装后 J-Link 已识别。
+    ) else (
+        echo       [失败] 安装驱动后仍未识别到 J-Link。
+        echo              请确认:
+        echo              - J-Link 已插入 USB（换线/换口试试）
+        echo              - 板已接 J-Link（P12: 6=SWDIO 8=SWCLK 7=nRESET）并供电
+        echo              - 可重跑本脚本，或插好后再用 flash.bat -check 复测
+    )
 )
 
 :summary
