@@ -8,7 +8,7 @@ rem
 rem  用法: 双击运行，或命令行 build.bat
 rem ============================================================
 
-setlocal
+setlocal enabledelayedexpansion
 set "ROOT=%~dp0"
 
 rem ---- 定位 Git Bash（build.sh 依赖 bash 的 /c/ 路径写法）----
@@ -26,6 +26,15 @@ if not defined BASH (
     exit /b 1
 )
 
+rem ---- 校验 Arm GNU Toolchain（build.sh 硬编码路径）----
+set "GCCBIN=%ProgramFiles(x86)%\Arm GNU Toolchain arm-none-eabi\14.2 rel1\bin\arm-none-eabi-gcc.exe"
+if not exist "%GCCBIN%" (
+    echo [错误] 找不到 Arm GNU Toolchain（arm-none-eabi-gcc）。
+    echo        请先运行 install_deps.bat 自动安装。
+    echo        期望路径: !GCCBIN!
+    pause
+    exit /b 1
+)
 echo [构建] bash      : %BASH%
 echo [构建] 工具链    : Arm GNU Toolchain 14.2.Rel1（经 firmware\build.sh 调用）
 echo [构建] 开始构建...

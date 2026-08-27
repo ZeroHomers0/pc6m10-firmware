@@ -2,12 +2,13 @@
 rem ============================================================
 rem  flash.bat -- 傻瓜式 J-Link SWD 烧写最新固件
 rem
-rem  步骤: connect-under-reset(停核)
-rem        -> 自动备份当前板上 Flash -> 整片擦除
-rem        -> 写入 firmware\firmware.bin -> 全镜像校验
-rem        -> 复位并运行新固件
+rem  步骤: ①连接探测(校验驱动/接线) -> ②connect-under-reset(停核)
+rem        -> ③自动备份当前板上 Flash -> ④整片擦除
+rem        -> ⑤写入 firmware\firmware.bin -> ⑥全镜像校验
+rem        -> ⑦复位并运行新固件
 rem
 rem  参数（可省）:
+rem        -check    只做 J-Link 连接探测（校验驱动/接线），不烧写
 rem        -preview  只生成 J-Link 脚本预览，不执行烧写
 rem        -norun    烧写+校验后不复位运行（核心保持 halt）
 rem
@@ -24,13 +25,16 @@ if not exist "%JLINK%" set "JLINK=D:\software\SEGGER\JLink_V970\JLink.exe"
 set "BIN=%ROOT%firmware\firmware.bin"
 set "BAK=%ROOT%backup\auto_pre_flash.bin"
 set "SCRIPT=%TEMP%\flash_firmware.jlink"
+set "CHKSCRIPT=%TEMP%\jlink_check.jlink"
 set "LOG=%ROOT%backup\flash_build.log"
+set "CHKLOG=%ROOT%backup\jlink_check.log"
 set "NORUN="
 
 for %%a in (%*) do (
     if /i "%%a"=="-norun" set "NORUN=1"
 )
 if /i "%~1"=="-preview" goto preview
+if /i "%~1"=="-check"  goto check
 
 if not exist "%BIN%" (
     echo [错误] 找不到 %BIN%
@@ -44,6 +48,20 @@ if not exist "%JLINK%" (
     pause
     exit /b 1
 )
+
+rem ---- ① 连接探测（校验驱动/接线，失败即中止）----
+call :check_link
+if not defined JLINK_OK (
+    echo [失败] 未检测到 J-Link 目标（找不到 SW-DP）。
+    echo        日志: %CHKLOG%
+    echo        可能原因:
+    echo          1. J-Link USB 驱动未装 -- 请运行 install_deps.bat
+    echo          2. J-Link 未插入 USB / 板未供电
+    echo          3. SWD 线序错（P12: 6=SWDIO 8=SWCLK 7=nRESET）
+    pause
+    exit /b 1
+)
+echo [检查] J-Link 连接正常（Found SW-DP）。
 
 call :gen_script
 
@@ -76,6 +94,24 @@ echo        本次烧写前 Flash 备份: %BAK%
 pause
 exit /b 0
 
+:check
+if not exist "%JLINK%" (
+    echo [错误] 找不到 J-Link: %JLINK%
+    pause
+    exit /b 1
+)
+echo [检查] 探测 J-Link 连接（校验驱动/接线，不烧写）...
+call :check_link
+if defined JLINK_OK (
+    echo [OK] J-Link 已识别（Found SW-DP），驱动与接线正常。
+) else (
+    echo [失败] 未检测到 J-Link。
+    echo        日志: %CHKLOG%
+    echo        可能原因: 驱动未装（install_deps.bat）/ 未插 / 未供电 / 线序错
+)
+pause
+exit /b 0
+
 :preview
 echo [预览] 生成 J-Link 脚本（不执行烧写）
 call :gen_script
@@ -86,7 +122,7 @@ echo [预览] 脚本已生成: %SCRIPT%
 pause
 exit /b 0
 
-rem ---- 生成 J-Link Commander 脚本（验证过的序列）----
+rem ---- 生成 J-Link Commander 烧写脚本（验证过的序列）----
 rem  参考 backup/jlink_flash_disp_sel_fix.jlink（双连接）
 rem       backup/jlink_backup_pre_adc_fix.jlink（w4 MEMMAP=1 + savebin）
 rem       backup/jlink_run_fixed.jlink（复位运行）
@@ -116,4 +152,20 @@ if defined NORUN (
     >> "%SCRIPT%" echo sleep 500
     >> "%SCRIPT%" echo exit
 )
+exit /b 0
+
+rem ---- 连接探测：JLink.exe 连一下，找 SW-DP ----
+:check_link
+set "JLINK_OK="
+>  "%CHKSCRIPT%" echo device LPC1765
+>> "%CHKSCRIPT%" echo if SWD
+>> "%CHKSCRIPT%" echo speed 4000
+>> "%CHKSCRIPT%" echo SetRESET
+>> "%CHKSCRIPT%" echo sleep 200
+>> "%CHKSCRIPT%" echo connect
+>> "%CHKSCRIPT%" echo ClrRESET
+>> "%CHKSCRIPT%" echo sleep 200
+>> "%CHKSCRIPT%" echo exit
+"%JLINK%" -device LPC1765 -if SWD -speed 4000 -CommanderScript "%CHKSCRIPT%" > "%CHKLOG%" 2>&1
+findstr /i "Found SW-DP" "%CHKLOG%" >nul 2>&1 && set "JLINK_OK=1"
 exit /b 0

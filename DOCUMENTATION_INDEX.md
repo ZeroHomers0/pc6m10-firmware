@@ -6,6 +6,7 @@
 
 | 主题 | 文档 |
 |---|---|
+| 傻瓜式操作 | `操作文档.md`（install_deps / build / flash 三脚本） |
 | 项目状态 | `docs/project/PROJECT_STATUS.md` |
 | 应用指南 | `docs/project/APPLICATION_GUIDE_2026-08-21.md` |
 | 数据段 | `docs/project/DATA_SEGMENT_2026-08-21.md` |
