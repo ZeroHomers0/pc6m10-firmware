@@ -2,6 +2,7 @@
 
 > 本文件是 W8 硬件执行和判定的唯一来源。软件安装、J-Link 命令、Modbus 脚本和仪器菜单操作见
 > `W8_SOFTWARE_OPERATION.md`；离线证据见 `W8_PRE_HARDWARE_VALIDATION_2026-08-23.md`。
+> **必检项完成状态以 `W8_TEST_MASTER.md` 为准**（本文档为流程规范细节，不含进度）。
 
 ## 1. 总体放行规则
 

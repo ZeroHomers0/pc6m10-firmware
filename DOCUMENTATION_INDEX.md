@@ -18,18 +18,19 @@
 
 ## W8 实机验证
 
-按顺序阅读：
+按顺序阅读（进度与完成状态一律看第 1 项 `W8_TEST_MASTER.md`）：
 
-1. `docs/w8/W8_ONBOARDING_2026-08-22.md`
-2. `docs/w8/W8_PRE_HARDWARE_VALIDATION_2026-08-23.md`
-3. `docs/w8/W8_HARDWARE_TEST_2026-08-22.md`
-4. `docs/w8/W8_SOFTWARE_OPERATION.md`
-5. `docs/w8/W8_JLINK_DEBUG_2026-08-24.md`
-6. `docs/w8/W8_ISP_FLASH_2026-08-26.md`（ISP 擦除、SWD 恢复、自编译固件 CRP 风险与实机经验）
-7. `docs/w8/W8_POST_FLASH_2026-08-26.md`（自编译固件 CRP 修复后 SWD 烧写入板、MEMMAP 排查与板上状态）
-8. `docs/w8/W8_DISP_SEL_FIX_2026-08-27.md`（case1 首页上下键无效：三分支 FAULT 门控修复 + DISP_SEL=控制方式 破译）
-9. `docs/w8/W8_ISSUE_LOG_2026-08-27.md`（烧录测试全流程问题回顾时间线，**暂未完结**，随调试持续追加）
-10. `docs/w8/W8_STAGE1_CLOSE_STAGE2_2026-08-27.md`（阶段1 收尾：SRAM 哨兵栈水位 + 继电器误吸合实机步骤；阶段2 三相同步启动清单）
+1. `docs/w8/W8_TEST_MASTER.md`（**唯一流程 + 进度权威**：阶段 0-4 必检项状态、通过标准、下一步、记录索引）
+2. `docs/w8/W8_ONBOARDING_2026-08-22.md`
+3. `docs/w8/W8_PRE_HARDWARE_VALIDATION_2026-08-23.md`
+4. `docs/w8/W8_HARDWARE_TEST_2026-08-22.md`
+5. `docs/w8/W8_SOFTWARE_OPERATION.md`
+6. `docs/w8/W8_JLINK_DEBUG_2026-08-24.md`
+7. `docs/w8/W8_ISP_FLASH_2026-08-26.md`（ISP 擦除、SWD 恢复、自编译固件 CRP 风险与实机经验）
+8. `docs/w8/W8_POST_FLASH_2026-08-26.md`（自编译固件 CRP 修复后 SWD 烧写入板、MEMMAP 排查与板上状态）
+9. `docs/w8/W8_DISP_SEL_FIX_2026-08-27.md`（case1 首页上下键无效：三分支 FAULT 门控修复 + DISP_SEL=控制方式 破译）
+10. `docs/w8/W8_ISSUE_LOG_2026-08-27.md`（烧录测试全流程问题回顾时间线，**暂未完结**，随调试持续追加）
+11. `docs/w8/W8_STAGE1_CLOSE_STAGE2_2026-08-27.md`（阶段1 收尾：SRAM 哨兵栈水位 + 继电器误吸合实机步骤；阶段2 三相同步启动清单）
 
 ## 证据与历史
 
