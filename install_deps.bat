@@ -45,10 +45,23 @@ if not defined BASH (
 if defined BASH (
     echo       [OK] Git Bash 已安装: !BASH!
 ) else (
-    echo       [提示] 未检测到 Git Bash。
-    echo              请下载安装 Git for Windows：
-    echo              https://git-scm.com/download/win
-    echo              （安装完成后本脚本其余部分仍可继续）
+    echo       [安装] 未检测到 Git Bash，尝试用 winget 自动安装（请稍候）...
+    winget install --id Git.Git -e --source winget --silent --accept-package-agreements --accept-source-agreements >nul 2>&1
+    set "BASH="
+    if exist "%ProgramFiles%\Git\bin\bash.exe" set "BASH=%ProgramFiles%\Git\bin\bash.exe"
+    if exist "%ProgramFiles(x86)%\Git\bin\bash.exe" set "BASH=%ProgramFiles(x86)%\Git\bin\bash.exe"
+    if exist "%LocalAppData%\Programs\Git\bin\bash.exe" set "BASH=%LocalAppData%\Programs\Git\bin\bash.exe"
+    if not defined BASH (
+        for /f "delims=" %%i in ('where bash 2^>nul') do if not defined BASH set "BASH=%%i"
+    )
+    if defined BASH (
+        echo       [OK] winget 安装成功: !BASH!
+    ) else (
+        echo       [失败] winget 自动安装未成功。
+        echo              请手动下载安装 Git for Windows：
+        echo              https://git-scm.com/download/win
+        echo              （本脚本其余部分仍可继续）
+    )
 )
 
 rem ---- 2/3 Arm GNU Toolchain ----
