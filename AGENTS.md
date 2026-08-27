@@ -67,7 +67,7 @@ tools/                      审计、生成、Ghidra、维护、验证和 W8 工
 - `install_deps.bat` —— 一键装依赖（Git winget / 工具链静默 / J-Link 驱动，自动请求管理员）
 - `build.bat` —— 构建固件（自动探测工具链，显示耗时 + SHA-256，日志落盘 `backup\build.log`）
 - `flash.bat` —— J-Link SWD 烧写（`-check` 测连接 / `-preview` 预览 / `-norun` 不复位运行）
-- `reset.bat` —— 双击复位重启固件（connect-under-reset，无需重新上电）
+- ~~`reset.bat`~~ —— 已删除：J-Link 驱动 nRESET 复位会悬挂 SWD，干扰复用调试脚的固件运行（背光常亮/按键失灵）。重启固件一律**物理断电再上电**。
 
 ```powershell
 # 手动构建（Git Bash 中执行 build.sh，等价 build.bat）
