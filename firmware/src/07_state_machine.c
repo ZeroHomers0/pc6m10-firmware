@@ -468,7 +468,7 @@ do_dispatch:
       if (*FAULT != 0) { *STATUS = 0; disp_string((int)0x47dc, 3, 0xa, 0); }
       else if (*RUN == 0 && *STATUS != 1) { *STATUS = 1; disp_string((int)0x47e8, 3, 0xa, 0); }
       if (*CTRL_MODE == 0 && *DISP_MODE != 1) {
-        *DISP_MODE = 1; fio1_pin20_ctrl(0); fio1_pin21_ctrl(0);
+        *DISP_MODE = 1; fio1_pin20_ctrl(1); fio1_pin21_ctrl(0);  /* 0x4E44：r0=1 → P1.20 置位高；反编译曾误作 0，已还原 */
         disp_string((int)0x47fc, 3, 0, 0);
       } else if (*CTRL_MODE == 1 && *DISP_MODE != 2) {
         *DISP_MODE = 2; fio1_pin20_ctrl(0); fio1_pin21_ctrl(1);
@@ -999,8 +999,41 @@ do_dispatch:
     /* ---- TIMEOUT3 计数到 0xFB：整页重绘当前页全部 4 项值(当前项高亮)，恢复被标签重绘清掉的值列 ---- */
     if (*TIMEOUT3 == 0xfb) sm3_draw_page(*MENU2);
 
-    /* ---- 编辑空闲超时：回到主屏 ---- */
+    /* ---- TIMEOUT3 超过 0x1F4：回绕为 0；编辑态按 MENU2 用空格擦除当前项值列 ---- */
+    /*     与 0xFB 整页重绘(当前项反显)交替 → 值"反显/消失"闪烁，周期≈501 帧 (0x7A32-0x7BD8)。
+     *     空格串：0x6474=5空格(item0/10..14)、0x7068=4空格(item1..7)、0x647C=0x6474+8=3空格(item8/9/15)。
+     *     item4/5 按 V_RANGE/A_RANGE 是否顶到限位选宽/窄擦除串。 */
+    if (*TIMEOUT3 > 0x1f4) {
+      *TIMEOUT3 = 0;
+      if (*MENU3 == 0) return;              /* 查看态：本帧提前返回(b.w 0x4ba8=pop{r4})，跳过 TIMEOUT++ */
+      switch (it) {
+        case 0:  disp_string(0x6474, 0, 0xb, 0); break;
+        case 1:  disp_string(0x7068, 1, 0xb, 0); break;
+        case 2:  disp_string(0x7068, 2, 0xb, 0); break;
+        case 3:  disp_string(0x7068, 3, 0xb, 0); break;
+        case 4:  if (*V_RANGE >= *w48) disp_string(0x7068, 0, 0xb, 0);
+                 else disp_string(0x6474, 0, 0xb, 0);
+                 break;
+        case 5:  if (*A_RANGE >= *w44) disp_string(0x7068, 1, 0xb, 0);
+                 else disp_string(0x6474, 1, 0xb, 0);
+                 break;
+        case 6:  disp_string(0x7068, 2, 0xb, 0); break;
+        case 7:  disp_string(0x7068, 3, 0xb, 0); break;
+        case 8:  disp_string(0x6474 + 0x8, 0, 0xb, 0); break;
+        case 9:  disp_string(0x6474 + 0x8, 1, 0xb, 0); break;
+        case 10: disp_string(0x6474, 2, 0xb, 0); break;
+        case 11: disp_string(0x6474, 3, 0xb, 0); break;
+        case 12: disp_string(0x6474, 0, 0xb, 0); break;
+        case 13: disp_string(0x6474, 1, 0xb, 0); break;
+        case 14: disp_string(0x6474, 2, 0xb, 0); break;
+        case 15: disp_string(0x6474 + 0x8, 3, 0xb, 0); break;
+      }
+    }
+
+    /* ---- 恒压/恒流(CTRL_MODE<2)且软起时间 b4c 未配置时自动置 1 (0x7BE2-0x7BF4)；
+     *     随后编辑空闲超时回到主屏 (0x7BD8-0x7C16) ---- */
     (*TIMEOUT)++;
+    if (*CTRL_MODE < 2 && *b4c == 0) *b4c = 1;
     if (*TIMEOUT >= 0x1388) { *TIMEOUT = 0; *MENU = 1; disp_splash_screen(); }
     return;
   }
