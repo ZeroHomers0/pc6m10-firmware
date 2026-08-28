@@ -45,16 +45,16 @@ python -m pip show minimalmodbus pyserial
 > **只需标准库、无需第三方**：`tools/verify_*.py`（逆向验证脚本）——纯标准库直接跑。
 > **需要 pip 装**：W8 的 Modbus 脚本（依赖 minimalmodbus + pyserial），先装这两个包。
 > **J-Link** 仓库已打包免安装最小集 `tools\jlink\JLink.exe`（**全项目 J-Link 唯一调用路径**，
-> 无需安装 J-Link 软件）；USB 驱动缺失时用 `install_deps.bat` 自动安装（官方驱动）。
+> 无需安装 J-Link 软件）；USB 驱动缺失时运行 `tools\jlink\USBDriver\InstDrivers.exe` 安装（官方驱动）。
 > HEX/ELF 用 `LoadFile`；BIN 用 `LoadFile 文件.bin 0x00000000`，无需另装 J-Flash。
 
 ### 1.2 Windows 环境安装与自检
 
-**推荐一键安装**：双击根目录 `install_deps.bat`（自动请求管理员权限），依次检查并安装：
-
-1. **Git for Windows**（`build.bat` 需要 bash）—— 缺则用 **winget 自动安装**；
-2. **Arm GNU Toolchain 14.2.Rel1**（编译工具链）—— 缺则自动下载官方安装包并**静默安装**；
-3. **J-Link USB 驱动**（仓库自带 `tools\jlink` 打包驱动）—— 用 J-Link 实连探测，识别不到才自动装。
+**手动安装**（按 §1.1 表，仅官方来源）：
+1. **Git for Windows**（构建需要 bash）—— 官网安装；或 `winget install --id Git.Git -e --source winget`；
+2. **Arm GNU Toolchain 14.2.Rel1**（编译工具链）—— 官方安装器（约 250 MB）静默安装，装到默认路径；
+3. **J-Link USB 驱动**（仓库自带 `tools\jlink` 打包驱动）—— 插 J-Link 未识别时运行
+   `tools\jlink\USBDriver\InstDrivers.exe`。
 
 也可按 §1.1 表手动安装（仅官方来源）。Git、Arm GNU Toolchain 14.2.Rel1、Python 3.12.10
 装好后重开终端，在项目根执行（J-Link 用打包版 `tools\jlink\JLink.exe`，无需安装软件）：
@@ -64,8 +64,8 @@ python test/run_tests.py
 python tools/verification/verify_firmware_equivalence.py
 ```
 
-构建用根目录 `build.bat`（双击，自动探测工具链并显示耗时与 SHA-256）或
-`cd firmware && bash build.sh`。通过标准：构建尺寸 `text 61968 / data 3000 / bss 2188`；
+构建用 `cd firmware && bash build.sh`（自动探测工具链并显示耗时与 SHA-256）。
+通过标准：构建尺寸 `text 61968 / data 3000 / bss 2188`；
 `firmware.bin` SHA-256 为 `25676E62317091EA33D054D404E0D2C4E2C988C8CE4969E04E70395FC0A49C62`；
 测试 11/11，独立验证器全 PASS。
 
