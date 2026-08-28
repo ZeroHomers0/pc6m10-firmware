@@ -51,22 +51,22 @@ tools/                      审计、生成、Ghidra、维护、验证和 W8 工
 |---|---|
 | `W8_TEST_MASTER.md` | **唯一流程 + 进度权威**：阶段 0-4 必检项状态、通过标准、下一步、记录索引只在此维护 |
 | `W8_HARDWARE_TEST_2026-08-22.md` | 硬件规范：安全前提、P12 引脚/触发引脚、时序表、记录模板（无进度） |
-| `W8_SOFTWARE_OPERATION.md` | 软件操作手册：软件清单/安装/命令/示波器·信号源操作（活文档） |
+| `W8_SOFTWARE_OPERATION.md` | 软件操作手册：软件清单/安装/示波器·信号源操作（活文档）；构建与烧写命令见 `操作文档.md` |
 | `W8_ONBOARDING_2026-08-22.md` | 导航入口 + 三条停止线 |
 | 其余带日期文档 | 记录：问题时间线/专项排查/阶段执行步骤，只记录当时事实 |
 
 更新规则：
 - 进度或完成状态变化 → 只改 `W8_TEST_MASTER.md` 的表格；新实测证据 → 写入对应必检项「记录/证据」列并链接。
 - 硬件事实变化 → 改 `W8_HARDWARE_TEST_2026-08-22.md` 与 AGENTS.md「已确证硬件事实」。
-- 软件/脚本/命令变化 → 改 `W8_SOFTWARE_OPERATION.md`。
+- 软件清单/安装/仪器操作变化 → 改 `W8_SOFTWARE_OPERATION.md`；构建与烧写命令变化 → 改根目录 `操作文档.md`（命令唯一源，不双源维护）。
 - 带日期文档：不删不改写历史，可追加新事实；不得作为「当前状态」来源。
 
 ## 常用入口
 
 操作入口（详见 `操作文档.md`；根目录三个 `.bat` 已删除，跨机不通用）：
 - 构建 —— `cd firmware && bash build.sh`（产物 `firmware.bin/hex/elf/map`，SHA/尺寸见 操作文档.md §2）
-- ISP 烧写（SWD 之前的解困通道）—— Flash Magic + USB-TTL，接线与用法见 操作文档.md §3
-- SWD 烧写 —— 打包版 `tools/jlink/JLink.exe` + `-CommanderScript`，命令见 操作文档.md §4
+- SWD 烧写（日常主通道，首选）—— 打包版 `tools/jlink/JLink.exe` + `-CommanderScript`，命令见 操作文档.md §3
+- ISP 烧写（SWD 连不上时的解困通道）—— Flash Magic + USB-TTL，接线与用法见 操作文档.md §4
 - 重启固件一律**物理断电再上电**（J-Link 驱动 nRESET 复位会悬挂 SWD，干扰复用调试脚的固件运行）。
 
 ```powershell

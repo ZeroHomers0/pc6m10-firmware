@@ -2,7 +2,8 @@
 
 > 日期：2026-08-22 ｜ 配合 `W8_HARDWARE_TEST_2026-08-22.md`（硬件接线/预期值/判定）使用
 > 本篇聚焦**软件侧**：W8 需要哪些软件、怎么装、每一步具体怎么操作（示波器挡位、信号发生器设置、串口连接…）
-> 本文同时包含固定版本环境安装，不再维护独立的重复安装文档。
+> **构建固件与 SWD/ISP 烧写命令统一以根目录 `操作文档.md` 为准**（2026-08-29 命令单源定论）；
+> 本篇不再重复这些命令，只保留 W8 特有的软件清单、仪器操作与调试验证。
 
 ---
 
@@ -22,25 +23,11 @@
 | 8 | **示波器厂商软件** | 仅选择仪器厂家免费版本；可选 | 截图、CSV 导出和远程控制 | 从示波器铭牌对应的厂家官网进入“支持/下载”，不使用第三方下载站 |
 | 9 | **USB-RS485 官方驱动** | 通常免费；按硬件芯片选装 | 让转换器显示为 COM 口 | 先由 Windows Update 安装；仍缺驱动时只从转换器厂商或芯片原厂官网下载，不能仅凭外壳猜测 CH340/FTDI |
 
-安装 Python 依赖：
-
-```powershell
-py -3.12 -m pip install minimalmodbus pyserial unicorn
-```
-
-版本确认：
-
-```powershell
-arm-none-eabi-gcc --version
-arm-none-eabi-gdb --version
-python --version
-python -m pip show minimalmodbus pyserial
-```
-
-> 本工程固定使用已经验证过的 Arm GNU Toolchain **14.2.Rel1**，不要在实机验证前切换到最新
-> 15.x。Python 推荐 3.12；MinimalModbus 官方支持 Python 3.8 及以上。J-Link Commander 和
-> J-Link GDB Server 已包含在同一个免费软件包中，不需要另购 J-Flash，也不需要安装 Keil、
-> MCUXpresso、OpenOCD、pyOCD 或付费 Modbus 软件。
+安装命令（Git / 工具链 / Python / pip 依赖）与版本确认见 `操作文档.md` §1。
+本工程固定使用已经验证过的 Arm GNU Toolchain **14.2.Rel1**，不要在实机验证前切换到最新
+15.x。Python 推荐 3.12；MinimalModbus 官方支持 Python 3.8 及以上。J-Link Commander 和
+J-Link GDB Server 已包含在同一个免费软件包中，不需要另购 J-Flash，也不需要安装 Keil、
+MCUXpresso、OpenOCD、pyOCD 或付费 Modbus 软件。
 
 > **只需标准库、无需第三方**：`tools/verify_*.py`（逆向验证脚本）——纯标准库直接跑。
 > **需要 pip 装**：W8 的 Modbus 脚本（依赖 minimalmodbus + pyserial），先装这两个包。
@@ -50,24 +37,13 @@ python -m pip show minimalmodbus pyserial
 
 ### 1.2 Windows 环境安装与自检
 
-**手动安装**（按 §1.1 表，仅官方来源）：
-1. **Git for Windows**（构建需要 bash）—— 官网安装；或 `winget install --id Git.Git -e --source winget`；
-2. **Arm GNU Toolchain 14.2.Rel1**（编译工具链）—— 官方安装器（约 250 MB）静默安装，装到默认路径；
-3. **J-Link USB 驱动**（仓库自带 `tools\jlink` 打包驱动）—— 插 J-Link 未识别时运行
-   `tools\jlink\USBDriver\InstDrivers.exe`。
+手动安装（按 §1.1 表，仅官方来源）：Git for Windows、Arm GNU Toolchain 14.2.Rel1、
+J-Link USB 驱动，具体命令见 `操作文档.md` §1。
 
-也可按 §1.1 表手动安装（仅官方来源）。Git、Arm GNU Toolchain 14.2.Rel1、Python 3.12.10
-装好后重开终端，在项目根执行（J-Link 用打包版 `tools\jlink\JLink.exe`，无需安装软件）：
-
-```bash
-python test/run_tests.py
-python tools/verification/verify_firmware_equivalence.py
-```
-
-构建用 `cd firmware && bash build.sh`（自动探测工具链并显示耗时与 SHA-256）。
-通过标准：构建尺寸 `text 61968 / data 3000 / bss 2188`；
-`firmware.bin` SHA-256 为 `25676E62317091EA33D054D404E0D2C4E2C988C8CE4969E04E70395FC0A49C62`；
-测试 11/11，独立验证器全 PASS。
+构建与回归自检命令见 `操作文档.md` §2（`cd firmware && bash build.sh` +
+`python test/run_tests.py` + `python tools/verification/verify_firmware_equivalence.py`）。
+构建通过标准（尺寸 `text 61968 / data 3000 / bss 2188`、`firmware.bin` SHA-256、
+测试 11/11、独立验证器全 PASS）见 `操作文档.md` §2。
 
 ### 1.3 硬件配套（跟软件配合用的仪器）
 
@@ -86,28 +62,19 @@ python tools/verification/verify_firmware_equivalence.py
 
 > 只证明「J-Link ↔ P12 ↔ LPC1765 能连、能读、能写、能跑」，不触碰 SCR/主整机。
 > 硬件接线、P12 引脚定义见 `W8_HARDWARE_TEST_2026-08-22.md`；各阶段通过标准见 `W8_TEST_MASTER.md`。
+> **连接 / 备份 / 烧写命令以根目录 `操作文档.md` §3 为准**（2026-08-29 实测定型）；
+> 本篇只保留 W8 特有的 blink 最小验证与断点/单步调试验证。
 
-### A.1 连接（J-Link Commander 交互 CLI）
-装好 J-Link 驱动后打开仓库打包版 `tools\jlink\JLink.exe`（免安装 J-Link Commander，
-全项目唯一调用路径；本机 SEGGER 安装版亦可），逐行输入：
+### A.1 连接 / 备份 / 烧写（命令见 操作文档.md §3）
+- 连接探测：`操作文档.md` §3.1（`speed 100` 普通 connect，成功标志 `Found SW-DP` + `IDCode` + `Cortex-M3`）
+- connect-under-reset（应用固件复用 SWD 脚时必用）：`操作文档.md` §3.2
+- 备份原固件 + CRP 检查：`操作文档.md` §3.3（`savebin` + `mem32 0x2FC` + 铁律）
+- 完整烧写序列（erase → loadbin → verifybin → 复位运行）：`操作文档.md` §3.4
+- 失败排查：`操作文档.md` §3.6
 
-```
-device LPC1765        ; 选芯片（也可先 "device LPC176x" 再确认）
-si SWD                ; 本项目 P12 采用 SWD 四线连接
-speed 100             ; 先 100 kHz，稳定后→400 kHz→1 MHz
-connect               ; 连接，应输出 Found SW-DP / IDCode / Cortex-M3 / Flash 256K
-```
+### A.2 烧写 / 运行最小验证（blink，W8 特有）
+用独立小程序（不烧真实固件）验证「能烧、能跑」：
 
-连接成功标志：`Found SW-DP` + `IDCode` + `Device core`。若失败→降到 100 kHz；仍失败→见 A.5。
-
-### A.2 识别 / 备份原固件（务必先做）
-```
-showdevice                                  ; 或 mem32 0x400FC41C，确认 CPU/Flash 型号、CRP 状态
-savebin backup_orig.bin, 0x00000000, 0x40000 ; LPC1765 Flash=256KB=0x40000，备份后再动
-```
-> **铁律**：备份前**不要** `unlock` / `recover` / `mass erase`（LPC17xx 有 CRP1/2/3，解除较高保护会整片擦除，原固件不可恢复）；确认可覆盖前也不要执行 `LoadFile`。
-
-### A.3 烧写 / 运行最小验证（blink）
 ```
 loadfile blink.hex             ; HEX 自带地址
 loadfile blink.bin 0x00000000  ; BIN 必须指定起始地址 0
@@ -116,19 +83,13 @@ g                              ; 运行（Go）
 ```
 目标板 LED 闪烁 = 烧写/运行链打通。
 
-### A.4 断点 / 单步（验证调试链路）
+### A.3 断点 / 单步（验证调试链路）
 ```
 halt            ; 暂停
 setbp 0x<addr>  ; 设断点
 go              ; 恢复运行，命中即停
 st              ; 单步     mem / regs  读内存/寄存器
 ```
-
-### A.5 失败排查
-| 现象 | 处置 |
-|---|---|
-| `connect` 失败 | 核对 P12-1/2/6/8 接线与共地；降到 100 kHz；给 TCK 补下拉（数据手册注15） |
-| 复位后死机 | `mem32 0x0,4` 看前 4 字（应为 SP/Reset/IRQ）；若需 `Connect under reset` 用 **P12-7（nRESET，已引出）**，连接不成功时补 TCK 下拉（数据手册注15） |
 
 **阶段 A 通过标准**：能 `connect`、能读设备 ID、能备份原 Flash、能烧 blink 且复位后运行、能断点单步。
 
@@ -258,8 +219,8 @@ python tools/w8/w8_modbus_test.py --port COM8 --baud 9600 --addr 1   # 自定义
 
 ## 8. 一键准备清单（开测前勾一遍）
 
-- [ ] §1.2 环境自检完成，`bash build.sh` 出 OK
-- [ ] `py -3.12 -m pip install minimalmodbus pyserial unicorn` 成功
+- [ ] 环境自检完成（构建命令见 `操作文档.md` §2）
+- [ ] Python 依赖已安装（命令见 `操作文档.md` §1）
 - [ ] USB-RS485 已识别成 COM 口（`w8_serial_detect.py` 能看到）
 - [ ] 示波器探头比例选对、挡位按 §4.1
 - [ ] 信号发生器已设 50Hz 0-3.3V 方波

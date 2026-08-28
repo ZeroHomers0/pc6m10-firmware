@@ -148,7 +148,7 @@
 | **W8_TEST_MASTER.md** | **唯一流程 + 进度权威（本文档）** |
 | W8_ONBOARDING_2026-08-22.md | 导航入口 + 三条停止线（进度见本文档） |
 | W8_HARDWARE_TEST_2026-08-22.md | 硬件规范（安全前提/接线/引脚/时序/记录模板；必检项见本文档） |
-| W8_SOFTWARE_OPERATION.md | 软件安装与操作手册（J-Link/Modbus/示波器/信号发生器） |
+| W8_SOFTWARE_OPERATION.md | 软件安装与操作手册（Modbus/示波器/信号发生器）；J-Link 烧写命令见根目录 `操作文档.md` §3 |
 | W8_PRE_HARDWARE_VALIDATION_2026-08-23.md | 离线验证证据与边界（时间点） |
 | W8_JLINK_DEBUG_2026-08-24.md | SWD 连不上专项排查记录（根因=固件复用调试脚） |
 | W8_ISP_FLASH_2026-08-26.md | ISP 备份/烧录 + 板上 CRP 冲突记录 |
