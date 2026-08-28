@@ -12,8 +12,8 @@
 
 ## 唯一执行顺序
 
-1. 按 `W8_SOFTWARE_OPERATION.md` §1 安装并验证固定版本环境。
-2. 按同一文档熟悉 J-Link、Modbus、示波器和信号发生器的操作。
+1. 按 `W8_SOFTWARE_OPERATION.md` §1 安装并验证固定版本环境（安装/构建命令见 `操作文档.md` §1/§2）。
+2. 按 `W8_SOFTWARE_OPERATION.md` 熟悉 Modbus、示波器和信号发生器操作；J-Link 连接/备份/烧写命令见 `操作文档.md` §3。
 3. 按 `W8_TEST_MASTER.md`（唯一流程+进度权威）从第 0 阶段开始逐项执行并记录；硬件接线与时序细节见
    `W8_HARDWARE_TEST_2026-08-22.md`。
 4. 任一阶段失败立即停止，不跨级；将记录交回分析后再继续。
