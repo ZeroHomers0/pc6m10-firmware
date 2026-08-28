@@ -22,7 +22,7 @@
 - 反编译、反汇编和硬件原始资料属于证据，不得因为当前未引用而删除。
 - 修改源码后必须以原始 BIN 做 A/B 执行级验证，不能仅依赖手写模型。
 - J-Link 一律调用仓库打包版 `tools/jlink/JLink.exe`（免安装），禁止依赖本机其他安装路径；
-  工具链由 `build.bat`/`build.sh` 自动探测（约定版本优先）。
+  工具链由 `firmware/build.sh` 自动探测（约定版本优先）。
 - 上机按 `docs/w8/W8_TEST_MASTER.md` 分级推进，不得跨级带载（硬件接线/时序见
   `docs/w8/W8_HARDWARE_TEST_2026-08-22.md`）。
 - `docs/history/` 只保存历史结论；当前状态以本文件、`DOCUMENTATION_INDEX.md` 和 W8 预验证记录为准。
@@ -63,14 +63,14 @@ tools/                      审计、生成、Ghidra、维护、验证和 W8 工
 
 ## 常用入口
 
-傻瓜式脚本（根目录，双击即用，详见 `操作文档.md`）：
-- `install_deps.bat` —— 一键装依赖（Git winget / 工具链静默 / J-Link 驱动，自动请求管理员）
-- `build.bat` —— 构建固件（自动探测工具链，显示耗时 + SHA-256，日志落盘 `backup\build.log`）
-- `flash.bat` —— J-Link SWD 烧写（`-check` 测连接 / `-preview` 预览 / `-norun` 不复位运行）
-- ~~`reset.bat`~~ —— 已删除：J-Link 驱动 nRESET 复位会悬挂 SWD，干扰复用调试脚的固件运行（背光常亮/按键失灵）。重启固件一律**物理断电再上电**。
+操作入口（详见 `操作文档.md`；根目录三个 `.bat` 已删除，跨机不通用）：
+- 构建 —— `cd firmware && bash build.sh`（产物 `firmware.bin/hex/elf/map`，SHA/尺寸见 操作文档.md §2）
+- ISP 烧写（SWD 之前的解困通道）—— Flash Magic + USB-TTL，接线与用法见 操作文档.md §3
+- SWD 烧写 —— 打包版 `tools/jlink/JLink.exe` + `-CommanderScript`，命令见 操作文档.md §4
+- 重启固件一律**物理断电再上电**（J-Link 驱动 nRESET 复位会悬挂 SWD，干扰复用调试脚的固件运行）。
 
 ```powershell
-# 手动构建（Git Bash 中执行 build.sh，等价 build.bat）
+# 手动构建（Git Bash 中执行 build.sh）
 cd firmware
 bash build.sh
 

@@ -1,0 +1,9 @@
+device LPC1765
+si SWD
+speed 4000
+SetRESET
+sleep 200
+connect
+ClrRESET
+sleep 200
+exit

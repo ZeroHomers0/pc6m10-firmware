@@ -64,7 +64,7 @@
 ### jlink/ — 免安装 J-Link 最小集
 
 `JLink.exe` + DLL + USB 驱动。**`JLink.exe` 是全项目 J-Link 唯一调用路径**，
-无需安装 J-Link 软件；`flash.bat`/`install_deps.bat` 一律从这里调用。
+无需安装 J-Link 软件；所有 SWD 烧写/探测一律从这里调用（命令见 `操作文档.md` §4）。
 
 ### archive/ — 一次性历史工具（仅供追溯，不作为当前流程入口）
 

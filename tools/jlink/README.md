@@ -1,7 +1,7 @@
 # tools/jlink — 免安装 J-Link 最小集
 
 来源：SEGGER J-Link V9.70（本机 `D:\software\SEGGER\JLink_V970` 安装目录，2026-08-27 拷贝）。
-用途：本目录 `JLink.exe` 是**全项目 J-Link 唯一调用路径**（`flash.bat`、`install_deps.bat`、以及后续所有 AI 工具/脚本一律从这里调用），**无需安装 J-Link 软件**，即拷即用。
+用途：本目录 `JLink.exe` 是**全项目 J-Link 唯一调用路径**（所有 SWD 烧写/探测命令与 AI 工具/脚本一律从这里调用，命令见 `操作文档.md` §4），**无需安装 J-Link 软件**，即拷即用。
 
 ## 内容
 
