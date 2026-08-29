@@ -2,29 +2,32 @@
 # =============================================================================
 # test_unicorn_modbus_dispatch.py — 真实执行 modbus_dispatch，验证 Modbus 帧处理
 #
-# 用 Unicorn 执行编译的 modbus_dispatch@0x86E4。把标准 Modbus RTU 请求帧放进
+# 用 Unicorn 执行编译的 modbus_dispatch。把标准 Modbus RTU 请求帧放进
 # FRAME(0x100022A4)、设 RX_LEN/RX_STATE/SLAVE_ADDR，验证：
-#   * 合法帧（CRC 正确，且 frame[2]==0x10 的 0x10xx 寄存器布局）→ 走 0x03 读分支
-#     → uart3_tx_byte(5+cnt*2=7) 发 7 字节响应，TXBUF=[addr,0x03,字节数,数据,CRC]
-#   * CRC 错帧 → 异常分支 uart3_tx_byte(5) 发异常响应（功能码置 0x80)
-# 为规避 UART 外设硬时序，hook uart3_tx_byte@0x904c：它参数 r0 = "发 n 字节"的计数，
+#   * 合法帧（CRC 正确，且 frame[2]==0x10 的 0x1001..0x103F 寄存器布局）
+#     → 走 0x03 读分支 → uart3_tx_byte(5+cnt*2=7) 发 7 字节响应，
+#       TXBUF=[addr,0x03,字节数,数据,CRC]
+#   * CRC 错帧 → 异常分支 uart3_tx_byte(5) 发异常响应（功能码置 0x80）
+# 为规避 UART 外设硬时序，hook uart3_tx_byte：它参数 r0 = "发 n 字节"的计数，
 # 实际字节在 TXBUF。hook 跳过函数体（PC=LR），只记录 r0 即得"本次要发的字节数"。
 #
-# 寄存器寻址约定（本固件特有）：帧体为 [addr,func,0x10,reg_lo,count_hi,count_lo,CRC]，
-#   frame[2]==0x10 是 reg 高字节、frame[3]=reg 低字节 → 即 Modbus 寄存区 0x1001..0x103F。
-# 注意：请求/响应 CRC 均按固件 crc16 语义计算（处理全部 len 字节 = 标准 Modbus CRC，
-#   2026-08-23 A/B 差分实证，非 len-1）。基准是原始二进制真值，非教材。
+# ★ A/B 差分：同一请求帧分别跑【原始 LPC1765.bin】与【编译 firmware.elf】的
+#   modbus_dispatch，断言 TXBUF 逐字节一致。2026-08-29 修复记：本固件 16 位
+#   字段一律大端（frame[4]<<8|frame[5]），旧测试把计数当小端写死（cnt_lo/cnt_hi
+#   颠倒）恰与反编译 bug 一致而同绿，漏过帧解析字节序回归（bug #3）。
+#
 # 若 unicorn 不可用 → SKIP。
 # =============================================================================
 import os, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ROOT, 'test', 'support'))
 try:
     sys.stdout.reconfigure(encoding='utf-8')
 except Exception:
     pass
 from unicorn import *
 from unicorn.arm_const import *
+from unicorn_harness import load_firmware, load_original, lookup
 
 FRAME, RX_LEN, RX_STATE, SLAVE_ADDR, TXBUF = 0x100022A4, 0x10001792, 0x10001790, 0x100016FF, 0x1000236C
 
@@ -42,9 +45,38 @@ def crc16_fw(data, length):
         ch = lo[t]
     return (cl | (ch << 8)) & 0xffff
 
-def load():
-    from unicorn_harness import load_firmware, lookup
-    return load_firmware(), lookup
+def map_periph(e):
+    for base, ln in [(0x2009C000, 0x4000), (0x40090000, 0x4000), (0x4009C000, 0x1000),
+                     (0x4002C000, 0x2000), (0x400FC000, 0x1000), (0xE000E100, 0x2000)]:
+        try:
+            e.mem_map(base, ln, UC_PROT_ALL)
+        except UcError:
+            pass
+
+# ── 在指定固件上跑一帧（frame 含 CRC），返回 (tx_count, TXBUF) ──
+def run_frame(load_fn, dispatch_addr, tx_addr, frame, slave=0x01, gain_sel=0x56):
+    e = load_fn()
+    map_periph(e)
+    tx_count = []
+    def hook_tx(uc, addr, size, user):
+        tx_count.append(uc.reg_read(UC_ARM_REG_R0) & 0xff)
+        uc.reg_write(UC_ARM_REG_PC, uc.reg_read(UC_ARM_REG_LR))
+    e.hook_add(UC_HOOK_CODE, hook_tx, begin=tx_addr, end=tx_addr + 1)
+    for i, b in enumerate(frame):
+        e.mem_write(FRAME + i, bytes([b]))
+    e.mem_write(RX_LEN, bytes([len(frame)]))
+    e.mem_write(RX_STATE, bytes([5]))
+    e.mem_write(SLAVE_ADDR, bytes([slave]))
+    e.mem_write(0x10001634, bytes([gain_sel]))
+    e.reg_write(UC_ARM_REG_LR, 0xFF000000)
+    e.emu_start(dispatch_addr | 1, 0xFF000000)
+    n = tx_count[0] if tx_count else -1
+    txb = bytes(e.mem_read(TXBUF, max(n, 0)))
+    return n, txb
+
+# 原始固件固定地址（编译固件从 map 解析）
+ORIG_DISPATCH = 0xB642
+ORIG_TX      = 0xAE0C
 
 def main():
     try:
@@ -52,16 +84,8 @@ def main():
     except Exception as ex:
         print(f"  [SKIP] unicorn 不可用（{ex}）")
         return 0
-    e, lookup = load()
     FUNC_dispatch = lookup('modbus_dispatch')
     FUNC_uart3_tx = lookup('uart3_tx_byte')
-    # 映射外设区为可读写 0（避免 UNMAPPED）；读/正常分支不触碰 FIO/UART，仅兜底/不匹配才碰
-    for base, ln in [(0x2009C000, 0x4000), (0x40090000, 0x4000), (0x4009C000, 0x1000),
-                     (0x4002C000, 0x2000), (0x400FC000, 0x1000), (0xE000E100, 0x2000)]:
-        try:
-            e.mem_map(base, ln, UC_PROT_ALL)
-        except UcError:
-            pass
 
     passed = failed = 0
     def check(name, cond, detail=""):
@@ -71,71 +95,43 @@ def main():
         else: failed += 1
         print(f"  [{st}] {name}" + (f"  {detail}" if detail else ""))
 
-    tx_count = []
-    def hook_tx(uc, addr, size, user):
-        # uart3_tx_byte(n)：r0 = 本帧要发的字节数 n；跳过函数体（PC=LR）
-        # 实际字节已写入 TXBUF；仅记录 n 即可判定走哪条分支（读=7 / 异常=5）。
-        lr = uc.reg_read(UC_ARM_REG_LR)
-        tx_count.append(uc.reg_read(UC_ARM_REG_R0) & 0xff)
-        uc.reg_write(UC_ARM_REG_PC, lr)
-    e.hook_add(UC_HOOK_CODE, hook_tx, begin=FUNC_uart3_tx, end=FUNC_uart3_tx+1)
-
-    def w8(a, v): e.mem_write(a, bytes([v]))
-    def r8(a): return e.mem_read(a, 1)[0]
-
-    def send_frame(frame, slave=0x01):
-        tx_count.clear()
-        for i, b in enumerate(frame):
-            e.mem_write(FRAME+i, bytes([b]))
-        w8(RX_LEN, len(frame))
-        w8(RX_STATE, 5)
-        w8(SLAVE_ADDR, slave)
-        from unicorn_harness import call
-        call(e, FUNC_dispatch)
-
-    # ── 场景1：合法读请求 站1 读 0x1001(#1) 数量1 ──
-    #   本固件地址/计数编码特例：帧体 = [addr,func,reg_hi=0x10,reg_lo, cnt_lo, cnt_hi]
-    #   reg=frame[3]=0x01(0x1001)；cnt=frame[4]|frame[5]<<8 小端 → frame[4]=0x01,frame[5]=0x00 → cnt=1
-    #   crc16(FRAME,v-2=6) 处理全部6字节 [01 03 10 01 01 00] = 0x5A11
-    req = bytes([0x01, 0x03, 0x10, 0x01, 0x01, 0x00])
+    # ── 场景1：合法读请求 站1 读寄存器 0x1001(#1) 数量1 ──
+    #   16 位字段大端：cnt = frame[4]<<8 | frame[5]；请求体 [01 03 10 01 00 01] → cnt=1。
+    #   该帧即实机通讯测试帧（用户 2026-08-28 报告，CRC=0x0AD1）。gain_sel 预置 0x56。
+    req = bytes([0x01, 0x03, 0x10, 0x01, 0x00, 0x01])
     req_crc = crc16_fw(req, 6)
-    frame = req + bytes([req_crc & 0xff, req_crc >> 8])
-    # reg 索引 0 → modbus_read_reg 返回 *g_gain_sel（0x10001634）；先写入已知值以便断言
-    G_GAIN_SEL = 0x10001634
-    w8(G_GAIN_SEL, 0x56)
-    send_frame(frame)
+    check("读请求帧 CRC 自洽（0x0AD1）", req_crc == 0x0AD1, f"0x{req_crc:04X}")
+    frame_ok = req + bytes([req_crc & 0xff, req_crc >> 8])
 
-    check("读请求帧 CRC 自洽（0x%04X）" % req_crc,
-          req_crc == 0x5A11, f"0x{req_crc:04X}")
-    check("读分支调用 uart3_tx_byte，发送 7 字节", tx_count == [7],
-          f"tx_count={[hex(x) for x in tx_count]}")
-    # 响应 TXBUF[0..6] = [addr,0x03,字节数,数据hi,数据lo,crcl,crch]
-    txb = [r8(TXBUF+i) for i in range(7)]
-    check("响应[0]=地址 0x01", txb[0] == 0x01, f"{hex(txb[0])}")
-    check("响应[1]=功能码 0x03", txb[1] == 0x03, f"{hex(txb[1])}")
-    check("响应[2]=字节数 0x02（1字=2节）", txb[2] == 0x02, f"{hex(txb[2])}")
-    check("响应[3..4]=数据字（大端 0x0056=g_gain_sel）", (txb[3] << 8 | txb[4]) == 0x0056,
-          f"数据=0x{txb[3]:02X}{txb[4]:02X}")
-    # 响应 CRC：固件 crc16(tx, 3+cnt*2=5) 处理全部5字节 tx[0..4] → 应为 tx[5]tx[6]
-    if len(tx_count) == 1 and tx_count[0] == 7:
-        rsp_crc = crc16_fw(txb, 5)
-        check("响应 CRC 自洽（固件语义）",
-              (rsp_crc & 0xff) == txb[5] and (rsp_crc >> 8) == txb[6],
-              f"算0x{rsp_crc:04X} tx[5]={hex(txb[5])} tx[6]={hex(txb[6])}")
+    G = 0x56
+    n_o, tx_o = run_frame(load_original, ORIG_DISPATCH, ORIG_TX, frame_ok, gain_sel=G)
+    n_n, tx_n = run_frame(load_firmware, FUNC_dispatch, FUNC_uart3_tx, frame_ok, gain_sel=G)
+
+    # 寄存器值 0x0056 大端 → 数据 [0x00,0x56]；响应 [01 03 02 00 56 crc]
+    exp = bytes([0x01, 0x03, 0x02, 0x00, G])
+    rsp_crc = crc16_fw(exp, 5)
+    exp_full = exp + bytes([rsp_crc & 0xff, rsp_crc >> 8])
+    check("原固件读分支发 7 字节", n_o == 7, f"tx_count={[hex(x) for x in [n_o]]}")
+    check("新固件读分支发 7 字节", n_n == 7, f"tx_count={[hex(x) for x in [n_n]]}")
+    check("原固件响应 = [01 03 02 0056 crc]", tx_o == exp_full, f"0x{tx_o.hex().upper()}")
+    check("新固件响应 = [01 03 02 0056 crc]", tx_n == exp_full, f"0x{tx_n.hex().upper()}")
+    check("A/B 差分：原/新 TXBUF 逐字节一致", tx_o == tx_n,
+          f"原 0x{tx_o.hex().upper()} vs 新 0x{tx_n.hex().upper()}")
 
     # ── 场景2：合法帧体但 CRC 最后一字节错 → 应走 CRC 异常分支 ──
-    bad = req + bytes([(req_crc & 0xff) ^ 0xFF, req_crc >> 8])   # 故意破坏 CRC 低字节
-    send_frame(bad)
-    check("CRC 错帧 → uart3_tx_byte(5) 异常响应", tx_count == [5],
-          f"tx_count={[hex(x) for x in tx_count]}")
-    txb = [r8(TXBUF+i) for i in range(5)]
-    check("异常响应[1]=功能码|0x80 (0x83)", txb[1] == 0x83, f"{hex(txb[1])}")
-    check("异常响应[2]=异常码 0x04(CRC)", txb[2] == 0x04, f"{hex(txb[2])}")
+    frame_bad = req + bytes([(req_crc & 0xff) ^ 0xFF, req_crc >> 8])   # 破坏 CRC 低字节
+    n_o, tx_o = run_frame(load_original, ORIG_DISPATCH, ORIG_TX, frame_bad, gain_sel=G)
+    n_n, tx_n = run_frame(load_firmware, FUNC_dispatch, FUNC_uart3_tx, frame_bad, gain_sel=G)
+    check("原固件 CRC 错帧 → 异常 5B [01 83 04]", n_o == 5 and tx_o[:3] == bytes([1, 0x83, 4]),
+          f"0x{tx_o.hex().upper()}")
+    check("新固件 CRC 错帧 → 异常 5B [01 83 04]", n_n == 5 and tx_n[:3] == bytes([1, 0x83, 4]),
+          f"0x{tx_n.hex().upper()}")
 
-    # ── 场景3：站址不匹配 → 兜底，不发 ──
-    send_frame(frame)                  # 正常读 → [7]
-    send_frame(frame, slave=0x02)      # 帧[0]=01 != 本站2 → 直接返回，不发
-    check("站址不匹配 → 不发送", tx_count == [], f"tx_count={[hex(x) for x in tx_count]}")
+    # ── 场景3：站址不匹配 → 兜底，不发（空 tx_count）──
+    c_o = run_frame(load_original, ORIG_DISPATCH, ORIG_TX, frame_ok, slave=0x02, gain_sel=G)[0]
+    c_n = run_frame(load_firmware, FUNC_dispatch, FUNC_uart3_tx, frame_ok, slave=0x02, gain_sel=G)[0]
+    check("原固件站址不匹配 → 不发送", c_o == -1, f"tx_count={hex(c_o)}")
+    check("新固件站址不匹配 → 不发送", c_n == -1, f"tx_count={hex(c_n)}")
 
     print()
     print(f"  通过 {passed}/{passed+failed}")

@@ -1,6 +1,6 @@
 # 文档索引
 
-> 最后更新：2026-08-27。当前进度优先级：`AGENTS.md` → 本文 → `docs/project/PROJECT_STATUS.md` → 历史文档。
+> 最后更新：2026-08-30。当前进度优先级：`AGENTS.md` → 本文 → `docs/project/PROJECT_STATUS.md` → 历史文档。
 
 ## 当前文档
 
@@ -31,6 +31,8 @@
 9. `docs/w8/W8_DISP_SEL_FIX_2026-08-27.md`（case1 首页上下键无效：三分支 FAULT 门控修复 + DISP_SEL=控制方式 破译）
 10. `docs/w8/W8_ISSUE_LOG_2026-08-27.md`（烧录测试全流程问题回顾时间线，**暂未完结**，随调试持续追加）
 11. `docs/w8/W8_STAGE1_CLOSE_STAGE2_2026-08-27.md`（阶段1 收尾：SRAM 哨兵栈水位 + 继电器误吸合实机步骤；阶段2 三相同步启动清单）
+12. `docs/w8/W8_ISSUE_FIX_2026-08-28.md`（问题修复：case3 编辑态不闪烁 + 恒流 LED/主屏开环 LED 错译）
+13. `docs/w8/W8_ISSUE_FIX_2026-08-30.md`（问题修复汇总：6 项实机问题——不闪烁/恢复出厂"M"/Modbus 大端/PID BY DESIGN/控制方式互斥/复位"重启"字样）
 
 ## 证据与历史
 
