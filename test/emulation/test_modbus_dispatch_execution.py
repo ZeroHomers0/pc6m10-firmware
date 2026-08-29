@@ -74,6 +74,13 @@ def run_frame(load_fn, dispatch_addr, tx_addr, frame, slave=0x01, gain_sel=0x56)
     txb = bytes(e.mem_read(TXBUF, max(n, 0)))
     return n, txb
 
+def run_outcome(load_fn, dispatch_addr, tx_addr, frame, slave=0x01, gain_sel=0x56):
+    """异常/短帧可能按原厂行为越界终止；统一返回可比较结果。"""
+    try:
+        return ("OK",) + run_frame(load_fn, dispatch_addr, tx_addr, frame, slave, gain_sel)
+    except UcError as ex:
+        return ("UC_ERR", ex.errno)
+
 # 原始固件固定地址（编译固件从 map 解析）
 ORIG_DISPATCH = 0xB642
 ORIG_TX      = 0xAE0C
@@ -154,6 +161,26 @@ def main():
     check("0x10 新固件发送 8 字节确认", n_n == 8, f"0x{tx_n.hex().upper()}")
     check("0x10 完整帧 A/B 响应一致", tx_o == tx_n,
           f"原 0x{tx_o.hex().upper()} vs 新 0x{tx_n.hex().upper()}")
+
+    # ── 场景6：异常结构/边界/短帧，仅以原BIN行为为期望 ──
+    def framed(body):
+        c = crc16_fw(body, len(body))
+        return body + bytes([c & 0xff, c >> 8])
+
+    abnormal = [
+        ("0x06 值越界", framed(bytes([1, 6, 0x10, 1, 0, 3]))),
+        ("0x06 不存在寄存器", framed(bytes([1, 6, 0x10, 0x3F, 0, 1]))),
+        ("0x10 数量为0", framed(bytes([1, 0x10, 0x10, 1, 0, 0, 0]))),
+        ("0x10 数量超限", framed(bytes([1, 0x10, 0x10, 1, 0, 0x3F, 0x7E]))),
+        ("0x10 字节数不匹配", framed(bytes([1, 0x10, 0x10, 1, 0, 2, 2, 0, 1]))),
+        ("不支持功能码", framed(bytes([1, 4, 0x10, 1, 0, 1]))),
+        ("1字节短帧", bytes([1])),
+        ("2字节短帧", bytes([1, 3])),
+    ]
+    for name, bad_frame in abnormal:
+        out_o = run_outcome(load_original, ORIG_DISPATCH, ORIG_TX, bad_frame, gain_sel=G)
+        out_n = run_outcome(load_firmware, FUNC_dispatch, FUNC_uart3_tx, bad_frame, gain_sel=G)
+        check(f"{name} A/B结果一致", out_o == out_n, f"原={out_o} 新={out_n}")
 
     print()
     print(f"  通过 {passed}/{passed+failed}")

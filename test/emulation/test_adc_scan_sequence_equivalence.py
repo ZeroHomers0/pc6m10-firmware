@@ -21,11 +21,13 @@ ADC = 0x40034000
 RAM_IMAGE = os.path.join(ROOT, "firmware", "assets", "ram_data_image.bin")
 
 
-def run(load_fn, scan, start, wait, samples, calls):
+def run(load_fn, scan, start, wait, samples, calls, overrides=()):
     uc = load_fn()
     uc.mem_map(ADC, 0x1000)
     with open(RAM_IMAGE, "rb") as f:
         uc.mem_write(0x10000000, f.read())
+    for address, data in overrides:
+        uc.mem_write(address, data)
     cursor = [0]
 
     def start_hook(machine, address, size, user):
@@ -51,14 +53,23 @@ def main():
     new_start = lookup("adc0_start")
     new_wait = lookup("adc0_wait_done")
     cases = [
-        ("零值连续12拍", [0], 12),
-        ("六通道固定梯度连续12拍", [100, 300, 500, 700, 900, 1100], 12),
-        ("边界与交错样本连续24拍", [0, 1, 9, 10, 2047, 4095, 123, 3960], 24),
+        ("零值连续12拍", [0], 12, ()),
+        ("六通道固定梯度连续12拍", [100, 300, 500, 700, 900, 1100], 12, ()),
+        ("边界与交错样本连续24拍", [0, 1, 9, 10, 2047, 4095, 123, 3960], 24, ()),
     ]
+    for cfg in (0, 1):
+        for gain_sel in (0, 1, 2):
+            cases.append((f"cfg={cfg}/gain_sel={gain_sel}", [9, 10, 2047, 4095, 800, 1000], 18,
+                          ((0x10001628, bytes((cfg,))), (0x10001634, bytes((gain_sel,))))))
+    for divisor in (1, 10, 0xFFFF, 0xFFFFFFFF):
+        packed = divisor.to_bytes(4, "little")
+        overrides = tuple((address, packed) for address in
+                          (0x10001698, 0x100016A0, 0x100016A8, 0x100016B0, 0x100016B8))
+        cases.append((f"标定除数边界0x{divisor:X}", [0, 1, 4095, 3960, 10, 2047], 18, overrides))
     failed = 0
-    for name, samples, calls in cases:
-        old = run(load_original, ORIG_SCAN, ORIG_START, ORIG_WAIT, samples, calls)
-        new = run(load_firmware, new_scan, new_start, new_wait, samples, calls)
+    for name, samples, calls, overrides in cases:
+        old = run(load_original, ORIG_SCAN, ORIG_START, ORIG_WAIT, samples, calls, overrides)
+        new = run(load_firmware, new_scan, new_start, new_wait, samples, calls, overrides)
         ok = old == new
         print(f"  [{'PASS' if ok else 'FAIL'}] {name}  conversions={old[2]}")
         if not ok:

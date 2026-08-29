@@ -398,13 +398,19 @@ void modbus_dispatch(int arg)
       param_sync_live_to_eeprom();
       break;
     default:
-      goto frame_tail;            /* 未匹配寄存器号（如 0x1E-0x20/0x29-0x2E 无写分支） */
+      goto bad_address;           /* 原 BIN 0xE16A：未匹配寄存器 → [地址,0x86,0x02] */
     }
     /* 正常写响应：[地址,0x06,0x10,reg,val_hi,val_lo,CRC16] */
     tx[0] = *slave; tx[1] = 0x06; tx[2] = 0x10; tx[3] = frame[3];
     tx[4] = (uint8_t)(v >> 8); tx[5] = (uint8_t)(v & 0xff);
     crc = crc16((uint8_t *)tx, 6); tx[6] = crc & 0xff; tx[7] = crc >> 8;
     uart3_tx_byte(8);
+    return;
+
+  bad_address:                    /* 非法寄存器地址 → 异常响应 [地址,0x86,0x02] */
+    tx[0] = *slave; tx[1] = 0x86; tx[2] = 0x02;
+    crc = crc16((uint8_t *)tx, 3); tx[3] = crc & 0xff; tx[4] = crc >> 8;
+    uart3_tx_byte(5);
     return;
 
   bad_value:                      /* 值越界 → 异常响应 [地址,0x86,0x03] */
@@ -475,7 +481,7 @@ void modbus_dispatch(int arg)
     return;
   }
 
-frame_tail:                       /* 8) 兜底帧尾：结构不符（帧[2]!=0x10 等） */
+                                  /* 8) 兜底帧尾：结构不符（帧[2]!=0x10 等） */
   FIO4CLR |= 0x20000000;
   *rx_state = 0;
   UART3_IER |= 1;
