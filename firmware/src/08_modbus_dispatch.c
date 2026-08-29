@@ -115,7 +115,7 @@ void modbus_dispatch(int arg)
 
   /* ================= 5) 0x06 写单寄存器（53 分支） ================= */
   if (frame[1] == 0x06 && frame[2] == 0x10) {
-    v = (uint32_t)frame[4] | ((uint32_t)frame[5] << 8);
+    v = ((uint32_t)frame[4] << 8) | (uint32_t)frame[5];   /* 原 BIN 0xB798: frame[4]<<8|frame[5] 大端 */
     *valcache = v;
     switch (frame[3]) {
     case 0x01:                    /* 0x1001 控制方式（byte 参数，值<3） */
@@ -417,7 +417,7 @@ void modbus_dispatch(int arg)
   /* ================= 6) 0x10 写多寄存器 ================= */
   if (frame[1] == 0x10 && frame[2] == 0x10) {
     reg = (uint32_t)frame[3];
-    cnt = (uint32_t)frame[4] | ((uint32_t)frame[5] << 8);
+    cnt = ((uint32_t)frame[4] << 8) | (uint32_t)frame[5];   /* 原 BIN 0xE202: frame[4]<<8|frame[5] 大端 */
     if (reg == 0 || reg > 0x3E) {
       tx[0] = *slave; tx[1] = 0x90; tx[2] = 0x02;      /* 非法地址 */
       crc = crc16((uint8_t *)tx, 3); tx[3] = crc & 0xff; tx[4] = crc >> 8;
@@ -431,7 +431,7 @@ void modbus_dispatch(int arg)
       return;
     }
     for (i = 0; i < cnt; i++) {
-      v = (uint32_t)frame[7 + i * 2] | ((uint32_t)frame[8 + i * 2] << 8);
+      v = ((uint32_t)frame[7 + i * 2] << 8) | (uint32_t)frame[8 + i * 2];  /* 原 BIN 0xE2C2 大端 */
       *(volatile uint32_t *)0x100017A4 = v;
       modbus_write_multi((uint32_t *)0x100017A4, reg - 1 + i);  /* 内部表 0 基（reg1→case0） */
     }
@@ -446,7 +446,7 @@ void modbus_dispatch(int arg)
   /* ================= 7) 0x03 读保持寄存器 ================= */
   if (frame[1] == 0x03 && frame[2] == 0x10) {
     reg = (uint32_t)frame[3];
-    cnt = (uint32_t)frame[4] | ((uint32_t)frame[5] << 8);
+    cnt = ((uint32_t)frame[4] << 8) | (uint32_t)frame[5];   /* 原 BIN 0xE408: frame[4]<<8|frame[5] 大端 */
     if (reg == 0 || reg > 0x3F) {
       tx[0] = *slave; tx[1] = 0x83; tx[2] = 0x02;
       crc = crc16((uint8_t *)tx, 3); tx[3] = crc & 0xff; tx[4] = crc >> 8;

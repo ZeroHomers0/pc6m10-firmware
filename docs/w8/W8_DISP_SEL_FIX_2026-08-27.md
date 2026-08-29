@@ -104,10 +104,41 @@ Modbus（`08_modbus_dispatch.c:173`），**无启动时强制写 1 的代码**�
 ## 6. 未决/后续
 
 - [x] 用户实测切到定值后上下键是否生效（2026-08-27 已实测：生效，闭环）
+- [x] case3 菜单 item10 DISP_SEL 编辑键循环语义——**2026-08-29 A/B + BIN 反汇编闭环**：
+      BIN 增量钳位（1→2→2），C 复刻曾误写成环绕（2→0），已修复（见下）。
+      手册"DOWN 切通讯/定值"以本地=0 描述，实机行为以 BIN 钳位为准。
 - [ ] `MENU==0x1e`（`07_state_machine.c:1790-1815`）的另一份三分支结构正确（不受门控），
       但调用时机（运行状态？）待确认与 case1 无冲突
-- [ ] case3 菜单 item10 DISP_SEL 循环顺序（UP: 1→2→0，DOWN: 2→1→0）与手册"DOWN 切
-      通讯/定值"措辞存在出入（手册可能以本地=0 描述），实机行为已按 UP 增大为准
+
+### 2026-08-29 增量：case3 枚举项环绕→钳位修复（bug #5 控制方式互斥）
+
+**BIN 实测**（`LPC1765.bin` 0x6DF0-0x6EFA 反汇编 + A/B 修正播种后全矩阵）：
+- item10 DISP_SEL（0x6E42-0x6E60）：增量 `++ ; cmp #2; ble; movs #2` → **钳位在 2**
+  （定值 按 UP 保持定值，不会跳回通讯）
+- item11 b56（0x6E60-0x6E7E）：钳位在 1；item12 ESTOP（0x6E7E）：钳位在 2；
+  item13 FEEDBACK（0x6EA2）：钳位在 1；item14 INPUT_SEL（0x6EC0）：钳位在 1
+- **item0 CTRL_MODE（0x6DAE-0x6DC8）例外：增量 2→0 环绕、减量 0→3→2 环绕**，与上不同
+  （原厂对不同枚举项故意用不同语义）
+- 减量方向 items 10-14 全部钳位在 0（2→1→0→0），无 0→max 环绕
+
+**C 复刻错误**（`07_state_machine.c` case3 编辑 switch 增量分支）曾把 items 10-14 写成
+`if (*X > max) *X = 0` 环绕。**2026-08-29 修复为钳位**（item0 保持环绕以匹配 BIN）：
+
+```c
+case 10: (*DISP_SEL)++;  if (*DISP_SEL > 2) *DISP_SEL = 2; break;   /* BIN 钳位 */
+case 11: (*b56)++;       if (*b56 > 1) *b56 = 1; break;              /* BIN 钳位 */
+case 12: (*ESTOP)++;     if (*ESTOP > 2) *ESTOP = 2; break;          /* BIN 钳位 */
+case 13: (*FEEDBACK)++;  if (*FEEDBACK > 1) *FEEDBACK = 1; break;    /* BIN 钳位 */
+case 14: (*INPUT_SEL)++; if (*INPUT_SEL > 1) *INPUT_SEL = 1; break;  /* BIN 钳位 */
+```
+
+**A/B 验证**：修正播种顺序（`_seed_display_items` 会把 ESTOP/FEEDBACK/INPUT_SEL 播成
+1/0/0，必须在标准播种**之后**再覆盖目标项）后全矩阵 48 用例（items 0/10/11/12/13/14 ×
+值 0..3 × UP/DOWN）修复前 13 差异 → 修复后 **0 差异**；扩展 case3 全 16 项 × 边界值 ×
+4 键（2/3/0x16/0x21）**256 用例 0 差异**。
+
+**与 bug #6 关联**：只有"定值(2)"分支处理上下键调 MANUAL。修复前在定值按 UP 会环绕到
+通讯(0)，模式在三分支间跳变、定值给定被跳过；修复后定值保持定值，模式互斥稳定。
 
 ## 7. 相关脚本/备份
 

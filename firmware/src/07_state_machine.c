@@ -485,11 +485,11 @@ do_dispatch:
       if (*FAULT != 0) {
         if (*DB_117 == 2 && *(volatile uint8_t*)0x10001658 == 0) {  /* 复位流程 */
           *FAULT = 0; *RUN = 0; *STOP_PEND = 1; *STOP_REQ = 0;
-          disp_string((int)0x522c, 0, 0, 0);
+          disp_string((int)0x522c, 3, 0xa, 0);   /* BIN 0x4EF6：复位(行3,列0xa) */
           /* 双层延时：LATCH_IN 内层 0→0x7d0（do-while），LATCH_OUT 外层到 0xbb8（0x4EFA-0x4F36） */
           *LATCH_OUT = 0;
           for (;;) { *LATCH_IN = 0; do { (*LATCH_IN)++; } while (*LATCH_IN < 0x7d0); wd_feed(); (*LATCH_OUT)++; if (*LATCH_OUT >= 0xbb8) break; }
-          disp_string((int)0x523c, 0, 0, 0);
+          disp_string((int)0x523c, 3, 0xa, 0);   /* BIN 0x4F40：重启(行3,列0xa) */
           *LATCH_OUT = 0;
           for (;;) { *LATCH_IN = 0; do { (*LATCH_IN)++; } while (*LATCH_IN < 0x7d0); wd_feed(); (*LATCH_OUT)++; if (*LATCH_OUT >= 0xbb8) break; }
           while (1) {}
@@ -714,47 +714,63 @@ do_dispatch:
     }
     (*TIMEOUT3)++;
     if (*TIMEOUT3 == 0xfb) {
-      /* 刷新显示（高亮当前项）——项0-10，按 MENU2 分段 */
+      /* 0x5C82-0x5F72：整页重绘，当前项反显（attr=1），其余 attr=0。
+       * 行号=项号%4：项0-3→row0-3、项4-7→row0-3、项8-0xa→row0-2。
+       * 项0-4=4位数值(disp_uint4，地址 0x10001698/a0/a8/b0/b8)；
+       * 项5=ESTOP、项6=RESET_MODE、项7=FEEDBACK、项8=INPUT_SEL、
+       * 项9=0x1000165b、项0xa=起始相位(8位装入 disp_number3)。 */
       if (*MENU2 < 4) {
         disp_uint4(*((volatile uint32_t*)0x10001698), 0, 0xb, (*MENU2 == 0) ? 1 : 0);
         disp_uint4(*((volatile uint32_t*)0x100016a0), 1, 0xb, (*MENU2 == 1) ? 1 : 0);
         disp_uint4(*((volatile uint32_t*)0x100016a8), 2, 0xb, (*MENU2 == 2) ? 1 : 0);
         disp_uint4(*((volatile uint32_t*)0x100016b0), 3, 0xb, (*MENU2 == 3) ? 1 : 0);
       } else if (*MENU2 < 8) {
-        if (*MENU2 == 5) {
-          if (*ESTOP == 0) disp_string((int)0x6018, 0, 0xb, 1);
-          else if (*ESTOP == 1) disp_string((int)0x6020, 0, 0xb, 1);
-          else disp_string((int)0x6028, 0, 0xb, 1);
-        }
-        if (*MENU2 == 6) {
-          if (*RESET_MODE == 0) disp_string((int)0x6030, 1, 0xb, 1);
-          else if (*RESET_MODE == 1) disp_string((int)0x6020, 1, 0xb, 1);
-          else disp_string((int)0x6028, 1, 0xb, 1);
-        }
-        if (*MENU2 == 7) {
-          if (*FEEDBACK == 1) disp_string((int)0x6038, 2, 0xb, 1);
-          else disp_string((int)0x6040, 2, 0xb, 1);
-        }
-        if (*MENU2 == 4) disp_string((int)0x6018, 3, 0xb, 1);
+        /* item4=输出电压数值 row0 */
+        disp_uint4(*((volatile uint32_t*)0x100016b8), 0, 0xb, (*MENU2 == 4) ? 1 : 0);
+        /* item5=ESTOP row1：0=急停/1=外控/2=限相 */
+        if (*ESTOP == 0) disp_string((int)0x6018, 1, 0xb, (*MENU2 == 5) ? 1 : 0);
+        else if (*ESTOP == 1) disp_string((int)0x6020, 1, 0xb, (*MENU2 == 5) ? 1 : 0);
+        else disp_string((int)0x6028, 1, 0xb, (*MENU2 == 5) ? 1 : 0);
+        /* item6=RESET_MODE row2：0=复位/1=外控/2=限相 */
+        if (*RESET_MODE == 0) disp_string((int)0x6030, 2, 0xb, (*MENU2 == 6) ? 1 : 0);
+        else if (*RESET_MODE == 1) disp_string((int)0x6020, 2, 0xb, (*MENU2 == 6) ? 1 : 0);
+        else disp_string((int)0x6028, 2, 0xb, (*MENU2 == 6) ? 1 : 0);
+        /* item7=FEEDBACK row3：==0→关闭(0x6038)；!=0→检测(0x6040) */
+        if (*FEEDBACK == 0) disp_string((int)0x6038, 3, 0xb, (*MENU2 == 7) ? 1 : 0);
+        else disp_string((int)0x6040, 3, 0xb, (*MENU2 == 7) ? 1 : 0);
       } else if (*MENU2 < 0xc) {
-        if (*MENU2 == 8) {
-          if (*INPUT_SEL == 0) disp_string((int)0x6048, 0, 0xb, 1);
-          else disp_string((int)0x6050, 0, 0xb, 1);
-        }
-        if (*MENU2 == 9) {
-          if (*(volatile uint8_t*)0x1000165b == 0) disp_string((int)0x6058, 1, 0xb, 1);
-          else disp_string((int)0x6060, 1, 0xb, 1);
-        }
-        if (*MENU2 == 0xa) disp_number3(*(volatile uint32_t*)0x10001660, 2, 0xb, 1);
+        /* item8=INPUT_SEL row0：0=电压/1=电流 */
+        if (*INPUT_SEL == 0) disp_string((int)0x6048, 0, 0xb, (*MENU2 == 8) ? 1 : 0);
+        else disp_string((int)0x6050, 0, 0xb, (*MENU2 == 8) ? 1 : 0);
+        /* item9=控制方式 row1：0=全控/1=半控 */
+        if (*(volatile uint8_t*)0x1000165b == 0) disp_string((int)0x6058, 1, 0xb, (*MENU2 == 9) ? 1 : 0);
+        else disp_string((int)0x6060, 1, 0xb, (*MENU2 == 9) ? 1 : 0);
+        /* item0xa=起始相位 row2（8 位装入） */
+        disp_number3(*(volatile uint8_t*)0x10001660, 2, 0xb, (*MENU2 == 0xa) ? 1 : 0);
       }
     }
+    /* TIMEOUT3 超 0x1F4 → 回绕为 0；编辑态按 MENU2 用空格串擦除当前项值列
+     * （与 0xFB 整页重绘交替 → 值"反显/消失"闪烁，周期≈501 帧，0x5F74-0x60FE）。
+     * 擦除串：0x5B38=4空格(项0-4 数值)、0x6474=5空格(项5-9 文字)、0x647C=3空格(项0xa 3位)。
+     * 行号=项号%4。 */
     if (*TIMEOUT3 > 0x1f4) {
       *TIMEOUT3 = 0;
-      if (*MENU3 == 0) return;
-      (*TIMEOUT)++;
-      if (*TIMEOUT >= 0x1388) { *TIMEOUT = 0; param_sync_live_to_eeprom(); *MENU = 1; disp_splash_screen(); return; }
-      return;
+      if (*MENU3 == 0) return;              /* 查看态：本帧提前返回，跳过 TIMEOUT++ */
+      if (*MENU2 == 0) disp_string(0x5b38, 0, 0xb, 0);
+      if (*MENU2 == 1) disp_string(0x5b38, 1, 0xb, 0);
+      if (*MENU2 == 2) disp_string(0x5b38, 2, 0xb, 0);
+      if (*MENU2 == 3) disp_string(0x5b38, 3, 0xb, 0);
+      if (*MENU2 == 4) disp_string(0x5b38, 0, 0xb, 0);
+      if (*MENU2 == 5) disp_string(0x6474, 1, 0xb, 0);
+      if (*MENU2 == 6) disp_string(0x6474, 2, 0xb, 0);
+      if (*MENU2 == 7) disp_string(0x6474, 3, 0xb, 0);
+      if (*MENU2 == 8) disp_string(0x6474, 0, 0xb, 0);
+      if (*MENU2 == 9) disp_string(0x6474, 1, 0xb, 0);
+      if (*MENU2 == 0xa) disp_string(0x647c, 2, 0xb, 0);
     }
+    /* 编辑空闲超时回主屏（0x6102-0x6132）：TIMEOUT 每帧累加（非仅擦除帧）；MENU3==0 帧已提前返回 */
+    (*TIMEOUT)++;
+    if (*TIMEOUT >= 0x1388) { *TIMEOUT = 0; param_sync_live_to_eeprom(); *MENU = 1; disp_splash_screen(); return; }
     return;
   }
 
@@ -826,7 +842,9 @@ do_dispatch:
       }
       if (*MENU2 == 3) {
         *MENU = 6; *MENU2 = 0; *LATCH_OUT = 0; disp_clear();
-        disp_string((int)0x6aa0, 1, 0, 0);
+        /* BIN 0x6712 是 ldr r0,[0x6aa0] 取字面量值 0x4D9C（"  密码:------"），
+         * 不是取 0x6aa0 处的指令字节——0x6AA0 处 4 字节=9C 4D 00 00 会只显示"M"。 */
+        disp_string((int)0x4d9c, 1, 0, 0);
       }
       if (*MENU2 == 4) {
         *MENU = 7; *MENU2 = 0;
@@ -985,11 +1003,11 @@ do_dispatch:
             case 7: (*b4d)++; if (*b4d > 0xc8) *b4d = 0xc8; break;
             case 8: (*w50)++; if (*w50 > 0xb4) *w50 = 0xb4; break;
             case 9: (*b54)++; if (*b54 > 0xa0) *b54 = 0xa0; break;
-            case 10: (*DISP_SEL)++; if (*DISP_SEL > 2) *DISP_SEL = 0; break;
-            case 11: (*b56)++; if (*b56 > 1) *b56 = 0; break;
-            case 12: (*ESTOP)++; if (*ESTOP > 2) *ESTOP = 0; break;
-            case 13: (*FEEDBACK)++; if (*FEEDBACK > 1) *FEEDBACK = 0; break;
-            case 14: (*INPUT_SEL)++; if (*INPUT_SEL > 1) *INPUT_SEL = 0; break;
+            case 10: (*DISP_SEL)++; if (*DISP_SEL > 2) *DISP_SEL = 2; break;   /* BIN 钳位 */
+            case 11: (*b56)++; if (*b56 > 1) *b56 = 1; break;                  /* BIN 钳位 */
+            case 12: (*ESTOP)++; if (*ESTOP > 2) *ESTOP = 2; break;            /* BIN 钳位 */
+            case 13: (*FEEDBACK)++; if (*FEEDBACK > 1) *FEEDBACK = 1; break;   /* BIN 钳位 */
+            case 14: (*INPUT_SEL)++; if (*INPUT_SEL > 1) *INPUT_SEL = 1; break; /* BIN 钳位 */
             case 15: (*w60)++; if (*w60 > 0xb4) *w60 = 0xb4; break;
           }
         }
@@ -1130,10 +1148,33 @@ do_dispatch:
     /* ---- 刷新节流：TIMEOUT3==0xfb 时重绘当前页（高亮当前项） ---- */
     if (*TIMEOUT3 == 0xfb) sm4_draw_page(*MENU2);
 
-    /* ---- 编辑空闲超时：回到主屏 ---- */
+    /* ---- TIMEOUT3 超过 0x1F4：回绕为 0；编辑态按 MENU2 用空格擦除当前项值列 ---- */
+    /*     与 0xFB 整页重绘(当前项反显)交替 → 值"反显/消失"闪烁，周期≈501 帧 (0x85C4-0x874E)。
+     *     窄串 0x7E6C=4 空格（word 项 0/2/4/6 值≠0、byte 项 1/3/5/7）；
+     *     宽串 0x6474=5 空格（word 项值==0、byte 项 8/9）。 */
     if (*TIMEOUT3 > 0x1f4) {
       *TIMEOUT3 = 0;
-      if (*MENU3 == 0) return;
+      if (*MENU3 == 0) return;              /* 查看态：本帧提前返回 */
+      switch (*MENU2) {
+        case 0:  if (*(volatile uint32_t*)0x100016c0 != 0) disp_string(0x7e6c, 0, 0xb, 0);
+                 else disp_string(0x6474, 0, 0xb, 0);
+                 break;
+        case 1:  disp_string(0x7e6c, 1, 0xb, 0); break;
+        case 2:  if (*(volatile uint32_t*)0x100016c8 != 0) disp_string(0x7e6c, 2, 0xb, 0);
+                 else disp_string(0x6474, 2, 0xb, 0);
+                 break;
+        case 3:  disp_string(0x7e6c, 3, 0xb, 0); break;
+        case 4:  if (*(volatile uint32_t*)0x100016d0 != 0) disp_string(0x7e6c, 0, 0xb, 0);
+                 else disp_string(0x6474, 0, 0xb, 0);
+                 break;
+        case 5:  disp_string(0x7e6c, 1, 0xb, 0); break;
+        case 6:  if (*(volatile uint32_t*)0x100016d8 != 0) disp_string(0x7e6c, 2, 0xb, 0);
+                 else disp_string(0x6474, 2, 0xb, 0);
+                 break;
+        case 7:  disp_string(0x7e6c, 3, 0xb, 0); break;
+        case 8:  disp_string(0x6474, 0, 0xb, 0); break;
+        case 9:  disp_string(0x6474, 1, 0xb, 0); break;
+      }
     }
     (*TIMEOUT)++;
     if (*TIMEOUT >= 0x1388) { *TIMEOUT = 0; *MENU = 1; disp_splash_screen(); }
