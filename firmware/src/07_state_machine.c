@@ -494,7 +494,7 @@ do_dispatch:
           for (;;) { *LATCH_IN = 0; do { (*LATCH_IN)++; } while (*LATCH_IN < 0x7d0); wd_feed(); (*LATCH_OUT)++; if (*LATCH_OUT >= 0xbb8) break; }
           while (1) {}
         }
-      } else {
+      }
         if (*(volatile uint8_t*)0x10001658 == 1) {
           if (*DB_117 != 2 && *DISP_MODE != 1) {
             *DISP2 = 1; *CTRL_MODE = 0; fio1_pin20_ctrl(1); fio1_pin21_ctrl(0);
@@ -509,7 +509,7 @@ do_dispatch:
           if (*DB_117 != 2) *RESET2 = 0; else *RESET2 = 1;
         }
         *DB_117 = debounce_p06();
-        if (*DB_117 == 2 && *(volatile uint8_t*)0x10001657 == 0) {
+        if (*FAULT == 0 && *DB_117 == 2 && *(volatile uint8_t*)0x10001657 == 0) {
           *RUN_REQ = 1; *RUN = 0; *STOP_PEND = 1; *STOP_REQ = 0;
           if (*STAT1 == 0) { disp_string((int)0x47e8, 3, 0xa, 0); *STAT1 = 1; }
           return;
@@ -560,7 +560,6 @@ do_dispatch:
             disp_string((int)0x47e8, 3, 0xa, 0);
           }
         }
-      }
       /* 0x52FA：DISP_SEL 三分支不受 FAULT 门控——原厂 0x52A2 在 FAULT!=0 时
        * cbnz 跳到 0x52FA 仍执行三分支，仅 RUN/STOP 逻辑(0x52A8-0x52F6)被 FAULT 跳过。
        * 若放回 FAULT==0 分支内，FAULT=7(缺相)时首页第一行上下键将永远不执行。 */

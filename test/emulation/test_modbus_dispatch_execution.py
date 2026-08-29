@@ -133,6 +133,28 @@ def main():
     check("原固件站址不匹配 → 不发送", c_o == -1, f"tx_count={hex(c_o)}")
     check("新固件站址不匹配 → 不发送", c_n == -1, f"tx_count={hex(c_n)}")
 
+    # ── 场景4：0x06 单写完整帧（reg 0x1001 / gain_sel=2）──
+    req06 = bytes([0x01, 0x06, 0x10, 0x01, 0x00, 0x02])
+    crc06 = crc16_fw(req06, len(req06))
+    frame06 = req06 + bytes([crc06 & 0xff, crc06 >> 8])
+    n_o, tx_o = run_frame(load_original, ORIG_DISPATCH, ORIG_TX, frame06, gain_sel=G)
+    n_n, tx_n = run_frame(load_firmware, FUNC_dispatch, FUNC_uart3_tx, frame06, gain_sel=G)
+    check("0x06 原固件发送 8 字节回显", n_o == 8, f"0x{tx_o.hex().upper()}")
+    check("0x06 新固件发送 8 字节回显", n_n == 8, f"0x{tx_n.hex().upper()}")
+    check("0x06 完整帧 A/B 响应一致", tx_o == tx_n,
+          f"原 0x{tx_o.hex().upper()} vs 新 0x{tx_n.hex().upper()}")
+
+    # ── 场景5：0x10 多写完整帧（从 reg 0x1001 起写 1 个寄存器）──
+    req10 = bytes([0x01, 0x10, 0x10, 0x01, 0x00, 0x01, 0x02, 0x00, 0x35])
+    crc10 = crc16_fw(req10, len(req10))
+    frame10 = req10 + bytes([crc10 & 0xff, crc10 >> 8])
+    n_o, tx_o = run_frame(load_original, ORIG_DISPATCH, ORIG_TX, frame10, gain_sel=G)
+    n_n, tx_n = run_frame(load_firmware, FUNC_dispatch, FUNC_uart3_tx, frame10, gain_sel=G)
+    check("0x10 原固件发送 8 字节确认", n_o == 8, f"0x{tx_o.hex().upper()}")
+    check("0x10 新固件发送 8 字节确认", n_n == 8, f"0x{tx_n.hex().upper()}")
+    check("0x10 完整帧 A/B 响应一致", tx_o == tx_n,
+          f"原 0x{tx_o.hex().upper()} vs 新 0x{tx_n.hex().upper()}")
+
     print()
     print(f"  通过 {passed}/{passed+failed}")
     return 0 if failed == 0 else 1
