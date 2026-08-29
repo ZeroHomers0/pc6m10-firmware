@@ -342,8 +342,11 @@ void main(void)
 /* 0x000007A8 —— 简单延时（loops×50 空循环） */
 void Delay(int loops)
 {
-  volatile int count = loops * 50;
+  int count = loops * 50;
+
   while (count != 0) {
+    /* 空编译屏障：保留原固件的软件延时循环，同时避免volatile栈读写改变时序。 */
+    __asm volatile ("" ::: "memory");
     count--;
   }
 }
