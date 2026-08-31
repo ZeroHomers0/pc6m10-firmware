@@ -1,7 +1,7 @@
 # 显示面板菜单树 → 固件参数精确映射
 
 > 生成：2026-08-20（任务 #16，state_machine 反汇编 + 池扫描 + Ghidra xrefs 三重确证）
-> 依据：`../../evidence/hardware/_disp_manual.txt`（面板手册）+
+> 依据：`../../evidence/hardware/display/extracted/CYW-B12864G_Operation_Manual.txt`（面板手册）+
 > `../../evidence/reverse/disassembly/legacy/state_machine_disasm.txt`（Ghidra 对齐反汇编）
 > 状态：**基本/保护/通讯/PID 菜单全部逐项确证**；相位校准、恢复出厂、版本信息已定位
 
@@ -9,7 +9,7 @@
 
 ## 0. 菜单系统架构
 
-- **一级菜单 8 项**（`_disp_manual.txt`）：基本参数/保护参数/通讯参数/恢复出厂/PID参数/相位参数/运行时间/版本
+- **一级菜单 8 项**（显示面板手册文本提取）：基本参数/保护参数/通讯参数/恢复出厂/PID参数/相位参数/运行时间/版本
 - 屏幕索引寄存器：`0x10001745`（二级菜单项索引，各菜单内复用）
 - 一级菜单选择：`0x10001744`；菜单门控：`0x10001746`（==1 允许编辑）
 - 编辑状态分发（state_machine 中 `r4`）：

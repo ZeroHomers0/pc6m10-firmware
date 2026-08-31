@@ -39,7 +39,7 @@ docs/project/               当前应用、数据段和项目状态
 docs/analysis/              模块级逆向结论
 docs/w8/                    实机验证：W8_TEST_MASTER.md 为唯一流程+进度权威，其余为记录/规范
 docs/history/               历史计划、进度与审计
-evidence/hardware/          BOM、接线表、手册等原始硬件证据
+evidence/hardware/          硬件证据索引；board/ 整板、display/ 面板、reports/ 分析报告
 evidence/reverse/           原始反编译、反汇编和过程报告
 test/                       静态与 Unicorn 执行级测试
 tools/                      审计、生成、Ghidra、维护、验证和 W8 工具；jlink/ 为打包 J-Link

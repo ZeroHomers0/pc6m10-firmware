@@ -181,7 +181,7 @@
 
 ## 五、硬件维护与更换（BOM 芯片清单）
 
-> 全表见 `../analysis/HARDWARE_VERIFICATION_2026-08-20.md` §六（来源：`../../evidence/hardware/PC6M-10-BOM-更新版.xlsx`）。
+> 全表见 `../analysis/HARDWARE_VERIFICATION_2026-08-20.md` §六（来源：`../../evidence/hardware/board/PC6M-10_BOM.xlsx`）。
 
 ### 5.1 关键器件（坏了换什么）
 
