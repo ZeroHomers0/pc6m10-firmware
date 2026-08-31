@@ -63,6 +63,9 @@ tools/                      审计、生成、Ghidra、维护、验证和 W8 工
 
 ## 常用入口
 
+后续逆向或同系列项目迁移，先读 `docs/analysis/REVERSE_ENGINEERING_AI_GUIDE.md`；该文档汇总
+PC6M/PC12M 的最优证据链、A/B 差分方法、历史 bug、验证门禁、项目结构和构建烧写规范。
+
 操作入口（详见 `操作文档.md`；根目录三个 `.bat` 已删除，跨机不通用）：
 - 构建 —— `cd firmware && bash build.sh`（产物 `firmware.bin/hex/elf/map`，SHA/尺寸见 操作文档.md §2）
 - SWD 烧写（日常主通道，首选）—— 打包版 `tools/jlink/JLink.exe` + `-CommanderScript`，命令见 操作文档.md §3

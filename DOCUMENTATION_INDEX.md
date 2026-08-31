@@ -1,11 +1,12 @@
 # 文档索引
 
-> 最后更新：2026-08-30。当前进度优先级：`AGENTS.md` → 本文 → `docs/project/PROJECT_STATUS.md` → 历史文档。
+> 最后更新：2026-08-31。当前进度优先级：`AGENTS.md` → 本文 → `docs/project/PROJECT_STATUS.md` → 历史文档。
 
 ## 当前文档
 
 | 主题 | 文档 |
 |---|---|
+| AI 逆向与重建总指南 | `docs/analysis/REVERSE_ENGINEERING_AI_GUIDE.md`（项目结构、证据链、A/B 差分方法、构建烧写、历史陷阱） |
 | 构建与烧写操作 | `操作文档.md`（构建命令 + ISP 烧写 + SWD 烧写） |
 | 项目状态 | `docs/project/PROJECT_STATUS.md` |
 | 应用指南 | `docs/project/APPLICATION_GUIDE_2026-08-21.md` |
