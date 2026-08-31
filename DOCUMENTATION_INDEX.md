@@ -7,6 +7,7 @@
 | 主题 | 文档 |
 |---|---|
 | 软件设计及开发文档 | `docs/project/PC6M10_软件设计及开发文档_V1.1.docx`（产品背景、软件架构、模块设计、接口、开发、测试与烧写） |
+| 软件设计文档生成脚本 | `tools/docs/generate_pc6m_software_design_doc.py`（可重建 Word，支持 `--output` 指定输出路径并执行结构、禁用表述和标题字体检查） |
 | AI 逆向与重建总指南 | `docs/analysis/REVERSE_ENGINEERING_AI_GUIDE.md`（项目结构、证据链、A/B 差分方法、构建烧写、历史陷阱） |
 | 构建与烧写操作 | `操作文档.md`（构建命令 + ISP 烧写 + SWD 烧写） |
 | 项目状态 | `docs/project/PROJECT_STATUS.md` |
