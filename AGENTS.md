@@ -15,6 +15,13 @@
   全镜像校验通过；过程见 `docs/w8/W8_POST_FLASH_2026-08-26.md`。
 - 测试：11/11 模块；输出级 144/144、状态机 115/115、TIMER1 126 例、Modbus 65 读/320 写均 PASS。
 - 离线结果允许进入断开门极与功率负载的 W8 分级实测，不代表带载 100% 等价。
+- **2026-09-01 产品信息定制**（用户要求）：case9「产品版本信息」屏 4 行文本覆写为
+  型号:PC6M-10 / 版本:V2.0 / 厂商:XIANPOWER / 电话:029-84205750（原厂
+  ST33C / V2.0.2016 / SINEP0WER / 18938061832）。实现：`tools/generation/generate_string_pool.py`
+  新增 `PRODUCT_INFO_OVERRIDES`（0x6b78/0x6b84/0x6b94/0x6ba4），重新生成 `firmware/src/strpool.c`
+  得 `strpool_override` 段，`strpool_map` 前置查表（flash 地址不变，仅替换显示内容；
+  原厂串仍保留于 blob）。重建固件后六相 A/B 验证全 PASS（含 DISPLAY_MATRIX 106 /
+  DISPLAY_FULL_EXEC 4）。注：本仓对 PC12M-2 仅作只读参考，本次改动为用户对六相固件的明确授权。
 
 ## 必须遵守
 

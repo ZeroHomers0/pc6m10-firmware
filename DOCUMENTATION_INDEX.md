@@ -18,6 +18,11 @@
 | UART3/Modbus | `docs/analysis/UART3_PROTOCOL.md` |
 | 状态机 | `docs/analysis/STATE_MACHINE_ANALYSIS.md` |
 | 菜单参数 | `docs/analysis/MENU_PARAMETER_MAPPING.md` |
+| PC12M-2 测试覆盖复查（任务 #4，113/113） | `docs/analysis/PC12M2_TEST_COVERAGE_REVIEW.md` |
+| PC12M-2 W8 问题复查（任务 #5） | `docs/analysis/PC12M2_W8_ISSUES_REVIEW.md` |
+
+> 说明：`docs/analysis/PC12M2_*` 两份为 PC12M-2（十二相）项目的复查产出，存于本仓
+> `docs/analysis/`（用户授权），仅作十二相侧结论记录，不影响本仓六相源码与 W8 结论。
 
 ## W8 实机验证
 
