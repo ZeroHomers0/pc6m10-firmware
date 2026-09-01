@@ -57,6 +57,17 @@ def addrs_from_src():
 # W7b 修正后的真实单位字符地址（修正前 src 为误译 ASCII 值 0x56/0x41/0x25，扫描不到）
 EXTRA = {0x7974, 0x7980, 0x86e0}   # 'V' 过压/欠压 · 'A' IF/CT 过载 · '%' 三相平衡
 
+# ── 产品信息定制覆写（2026-09-01 用户要求）────────────────────────────
+# case9 产品版本信息屏 4 行文本：地址保持原固件 flash 地址，strpool_map 前置
+# 查表返回定制串（GBK 字节）。原厂内容：型号:ST33C / 版本:V2.0.2016 /
+# 厂商:SINEP0WER / 电话:18938061832。改这里并重新生成即可。
+PRODUCT_INFO_OVERRIDES = {
+    0x6b78: "型号:PC6M-10",
+    0x6b84: "版本:V2.0",
+    0x6b94: "厂商:XIANPOWER",
+    0x6ba4: "电话:029-84205750",
+}
+
 def addrs_final():
     raw = addrs_from_src() | EXTRA
     # 过滤：仅保留 flash 字符串区（>=0x400，排除 0x25/0x41/0x56 误译残渣；<FLASH_LEN）
@@ -117,7 +128,9 @@ csrc.append("/* 自动生成：tools/generation/generate_string_pool.py（目标
 csrc.append(" * GBK 字符串表 blob + 簇表 + strpool_map。")
 csrc.append(" * 反编译把 disp_string 第一实参直传原固件 flash 字符串地址；")
 csrc.append(" * GCC 重链接后该地址是指令字节。strpool_map 把 flash 地址映射到本 blob 内偏移。")
-csrc.append(" * 未命中（RAM/外设地址）原样返回。 */")
+csrc.append(" * 未命中（RAM/外设地址）原样返回。")
+csrc.append(" * 产品信息定制（2026-09-01 用户要求）：case9 版本屏 4 行文本覆写为定制内容")
+csrc.append(" * （型号/版本/厂商/电话），地址不变，strpool_map 前置查表；见 PRODUCT_INFO_OVERRIDES。 */")
 csrc.append("#include <stdint.h>")
 csrc.append("")
 csrc.append("typedef struct { uint32_t base; uint32_t len; const uint8_t *blob; } strpool_cluster_t;")
@@ -139,9 +152,40 @@ for base, ln, off in records:
     csrc.append("  {%d, %d, strpool_blob + %d}," % (base, ln, off))
 csrc.append("};")
 csrc.append("")
+
+# 产品信息定制覆写段（strpool_map 前置查表）
+if PRODUCT_INFO_OVERRIDES:
+    ov_off = {}
+    ovb = bytearray()
+    for a in sorted(PRODUCT_INFO_OVERRIDES):
+        ov_off[a] = len(ovb)
+        ovb += PRODUCT_INFO_OVERRIDES[a].encode("gbk") + b"\x00"
+    csrc.append("/* 产品信息定制覆写（2026-09-01 用户要求）：case9 版本屏 4 行文本（GBK 字节）。")
+    csrc.append(" * 地址保持原固件 flash 地址，strpool_map 前置查表返回定制串；")
+    csrc.append(" * 原厂内容仍在原簇 blob 中保留（未使用）。 */")
+    csrc.append("static const uint8_t strpool_override_blob[] =")
+    ovlines = []
+    for a in sorted(PRODUCT_INFO_OVERRIDES):
+        chunk = PRODUCT_INFO_OVERRIDES[a].encode("gbk") + b"\x00"
+        ovlines.append('  "' + "".join("\\x%02x" % b for b in chunk) +
+                       '" /* %s */' % PRODUCT_INFO_OVERRIDES[a])
+    csrc.append("\n".join(ovlines) + ";")
+    csrc.append("")
+    csrc.append("typedef struct { uint32_t addr; uint32_t off; } strpool_override_t;")
+    csrc.append("static const strpool_override_t strpool_override[] = {")
+    csrc.append("  " + ", ".join("{ 0x%04x, %d }" % (a, ov_off[a])
+                                 for a in sorted(PRODUCT_INFO_OVERRIDES)) + "};")
+    csrc.append("")
+    csrc.append("")
+
 csrc.append("uint32_t strpool_map(uint32_t addr)")
 csrc.append("{")
 csrc.append("  uint32_t i;")
+if PRODUCT_INFO_OVERRIDES:
+    csrc.append("  for (i = 0; i < sizeof(strpool_override) / sizeof(strpool_override[0]); i++) {")
+    csrc.append("    if (addr == strpool_override[i].addr)")
+    csrc.append("      return (uint32_t)(strpool_override_blob + strpool_override[i].off);")
+    csrc.append("  }")
 csrc.append("  for (i = 0; i < sizeof(strpool_clusters) / sizeof(strpool_clusters[0]); i++) {")
 csrc.append("    if (addr >= strpool_clusters[i].base && addr < strpool_clusters[i].base + strpool_clusters[i].len)")
 csrc.append("      return (uint32_t)(strpool_clusters[i].blob + (addr - strpool_clusters[i].base));")
