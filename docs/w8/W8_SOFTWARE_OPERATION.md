@@ -42,8 +42,8 @@ J-Link USB 驱动，具体命令见 `操作文档.md` §1。
 
 构建与回归自检命令见 `操作文档.md` §2（`cd firmware && bash build.sh` +
 `python test/run_tests.py` + `python tools/verification/verify_firmware_equivalence.py`）。
-构建通过标准（尺寸 `text 61968 / data 3000 / bss 2188`、`firmware.bin` SHA-256、
-测试 11/11、独立验证器全 PASS）见 `操作文档.md` §2。
+构建通过标准（尺寸 `text 62840 / data 3000 / bss 2188`、`firmware.bin` SHA-256、
+静态测试 25/25、独立验证器全 PASS）见 `操作文档.md` §2。
 
 ### 1.3 硬件配套（跟软件配合用的仪器）
 

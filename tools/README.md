@@ -21,6 +21,12 @@
 | `generate_string_pool.py` | 生成 `strpool.c`（GBK blob + 簇表 + strpool_map） |
 | `locate_sram_mirrors.py` | 定位 SRAM `.data` 初始镜像 + 字符串池补扫（结论已并入 `extract_ram_data_image`） |
 
+### docs/ — 文档生成
+
+| 脚本 | 功能 |
+|---|---|
+| `generate_pc6m_software_design_doc.py` | 重建 `docs/project/PC6M10_软件设计及开发文档_V1.1.docx`（支持 `--output` 指定路径，含结构/禁用表述/标题字体检查） |
+
 ### ghidra/ — Ghidra 辅助脚本
 
 | 脚本 | 功能 |

@@ -65,7 +65,7 @@ PRODUCT_INFO_OVERRIDES = {
     0x6b78: "型号:PC6M-10",
     0x6b84: "版本:V2.0",
     0x6b94: "厂商:XIANPOWER",
-    0x6ba4: "电话:029-84205750",
+    0x6ba4: "电话:02984205750",
 }
 
 def addrs_final():
