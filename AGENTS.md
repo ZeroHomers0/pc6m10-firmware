@@ -8,15 +8,15 @@
 `LPC1765.bin`（262144 B）是所有等价验证的金标准。
 
 - GCC 可编译工程：`firmware/`，Arm GNU Toolchain 14.2.Rel1。
-- 当前构建：`text 61968 / data 3000 / bss 2188`。
-- 当前 `firmware.bin` SHA-256：`25676E62317091EA33D054D404E0D2C4E2C988C8CE4969E04E70395FC0A49C62`。
+- 当前构建：`text 62840 / data 3000 / bss 2188`。
+- 当前 `firmware.bin` SHA-256：`C6D3F35DD6C5A451947C27BA1825D8CE35C43D031F4EA02E32A9438BB32AE74E`。
 - 自编译固件已于 2026-08-26 完成 CRP 布局修复（`0x2FC` 显式保留 `0xFFFFFFFF`，见
   `firmware/lpc1765.ld`、`firmware/startup.s`、`firmware/build.sh`）并经 J-Link SWD 烧写入板、
   全镜像校验通过；过程见 `docs/w8/W8_POST_FLASH_2026-08-26.md`。
 - 测试：11/11 模块；输出级 144/144、状态机 115/115、TIMER1 126 例、Modbus 65 读/320 写均 PASS。
 - 离线结果允许进入断开门极与功率负载的 W8 分级实测，不代表带载 100% 等价。
 - **2026-09-01 产品信息定制**（用户要求）：case9「产品版本信息」屏 4 行文本覆写为
-  型号:PC6M-10 / 版本:V2.0 / 厂商:XIANPOWER / 电话:029-84205750（原厂
+  型号:PC6M-10 / 版本:V2.0 / 厂商:XIANPOWER / 电话:02984205750（原厂
   ST33C / V2.0.2016 / SINEP0WER / 18938061832）。实现：`tools/generation/generate_string_pool.py`
   新增 `PRODUCT_INFO_OVERRIDES`（0x6b78/0x6b84/0x6b94/0x6ba4），重新生成 `firmware/src/strpool.c`
   得 `strpool_override` 段，`strpool_map` 前置查表（flash 地址不变，仅替换显示内容；
@@ -24,8 +24,8 @@
   DISPLAY_FULL_EXEC 4）。注：本仓对 PC12M-2 仅作只读参考，本次改动为用户对六相固件的明确授权。
 - **2026-09-01 厂商 X/O 显示修复**（用户要求，分支 `w8-debug-2026-09-01`，与 PC12M-2 方案C 同款）：
   原 BIN 8×8 字库仅 36 字符（map @0x10000BB8 无 X/O），"厂商:XIANPOWER" 的 X/O 查表未命中
-  渲染空白。修复：`02_lcd_display.c` 新增 `ext_char8_xo[0x20]` 扩展字形，`disp_render_char8`
-  对 X/O 提前匹配，其余查原字库（字库外字符空白保留）。`verify_firmware_equivalence.py` 新增
+  渲染空白。修复：`02_lcd_display.c` 新增 `ext_char8_x[0x10]` 扩展 X 字形，O 复用原字库数字 0，
+  其余查原字库（字库外字符空白保留）。`verify_firmware_equivalence.py` 新增
   `XO_FONT`：OLD 'X' 0 写 / NEW 'X'·'O' 各 387 写 / NEW 'Z' 0 写；A/B 全套 PASS。
   详见 `docs/w8/W8_ISSUE_FIX_2026-09-01.md`。注意：此为**有意定制偏离**（原 BIN 渲染 X/O 空白），
   仅"渲染 X/O"的 GPIO 写迹与 OLD 不同。本次改动为用户对六相固件的明确授权。
