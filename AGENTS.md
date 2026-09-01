@@ -22,6 +22,13 @@
   得 `strpool_override` 段，`strpool_map` 前置查表（flash 地址不变，仅替换显示内容；
   原厂串仍保留于 blob）。重建固件后六相 A/B 验证全 PASS（含 DISPLAY_MATRIX 106 /
   DISPLAY_FULL_EXEC 4）。注：本仓对 PC12M-2 仅作只读参考，本次改动为用户对六相固件的明确授权。
+- **2026-09-01 厂商 X/O 显示修复**（用户要求，分支 `w8-debug-2026-09-01`，与 PC12M-2 方案C 同款）：
+  原 BIN 8×8 字库仅 36 字符（map @0x10000BB8 无 X/O），"厂商:XIANPOWER" 的 X/O 查表未命中
+  渲染空白。修复：`02_lcd_display.c` 新增 `ext_char8_xo[0x20]` 扩展字形，`disp_render_char8`
+  对 X/O 提前匹配，其余查原字库（字库外字符空白保留）。`verify_firmware_equivalence.py` 新增
+  `XO_FONT`：OLD 'X' 0 写 / NEW 'X'·'O' 各 387 写 / NEW 'Z' 0 写；A/B 全套 PASS。
+  详见 `docs/w8/W8_ISSUE_FIX_2026-09-01.md`。注意：此为**有意定制偏离**（原 BIN 渲染 X/O 空白），
+  仅"渲染 X/O"的 GPIO 写迹与 OLD 不同。本次改动为用户对六相固件的明确授权。
 
 ## 必须遵守
 
