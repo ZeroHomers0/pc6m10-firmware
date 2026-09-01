@@ -1,6 +1,7 @@
 """独立修复验证：直接执行原固件与新 ELF 的关键函数，不调用 test/ 现有套件。"""
 from pathlib import Path
 import re
+import shutil
 import struct
 import subprocess
 
@@ -11,9 +12,11 @@ from unicorn.arm_const import (UC_ARM_REG_LR, UC_ARM_REG_SP, UC_ARM_REG_R0,
 
 ROOT = Path(__file__).resolve().parents[2]
 FW = ROOT / "firmware"
-TC = Path(r"C:\Program Files (x86)\Arm GNU Toolchain arm-none-eabi\14.2 rel1\bin")
-NM = TC / "arm-none-eabi-nm.exe"
-OBJDUMP = TC / "arm-none-eabi-objdump.exe"
+# 工具链定位：优先 PATH（CI/Linux 由 arm-none-eabi-gcc-action 注入），
+# 找不到再回退本机 Windows 安装路径（本地开发机）。
+_WIN_TC = Path(r"C:\Program Files (x86)\Arm GNU Toolchain arm-none-eabi\14.2 rel1\bin")
+NM = shutil.which("arm-none-eabi-nm") or str(_WIN_TC / "arm-none-eabi-nm.exe")
+OBJDUMP = shutil.which("arm-none-eabi-objdump") or str(_WIN_TC / "arm-none-eabi-objdump.exe")
 
 
 def symbols():
