@@ -19,7 +19,7 @@
 #define system_input_code         (*((volatile uint8_t *)0x10000007u))
 #define system_tick_countdown     (*((volatile uint8_t *)0x10001784u))
 #define watchdog_timeout_count    (*((volatile uint32_t *)0x10002134u))
-#define watchdog_timeout_count_ptr ((volatile uint8_t *)0x10002134u)
+#define watchdog_timeout_count_ptr ((volatile uint32_t *)0x10002134u)
 
 /* 指针形式用于需要把地址保存到局部变量的反编译等价代码。 */
 #define system_auth_enabled_ptr       ((volatile uint8_t *)0x10002138u)
@@ -34,7 +34,7 @@
 /* ---------------- 频率调节和认证工作区 ---------------- */
 #define frequency_adjust_value        (*((volatile uint32_t *)0x1000162Cu))
 #define frequency_adjust_shadow       (*((volatile uint32_t *)0x10001630u))
-#define frequency_adjust_limit        (*((volatile uint32_t *)0x10001634u))
+#define frequency_adjust_limit        (*((volatile uint8_t *)0x10001634u))
 #define frequency_adjust_step         (*((volatile uint32_t *)0x10001638u))
 #define frequency_adjust_value_ptr    ((volatile uint32_t *)0x1000162Cu)
 #define frequency_adjust_shadow_ptr   ((volatile uint32_t *)0x10001630u)
@@ -156,7 +156,7 @@
 #define communication_parity_ptr         ((volatile uint8_t *)0x10001704u)
 #define communication_check_ptr          ((volatile uint8_t *)0x10001705u)
 #define baud_rate_runtime_table_ptr      ((volatile uint32_t *)0x100017BCu)
-#define pid_mode_selection_ptr           ((volatile uint32_t *)0x10001710u)
+#define pid_mode_selection_ptr           ((volatile uint8_t *)0x10001710u)
 #define frequency_adjustment_ptr         ((volatile uint32_t *)0x1000162Cu)
 #define phase_balance_angle_ptr          ((volatile uint8_t *)0x10001694u)
 #define run_stop_state_ptr               ((volatile uint8_t *)0x10001785u)
@@ -363,7 +363,6 @@
 #define output_scb_base            ((volatile uint8_t *)0x400FC000u)
 #define output_pinsel_base         0x4002C000u
 #define output_scan_counter        (*((volatile uint8_t *)0x10002074u))
-#define output_input_state         (*((volatile uint8_t *)0x10002000u))
 #define output_frequency           (*((volatile uint8_t *)0x10001FF8u))
 #define output_phase_counter       (*((volatile uint8_t *)0x10001FF9u))
 #define output_mode                (*((volatile uint8_t *)0x10002075u))
@@ -428,7 +427,6 @@
 #define output_eint2_flag_ptr       ((volatile uint8_t *)0x100020C1u)
 #define output_eint3_flag_ptr       ((volatile uint8_t *)0x100020C2u)
 #define output_hold_counter_ptr     ((volatile uint32_t *)0x100020C4u)
-#define output_ramp_counter_byte_ptr ((volatile uint8_t *)0x10002068u)
 #define output_hold_counter_byte_ptr ((volatile uint8_t *)0x100020C4u)
 #define output_scale_byte_ptr       ((volatile uint8_t *)0x100020CCu)
 
@@ -452,7 +450,6 @@
 #define uart3_baud_table            ((const uint32_t *)0x0000B4C4u)
 #define uart3_frame_timeout         (*((volatile uint32_t *)0x1000178Cu))
 #define uart3_global_tick            (*((volatile uint32_t *)0x100017B8u))
-#define uart3_tx_busy                (*((volatile uint8_t *)0x1000178Cu))
 #define uart3_tx_state               (*((volatile uint8_t *)0x10001790u))
 #define uart3_tx_length              (*((volatile uint8_t *)0x10001793u))
 #define uart3_tx_index               (*((volatile uint8_t *)0x10001794u))
@@ -473,8 +470,8 @@
 #define modbus_current_register      (*((volatile uint32_t *)0x100017A0u))
 #define modbus_pid_selection        (*((volatile uint8_t *)0x100016F4u))
 #define modbus_pid_selection_ptr    ((volatile uint8_t *)0x10001710u)
-#define modbus_active_gain_a        (*((volatile uint32_t *)0x100016FCu))
-#define modbus_active_gain_b        (*((volatile uint32_t *)0x10001704u))
+#define modbus_active_gain_a        (*((volatile uint8_t *)0x100016FCu))
+#define modbus_active_gain_b        (*((volatile uint8_t *)0x10001704u))
 #define modbus_output_fine_value    (*((volatile uint32_t *)0x100015C0u))
 #define modbus_phase_calibration    (*((volatile uint8_t *)0x10001694u))
 #define modbus_run_flag             (*((volatile uint8_t *)0x10001670u))

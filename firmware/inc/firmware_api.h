@@ -21,7 +21,7 @@ void timer0_init(void);
 void TIMER0_IRQHandler(void);
 void Delay(int loops);
 void long_delay(void);
-void state_machine(int key);
+void state_machine(KeyCode key_code);
 
 /* GPIO、输入与采样 */
 void pin_config(void);

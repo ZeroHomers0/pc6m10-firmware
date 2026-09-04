@@ -66,17 +66,28 @@ for fn in files:
             prev_line = line
 
 # 2) 解析语义地址映射：addr -> (name, width)
-DEF = re.compile(
-    r'#define\s+(\w+)\s+.*?volatile\s+'
-    r'(uint32_t|uint8_t|uint16_t)\s*\*\s*\)\s*0x([0-9a-fA-F]+)'
-)
+# Read one macro at a time.  Some legacy-compatible address views use a nested
+# cast such as ``(volatile uint32_t *)((volatile uint8_t *)ADDRESS)``.  The
+# first volatile pointer type is the effective access width; searching the
+# complete file with a non-greedy expression could incorrectly capture the
+# inner uint8_t cast instead.
+DEFINE_LINE = re.compile(r'^\s*#define\s+(\w+)\s+(.*)$')
+WIDTH = re.compile(r'volatile\s+(uint32_t|uint8_t|uint16_t)\s*\*')
+ADDRESS = re.compile(r'0x([0-9a-fA-F]+)')
 def_by_addr = {}   # addr -> list of (name, width)
 for map_file in MAP_FILES:
     with open(map_file, encoding='utf-8') as f:
-        for m in DEF.finditer(f.read()):
-            name = m.group(1)
-            w = m.group(2)
-            addr = int(m.group(3), 16)
+        for line in f:
+            define = DEFINE_LINE.match(line)
+            if not define:
+                continue
+            width = WIDTH.search(define.group(2))
+            address = ADDRESS.findall(define.group(2))
+            if not width or not address:
+                continue
+            name = define.group(1)
+            w = width.group(1)
+            addr = int(address[-1], 16)
             def_by_addr.setdefault(addr, []).append((name, w))
 
 def gw(w):

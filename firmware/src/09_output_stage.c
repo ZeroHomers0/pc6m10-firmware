@@ -259,7 +259,7 @@ void output_stage(void)
   volatile uint32_t *working_word_ptr;
   volatile uint32_t *working_value_ptr;
   volatile uint32_t *constant_voltage_output_ptr;
-  volatile uint8_t *ramp_counter_ptr;
+  volatile uint32_t *ramp_counter_ptr;
   uint32_t closed_loop_output;
 
   scheduler_tick_ptr = output_tick_counter_ptr;
@@ -709,7 +709,7 @@ void output_stage(void)
         *(volatile uint32_t *)output_run_state_ptr = 4;
         *(volatile uint32_t *)output_ramp_value_ptr = *(volatile uint32_t *)output_setpoint_ptr / 100;
       }
-      ramp_counter_ptr = output_ramp_counter_byte_ptr;
+      ramp_counter_ptr = output_ramp_counter_ptr;
       if (*parameter_soft_stop_time_ptr == 0) {
         gpio_outputs_set();
         *(volatile uint32_t *)output_ramp_counter_ptr = 0;

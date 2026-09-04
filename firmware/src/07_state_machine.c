@@ -6,7 +6,7 @@
  *   字符串→运行期地址映射属 W7 遗留）。绝不臆造：每 case 均对照对应反汇编段。
  *
  * 函数：0x0000458C-0xAB44（UI 状态机主分发，ui_screen_id_ptr 驱动）
- * 调用点：main() 主循环 state_machine(*key)
+ * 调用点：main() 主循环 state_machine(*key_code)
  * 分发链（顺序 if 级联，遇 return 即返回；历史说明见 docs/history/_SM_W1B_PROGRESS.md）：
  *   entry(0x458C)→case1(0x4B16)→caseA(0x541C)→case62(0x5572)→case63(0x5748)
  *   →case2(0x6134)→case3(0x69D6)→case4(0x7C1A)→case5(0x8780)→case6(0x8C1A)
@@ -16,7 +16,7 @@
  *   4→case4、5→case5、6→case6、7→case7、8→case8、0xb→caseB、9→case9、0x5a→case5A、
  *   0xc→caseC、0x14→case14、0x1e→case1E。
  *
- * r4=key 语义：1=确认、2=DOWN/减、3=UP/加、4=SET/退出、5=启动、6=停机、
+ * r4=key_code 语义：1=确认、2=DOWN/减、3=UP/加、4=SET/退出、5=启动、6=停机、
  *   0x16=快加、0x21=快减、0x17=统计清零、0xe=初始参数密码、数字键0-9输密码。
  * ========================================================================== */
 #include "inc/types.h"
@@ -183,15 +183,15 @@ static void sm6_delay_loop(void)
 /* =============================================================================
  * state_machine(0x458C)
  * 流程：entry 公共逻辑（state_entry_ticks_ptr/去抖/故障码/启停/统计）→ ui_screen_id_ptr 分发到各 case。
- * 各 case 以顺序 if 级联实现；case 内部按 key 分发。
+ * 各 case 以顺序 if 级联实现；case 内部按 key_code 分发。
  * ========================================================================== */
-void state_machine(int key)
+void state_machine(KeyCode key_code)
 {
   uint32_t delay_iteration;
 
   /* ================= entry 公共逻辑 (0x458C-0x4B16) ================= */
   (*state_entry_ticks_ptr)++;
-  if (key > 0) { *state_entry_ticks_ptr = 0; lcd_ctrl_line(1); }
+  if (key_code != KEY_NONE) { *state_entry_ticks_ptr = 0; lcd_ctrl_line(1); }
   if (*state_entry_ticks_ptr > 0x1388) { *state_entry_ticks_ptr = 0; lcd_ctrl_line(0); }
 
   if (debounce_p09() == 1) {                    /* P0.9 高电平：累计/影子值→EEPROM */
@@ -306,10 +306,10 @@ void state_machine(int key)
 
 do_dispatch:
   /* ================= 分发链（ui_screen_id_ptr 值→case 段） ================= */
-  if (*ui_screen_id_ptr == 1) {
+  if (*ui_screen_id_ptr == UI_SCREEN_MAIN_MENU) {
     /* ---------- case1 运行状态屏 (0x4B16-0x541C) ---------- */
-    if (key == 0x17 && *operation_configuration_ptr == 0) {
-      *ui_screen_id_ptr = 0xc; *ui_item_index_ptr = 0; *ui_idle_timeout_ticks_ptr = 0;
+    if (key_code == KEY_CLEAR_STATISTICS && *operation_configuration_ptr == 0) {
+      *ui_screen_id_ptr = UI_SCREEN_RUNTIME_CLEAR; *ui_item_index_ptr = 0; *ui_idle_timeout_ticks_ptr = 0;
       disp_clear();
       disp_string((int)0x4d58, 0, 0, 0);
       disp_string((int)0x4d6c, 1, 0, 0);
@@ -321,24 +321,24 @@ do_dispatch:
       disp_uint2(*runtime_total_minute_ptr, 3, 0xa, 0);
       return;
     }
-    if (key == 1 && *operation_configuration_ptr == 0) {
-      *ui_screen_id_ptr = 0xa;
+    if (key_code == KEY_CONFIRM && *operation_configuration_ptr == 0) {
+      *ui_screen_id_ptr = UI_SCREEN_CALIBRATION_MENU;
       *ui_item_index_ptr = 0; *ui_idle_timeout_ticks_ptr = 0;
       disp_clear();
       disp_string((int)0x4d9c, 1, 0, 0);
       disp_string((int)0x4dac, 3, 7, 0);
       *ui_calibration_timeout_ticks_ptr = 0x3c; *ui_idle_refresh_ticks_ptr = 0; return;
     }
-    if (key == 0xe) {
-      *ui_screen_id_ptr = 0x62;
+    if (key_code == KEY_INITIAL_PARAMETER_PASSWORD) {
+      *ui_screen_id_ptr = UI_SCREEN_CALIBRATION_ACTIVE;
       *ui_item_index_ptr = 0; *ui_idle_timeout_ticks_ptr = 0;
       disp_clear();
       disp_string((int)0x4db4, 0, 0, 0);
       disp_string((int)0x4dc8, 1, 0, 0);
       disp_string((int)0x4dac, 3, 7, 0); return;
     }
-    if (key == 4 && *operation_configuration_ptr == 0 && *output_fault_flags_ptr != 0) {
-      *ui_screen_id_ptr = 0x14; *ui_statistics_timeout_ticks_ptr = 0x1f4;
+    if (key_code == KEY_BACK && *operation_configuration_ptr == 0 && *output_fault_flags_ptr != 0) {
+      *ui_screen_id_ptr = UI_SCREEN_STATUS_MONITOR; *ui_statistics_timeout_ticks_ptr = 0x1f4;
       *ui_item_index_ptr = 0; *ui_idle_timeout_ticks_ptr = 0;
       disp_clear(); return;
     }
@@ -425,7 +425,7 @@ do_dispatch:
           disp_string((int)0x47e8, 3, 0xa, 0);
         }
         if (*operation_configuration_ptr == 0 && *parameter_control_method_ptr != 0) *run_stop_state_ptr = 0;
-        if (*output_fault_flags_ptr == 0 && *stop_request_ptr == 0 && (key == 5 || *ui_scan_stop_flag_ptr == 7)) {
+        if (*output_fault_flags_ptr == 0 && *stop_request_ptr == 0 && (key_code == KEY_START || *ui_scan_stop_flag_ptr == 7)) {
           if (*parameter_start_mode_ptr == 0) {
             *run_stop_state_ptr = 1; *stop_request_ptr = 1; *stop_pending_ptr = 0; *run_request_ptr = 0;
             *operation_configuration_ptr = 1; *status_message_shown_ptr = 0; *runtime_tick_ptr = 0; *runtime_current_minute_ptr = 0; *runtime_current_hour_ptr = 0;
@@ -436,7 +436,7 @@ do_dispatch:
             disp_string((int)0x47f0, 3, 0xa, 0);
           }
         }
-        if (*output_fault_flags_ptr == 0 && *stop_pending_ptr == 0 && (key == 6 || *ui_scan_stop_flag_ptr == 8)) {
+        if (*output_fault_flags_ptr == 0 && *stop_pending_ptr == 0 && (key_code == KEY_STOP || *ui_scan_stop_flag_ptr == 8)) {
           if (*parameter_start_mode_ptr == 0) {
             *run_stop_state_ptr = 0; *stop_pending_ptr = 1; *stop_request_ptr = 0; *operation_configuration_ptr = 0;
             disp_string((int)0x47e8, 3, 0xa, 0);
@@ -456,12 +456,12 @@ do_dispatch:
       } else if (*parameter_control_method_ptr == 1) {
         *output_reference_average_ptr = *output_secondary_reference_ptr;
       } else {
-        if (key == 2 || key == 0x16) {
+        if (key_code == KEY_DOWN || key_code == KEY_FAST_UP) {
           (*manual_reference_value_ptr)++; if (*manual_reference_value_ptr > 0x3e8) *manual_reference_value_ptr = 0x3e8;
           if (*manual_reference_value_ptr < 0xa) *manual_reference_value_ptr = 0xa;
           disp_fixed_1dec(*manual_reference_value_ptr, 0, 9, 0);
         }
-        if (key == 3 || key == 0x21) {
+        if (key_code == KEY_UP || key_code == KEY_FAST_DOWN) {
           if (*manual_reference_value_ptr > 0xa) (*manual_reference_value_ptr)--;
           else { *manual_reference_value_ptr = 1; (*manual_reference_value_ptr)--; }
           disp_fixed_1dec(*manual_reference_value_ptr, 0, 9, 0);
@@ -477,7 +477,7 @@ do_dispatch:
 
   if (*ui_screen_id_ptr == 0xa) {
     /* ---------- caseA 参数密码屏 (0x541C-0x5572) ---------- */
-    if (key == 1) {
+    if (key_code == KEY_CONFIRM) {
       *ui_item_index_ptr = 0;
       while (*ui_item_index_ptr < 6) {
         if (password_input_buffer_ptr[*ui_item_index_ptr] != password_part_a_ptr[*ui_item_index_ptr]) {
@@ -486,29 +486,29 @@ do_dispatch:
           /* 密码错延时：delay_iteration 计 0x3e8 次，循环体喂狗(wd_feed)并累加 watchdog_delay_outer_ticks_ptr；外层至 0x2710 */
           *watchdog_delay_inner_ticks_ptr = 0;
           for (delay_iteration = 0; delay_iteration < 0x3e8; delay_iteration++) { wd_feed(); (*watchdog_delay_outer_ticks_ptr)++; }
-          *ui_screen_id_ptr = 1; disp_splash_screen(); return;
+          *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return;
         }
         password_input_buffer_ptr[*ui_item_index_ptr] = 0; (*ui_item_index_ptr)++;
       }
-      *ui_screen_id_ptr = 2; *ui_item_index_ptr = 0; disp_screen_static(); return;
+      *ui_screen_id_ptr = UI_SCREEN_BASIC_PARAMETERS; *ui_item_index_ptr = 0; disp_screen_static(); return;
     }
-    if (key == 4) { *ui_screen_id_ptr = 1; disp_splash_screen(); return; }
-    if (key > 0) {
-      if (*ui_item_index_ptr < 6) { password_input_buffer_ptr[*ui_item_index_ptr] = key; disp_render_char8('*', 1, *ui_item_index_ptr + 7, 0); (*ui_item_index_ptr)++; }
+    if (key_code == KEY_BACK) { *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return; }
+    if (key_code != KEY_NONE) {
+      if (*ui_item_index_ptr < 6) { password_input_buffer_ptr[*ui_item_index_ptr] = key_code; disp_render_char8('*', 1, *ui_item_index_ptr + 7, 0); (*ui_item_index_ptr)++; }
       return;
     }
     (*ui_idle_refresh_ticks_ptr)++;
     if (*ui_idle_refresh_ticks_ptr >= 0x1f4) {
       *ui_idle_refresh_ticks_ptr = 0; (*ui_calibration_timeout_ticks_ptr)--;
       disp_number3(*ui_calibration_timeout_ticks_ptr, 3, 6, 0);
-      if (*ui_calibration_timeout_ticks_ptr == 0) { *ui_screen_id_ptr = 1; disp_splash_screen(); return; }
+      if (*ui_calibration_timeout_ticks_ptr == 0) { *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return; }
     }
     return;
   }
 
-  if (*ui_screen_id_ptr == 0x62) {
+  if (*ui_screen_id_ptr == UI_SCREEN_CALIBRATION_ACTIVE) {
     /* ---------- case62 初始密码屏 (0x5572-0x5748) ---------- */
-    if (key == 1) {
+    if (key_code == KEY_CONFIRM) {
       *ui_item_index_ptr = 0;
       while (*ui_item_index_ptr < 6) {
         if (password_input_buffer_ptr[*ui_item_index_ptr] != password_part_c_ptr[*ui_item_index_ptr]) {
@@ -517,40 +517,40 @@ do_dispatch:
           /* 密码错延时（同 caseA）：delay_iteration 计 0x3e8 次，喂狗 + watchdog_delay_outer_ticks_ptr++ */
           *watchdog_delay_inner_ticks_ptr = 0;
           for (delay_iteration = 0; delay_iteration < 0x3e8; delay_iteration++) { wd_feed(); (*watchdog_delay_outer_ticks_ptr)++; }
-          *ui_screen_id_ptr = 1; disp_splash_screen(); return;
+          *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return;
         }
         password_input_buffer_ptr[*ui_item_index_ptr] = 0; (*ui_item_index_ptr)++;
       }
-      *ui_screen_id_ptr = 0x63; *ui_item_index_ptr = 0; disp_clear(); disp_screen_calib(); return;
+      *ui_screen_id_ptr = UI_SCREEN_CALIBRATION_RESULT; *ui_item_index_ptr = 0; disp_clear(); disp_screen_calib(); return;
     }
-    if (key == 4) { *ui_screen_id_ptr = 1; disp_splash_screen(); return; }
-    if (key > 0) {
-      if (*ui_item_index_ptr < 6) { password_input_buffer_ptr[*ui_item_index_ptr] = key; disp_render_char8('*', 1, *ui_item_index_ptr + 7, 0); (*ui_item_index_ptr)++; }
+    if (key_code == KEY_BACK) { *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return; }
+    if (key_code != KEY_NONE) {
+      if (*ui_item_index_ptr < 6) { password_input_buffer_ptr[*ui_item_index_ptr] = key_code; disp_render_char8('*', 1, *ui_item_index_ptr + 7, 0); (*ui_item_index_ptr)++; }
       return;
     }
     (*ui_idle_refresh_ticks_ptr)++;
     if (*ui_idle_refresh_ticks_ptr >= 0x1f4) {
       *ui_idle_refresh_ticks_ptr = 0; (*ui_calibration_timeout_ticks_ptr)--;
       disp_number3(*ui_calibration_timeout_ticks_ptr, 3, 6, 0);
-      if (*ui_calibration_timeout_ticks_ptr == 0) { *ui_screen_id_ptr = 1; disp_splash_screen(); return; }
+      if (*ui_calibration_timeout_ticks_ptr == 0) { *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return; }
     }
     return;
   }
 
-  if (*ui_screen_id_ptr == 0x63) {
+  if (*ui_screen_id_ptr == UI_SCREEN_CALIBRATION_RESULT) {
     /* ---------- case63 初始参数 (0x5748-0x6134)，ui_item_index_ptr=项0-10，ui_view_mode_ptr=0导航/1编辑 ---------- */
-    if (key == 1) {
+    if (key_code == KEY_CONFIRM) {
       *ui_idle_timeout_ticks_ptr = 0; (*ui_view_mode_ptr)++; if (*ui_view_mode_ptr > 1) *ui_view_mode_ptr = 0;
       if (*ui_view_mode_ptr == 0) *ui_statistics_timeout_ticks_ptr = 0xfa; else *ui_statistics_timeout_ticks_ptr = 0x1f4;
     }
-    if (key == 4) {
-      *ui_idle_timeout_ticks_ptr = 0; param_sync_live_to_eeprom(); *ui_screen_id_ptr = 1; disp_splash_screen(); return;
+    if (key_code == KEY_BACK) {
+      *ui_idle_timeout_ticks_ptr = 0; param_sync_live_to_eeprom(); *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return;
     }
-    if (key == 2 || key == 3) {
+    if (key_code == KEY_DOWN || key_code == KEY_UP) {
       if (*ui_view_mode_ptr == 0) {
         *ui_idle_timeout_ticks_ptr = 0;
-        if (key == 3) { (*ui_item_index_ptr)++; if (*ui_item_index_ptr > 0xa) *ui_item_index_ptr = 0xa; }
-        if (key == 2) { if (*ui_item_index_ptr > 0) (*ui_item_index_ptr)--; }
+        if (key_code == KEY_UP) { (*ui_item_index_ptr)++; if (*ui_item_index_ptr > 0xa) *ui_item_index_ptr = 0xa; }
+        if (key_code == KEY_DOWN) { if (*ui_item_index_ptr > 0) (*ui_item_index_ptr)--; }
         if (*ui_item_index_ptr < 4) {
           disp_string((int)0x4854, 0, 0, 0); disp_string((int)0x4868, 1, 0, 0);
           disp_string((int)0x487c, 2, 0, 0); disp_string((int)0x4890, 3, 0, 0);
@@ -565,7 +565,7 @@ do_dispatch:
         }
         *ui_statistics_timeout_ticks_ptr = 0xfa;
       } else {
-        if (key == 2 || key == 0x16) {
+        if (key_code == KEY_DOWN || key_code == KEY_FAST_UP) {
           *ui_idle_timeout_ticks_ptr = 0;
           if (*ui_item_index_ptr == 0) { (*parameter_current_calibration_a_ptr)++; if (*parameter_current_calibration_a_ptr > 0x1194) *parameter_current_calibration_a_ptr = 0x1194; }
           if (*ui_item_index_ptr == 1) { (*parameter_current_calibration_b_ptr)++; if (*parameter_current_calibration_b_ptr > 0x1194) *parameter_current_calibration_b_ptr = 0x1194; }
@@ -579,7 +579,7 @@ do_dispatch:
           if (*ui_item_index_ptr == 9) { (*parameter_output_phase_ptr)++; if (*parameter_output_phase_ptr > 1) *parameter_output_phase_ptr = 1; }
           if (*ui_item_index_ptr == 0xa) { (*parameter_start_phase_ptr)++; if (*parameter_start_phase_ptr > 0xb4) *parameter_start_phase_ptr = 0xb4; }
         }
-        if (key == 3 || key == 0x21) {
+        if (key_code == KEY_UP || key_code == KEY_FAST_DOWN) {
           *ui_idle_timeout_ticks_ptr = 0;
           if (*ui_item_index_ptr == 0) { if (*parameter_current_calibration_a_ptr > 0xdac) (*parameter_current_calibration_a_ptr)--; }
           if (*ui_item_index_ptr == 1) { if (*parameter_current_calibration_b_ptr > 0xdac) (*parameter_current_calibration_b_ptr)--; }
@@ -654,17 +654,17 @@ do_dispatch:
     }
     /* 编辑空闲超时回主屏（0x6102-0x6132）：ui_idle_timeout_ticks_ptr 每帧累加（非仅擦除帧）；ui_view_mode_ptr==0 帧已提前返回 */
     (*ui_idle_timeout_ticks_ptr)++;
-    if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; param_sync_live_to_eeprom(); *ui_screen_id_ptr = 1; disp_splash_screen(); return; }
+    if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; param_sync_live_to_eeprom(); *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return; }
     return;
   }
 
-  if (*ui_screen_id_ptr == 2) {
+  if (*ui_screen_id_ptr == UI_SCREEN_BASIC_PARAMETERS) {
     /* ---------- case2 主菜单页1 (0x6134-0x69D6)，ui_item_index_ptr=选项0-8 ---------- */
-    if (key == 4) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = 1; disp_splash_screen(); return; }
-    if (key == 2 || key == 3) {
+    if (key_code == KEY_BACK) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return; }
+    if (key_code == KEY_DOWN || key_code == KEY_UP) {
       *ui_idle_timeout_ticks_ptr = 0;
-      if (key == 3) { (*ui_item_index_ptr)++; if (*ui_item_index_ptr > 7) *ui_item_index_ptr = 7; }
-      if (key == 2) { if (*ui_item_index_ptr > 0) (*ui_item_index_ptr)--; }
+      if (key_code == KEY_UP) { (*ui_item_index_ptr)++; if (*ui_item_index_ptr > 7) *ui_item_index_ptr = 7; }
+      if (key_code == KEY_DOWN) { if (*ui_item_index_ptr > 0) (*ui_item_index_ptr)--; }
       if (*ui_item_index_ptr < 4) {
         disp_string((int)0x6488, 0, 0, 0); disp_string((int)0x649c, 1, 0, 0);
         disp_string((int)0x64b0, 2, 0, 0); disp_string((int)0x64c4, 3, 0, 0);
@@ -687,10 +687,10 @@ do_dispatch:
       if (*ui_item_index_ptr == 7) disp_string((int)0x6514, 3, 0, 1);
       if (*ui_item_index_ptr == 8) disp_string((int)0x6528, 0, 0, 1);
     }
-    if (key == 1) {
+    if (key_code == KEY_CONFIRM) {
       *ui_idle_timeout_ticks_ptr = 0; *ui_view_mode_ptr = 0;
       if (*ui_item_index_ptr == 0) {
-        *ui_screen_id_ptr = 3; *ui_item_index_ptr = 0;
+        *ui_screen_id_ptr = UI_SCREEN_BASIC_PARAMETER_EDIT; *ui_item_index_ptr = 0;
         disp_string((int)0x6540, 0, 0, 0); disp_string((int)0x6554, 1, 0, 0);
         disp_string((int)0x6568, 2, 0, 0); disp_string((int)0x657c, 3, 0, 0);
         if (*parameter_control_mode_ptr == 0) { disp_string((int)0x6594, 0, 0xb, 1); fio1_pin20_ctrl(1); fio1_pin21_ctrl(0); }
@@ -702,7 +702,7 @@ do_dispatch:
         *ui_statistics_timeout_ticks_ptr = 0xfa;
       }
       if (*ui_item_index_ptr == 1) {
-        *ui_screen_id_ptr = 4; *ui_item_index_ptr = 0;
+        *ui_screen_id_ptr = UI_SCREEN_PROTECTION_PARAMETERS; *ui_item_index_ptr = 0;
         disp_string((int)0x65bc, 0, 0, 0); disp_string((int)0x65d0, 1, 0, 0);
         disp_string((int)0x65e4, 2, 0, 0); disp_string((int)0x65f8, 3, 0, 0);
         disp_uint4(*parameter_overvoltage_limit_ptr, 0, 0xb, 1);
@@ -712,7 +712,7 @@ do_dispatch:
         *ui_statistics_timeout_ticks_ptr = 0xfa;
       }
       if (*ui_item_index_ptr == 2) {
-        *ui_screen_id_ptr = 5; *ui_item_index_ptr = 0;
+        *ui_screen_id_ptr = UI_SCREEN_COMMUNICATION_PARAMETERS; *ui_item_index_ptr = 0;
         disp_string((int)0x6a18, 0, 0, 0); disp_string((int)0x6a2c, 1, 0, 0);
         disp_string((int)0x6a40, 2, 0, 0); disp_string((int)0x6a54, 3, 0, 0);
         disp_uint5(*communication_address_ptr, 0, 0xb, 1);
@@ -725,13 +725,13 @@ do_dispatch:
         *ui_statistics_timeout_ticks_ptr = 0xfa;
       }
       if (*ui_item_index_ptr == 3) {
-        *ui_screen_id_ptr = 6; *ui_item_index_ptr = 0; *watchdog_delay_outer_ticks_ptr = 0; disp_clear();
+        *ui_screen_id_ptr = UI_SCREEN_RUNTIME_HOURS; *ui_item_index_ptr = 0; *watchdog_delay_outer_ticks_ptr = 0; disp_clear();
         /* BIN 0x6712 是 ldr r0,[0x6aa0] 取字面量值 0x4D9C（"  密码:------"），
          * 不是取 0x6aa0 处的指令字节——0x6AA0 处 4 字节=9C 4D 00 00 会只显示"M"。 */
         disp_string((int)0x4d9c, 1, 0, 0);
       }
       if (*ui_item_index_ptr == 4) {
-        *ui_screen_id_ptr = 7; *ui_item_index_ptr = 0;
+        *ui_screen_id_ptr = UI_SCREEN_PID_PARAMETERS; *ui_item_index_ptr = 0;
         disp_string((int)0x6aa4, 0, 0, 0); disp_string((int)0x6ab8, 1, 0, 0);
         disp_string((int)0x6acc, 2, 0, 0); disp_string((int)0x6ae0, 3, 0, 0);
         if (*parameter_pid_profile_ptr == 1) { disp_string((int)0x6af8, 0, 0xb, 1); disp_uint2(*parameter_profile1_gain_a_ptr, 1, 0xb, 0); disp_uint2(*parameter_profile1_gain_b_ptr, 2, 0xb, 0); }
@@ -741,7 +741,7 @@ do_dispatch:
         *ui_statistics_timeout_ticks_ptr = 0xfa;
       }
       if (*ui_item_index_ptr == 5) {
-        *ui_screen_id_ptr = 8; *ui_item_index_ptr = 0; disp_clear();
+        *ui_screen_id_ptr = UI_SCREEN_PHASE_CALIBRATION; *ui_item_index_ptr = 0; disp_clear();
         disp_string((int)0x6b34, 0, 4, 0); disp_string((int)0x6b40, 1, 2, 0);
         disp_string((int)0x6b4c, 2, 2, 0); disp_offset(*frequency_adjustment_ptr, 2, 7, 1);
         disp_string((int)0x6b58, 3, 0, 0);
@@ -754,19 +754,19 @@ do_dispatch:
         disp_uint5(*runtime_total_hour_ptr, 3, 3, 0); disp_uint2(*runtime_total_minute_ptr, 3, 0xa, 0);
       }
       if (*ui_item_index_ptr == 7) {
-        *ui_screen_id_ptr = 9; *ui_item_index_ptr = 0; disp_clear();
+        *ui_screen_id_ptr = UI_SCREEN_VERSION; *ui_item_index_ptr = 0; disp_clear();
         disp_string((int)0x6b78, 0, 0, 0); disp_string((int)0x6b84, 1, 0, 0);
         disp_string((int)0x6b94, 2, 0, 0); disp_string((int)0x6ba4, 3, 0, 0);
       }
       if (*ui_item_index_ptr == 8) {
-        *ui_screen_id_ptr = 0x5a; *ui_item_index_ptr = 0; disp_clear();
+        *ui_screen_id_ptr = UI_SCREEN_MANUAL_BALANCE; *ui_item_index_ptr = 0; disp_clear();
         disp_string((int)0x6bb8, 0, 4, 0); disp_string((int)0x6b40, 1, 2, 0);
         disp_string((int)0x6b4c, 2, 2, 0); disp_signed_angle(*phase_balance_angle_ptr, 2, 7, 1);
         disp_string((int)0x6b58, 3, 0, 0);
       }
     }
     (*ui_idle_timeout_ticks_ptr)++;
-    if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = 1; disp_splash_screen(); }
+    if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); }
     return;
   }
 
@@ -777,15 +777,15 @@ do_dispatch:
        | 6=0x1000164c 0xc8 | 7=0x1000164d 0xc8 | 8=0x10001650 0xb4 | 9=0x10001654 0xa0
        | 10=parameter_control_method_ptr 0..2 | 11=0x10001656 0..1 | 12=parameter_emergency_stop_ptr 0..2 | 13=parameter_feedback_mode_ptr 0..1
        | 14=parameter_input_mode_ptr 0..1 | 15=0x10001660 0xb4                                 */
-  if (*ui_screen_id_ptr == 3) {
+  if (*ui_screen_id_ptr == UI_SCREEN_BASIC_PARAMETER_EDIT) {
     uint32_t item_index = *ui_item_index_ptr;                              /* 项号 */
 
     /* 原汇编公共尾部 0x7446-0x744E 对刷新计数加一。提前执行可保持所有
      * 提前返回/辅助绘制调用下的同一可观察结果；按键分支在下方写入最终值。 */
     (*ui_statistics_timeout_ticks_ptr)++;
 
-    /* ---- key==1：在 查看/编辑 之间切换 ui_view_mode_ptr，并复位修改空闲计时 ---- */
-    if (key == 1) {
+    /* ---- key_code==1：在 查看/编辑 之间切换 ui_view_mode_ptr，并复位修改空闲计时 ---- */
+    if (key_code == KEY_CONFIRM) {
       *ui_idle_timeout_ticks_ptr = 0;
       (*ui_view_mode_ptr)++;
       if (*ui_view_mode_ptr > 1) *ui_view_mode_ptr = 0;
@@ -793,18 +793,18 @@ do_dispatch:
       if (*ui_view_mode_ptr == 1) *ui_statistics_timeout_ticks_ptr = 0x1f5;
     }
 
-    /* ---- key==4：保存并退回 参数子菜单(type2 屏) ---- */
-    else if (key == 4) {
-      *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = 2; *ui_item_index_ptr = 0;
+    /* ---- key_code==4：保存并退回 参数子菜单(type2 屏) ---- */
+    else if (key_code == KEY_BACK) {
+      *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_BASIC_PARAMETERS; *ui_item_index_ptr = 0;
       param_sync_live_to_eeprom(); disp_clear();
       disp_string((int)0x4814,0,0,1); disp_string((int)0x4824,1,0,0);
       disp_string((int)0x4834,2,0,0); disp_string((int)0x4844,3,0,0);
     }
 
-    /* ---- key==2/3 且 *ui_view_mode_ptr==0：项间导航 (ui_item_index_ptr=0..15) ---- */
-    else if ((key == 2 || key == 3) && *ui_view_mode_ptr == 0) {
+    /* ---- key_code==2/3 且 *ui_view_mode_ptr==0：项间导航 (ui_item_index_ptr=0..15) ---- */
+    else if ((key_code == KEY_DOWN || key_code == KEY_UP) && *ui_view_mode_ptr == 0) {
       *ui_idle_timeout_ticks_ptr = 0;
-      if (key == 3) { (*ui_item_index_ptr)++; if (*ui_item_index_ptr > 0xf) *ui_item_index_ptr = 0xf; }
+      if (key_code == KEY_UP) { (*ui_item_index_ptr)++; if (*ui_item_index_ptr > 0xf) *ui_item_index_ptr = 0xf; }
       else          { if (*ui_item_index_ptr > 0) (*ui_item_index_ptr)--; }
       *ui_statistics_timeout_ticks_ptr = 0xfb;
       /* 重绘新项所在页标题(值列清空)；值由尾部整页重绘恢复 */
@@ -821,33 +821,33 @@ do_dispatch:
       }
     }
 
-    /* ---- key==2/0x16/3/0x21 且 *ui_view_mode_ptr==1：修改当前项值 ---- */
-    else if ((key == 2 || key == 0x16 || key == 3 || key == 0x21) && *ui_view_mode_ptr == 1) {
+    /* ---- key_code==2/0x16/3/0x21 且 *ui_view_mode_ptr==1：修改当前项值 ---- */
+    else if ((key_code == KEY_DOWN || key_code == KEY_FAST_UP || key_code == KEY_UP || key_code == KEY_FAST_DOWN) && *ui_view_mode_ptr == 1) {
       *ui_idle_timeout_ticks_ptr = 0;
       *ui_statistics_timeout_ticks_ptr = 0xfb;
       item_index = *ui_item_index_ptr;
-      /* 步进：数字项 key==0x16 快加 +5、key==0x21 快减 -5 */
+      /* 步进：数字项 key_code == KEY_FAST_UP 快加 +5、key_code == KEY_FAST_DOWN 快减 -5 */
       if (item_index >= 1 && item_index <= 5) {
-        if (key == 0x16) {                     /* 快加 +5 */
+        if (key_code == KEY_FAST_UP) {                     /* 快加 +5 */
           if (item_index == 1) { *parameter_voltage_range_ptr += 5; if (*parameter_voltage_range_ptr > 0x1770) *parameter_voltage_range_ptr = 0x1770; }
           else if (item_index == 2) { *parameter_current_range_ptr += 5; if (*parameter_current_range_ptr > 0x1770) *parameter_current_range_ptr = 0x1770; }
           else if (item_index == 3) { *parameter_transformer_ratio_ptr += 5;      if (*parameter_transformer_ratio_ptr > 0x1770) *parameter_transformer_ratio_ptr = 0x1770; }
           else if (item_index == 4) { *parameter_voltage_limit_ptr += 5;      if (*parameter_voltage_limit_ptr > *parameter_voltage_range_ptr + 1) *parameter_voltage_limit_ptr = *parameter_voltage_range_ptr + 1; }
           else              { *parameter_current_limit_ptr += 5;      if (*parameter_current_limit_ptr > *parameter_current_range_ptr + 1) *parameter_current_limit_ptr = *parameter_current_range_ptr + 1; }
-        } else if (key == 0x21) {              /* 快减 -5 (数字项下限 0xf) */
+        } else if (key_code == KEY_FAST_DOWN) {              /* 快减 -5 (数字项下限 0xf) */
           if (item_index == 1) { if (*parameter_voltage_range_ptr < 0x10) *parameter_voltage_range_ptr = 0xf; *parameter_voltage_range_ptr -= 5; }
           else if (item_index == 2) { if (*parameter_current_range_ptr < 0x10) *parameter_current_range_ptr = 0xf; *parameter_current_range_ptr -= 5; }
           else if (item_index == 3) { if (*parameter_transformer_ratio_ptr < 0x10) *parameter_transformer_ratio_ptr = 0xf;      *parameter_transformer_ratio_ptr -= 5; }
           else if (item_index == 4) { if (*parameter_voltage_limit_ptr < 0x10) *parameter_voltage_limit_ptr = 0xf;      *parameter_voltage_limit_ptr -= 5; }
           else              { if (*parameter_current_limit_ptr < 0x10) *parameter_current_limit_ptr = 0xf;      *parameter_current_limit_ptr -= 5; }
-        } else {                               /* key==2/3：+1/-1 */
-          if (key == 2) {
+        } else {                               /* key_code==2/3：+1/-1 */
+          if (key_code == KEY_DOWN) {
             if (item_index == 1) { (*parameter_voltage_range_ptr)++; if (*parameter_voltage_range_ptr > 0x1770) *parameter_voltage_range_ptr = 0x1770; }
             else if (item_index == 2) { (*parameter_current_range_ptr)++; if (*parameter_current_range_ptr > 0x1770) *parameter_current_range_ptr = 0x1770; }
             else if (item_index == 3) { (*parameter_transformer_ratio_ptr)++; if (*parameter_transformer_ratio_ptr > 0x1770) *parameter_transformer_ratio_ptr = 0x1770; }
             else if (item_index == 4) { (*parameter_voltage_limit_ptr)++; if (*parameter_voltage_limit_ptr > *parameter_voltage_range_ptr + 1) *parameter_voltage_limit_ptr = *parameter_voltage_range_ptr + 1; }
             else { (*parameter_current_limit_ptr)++; if (*parameter_current_limit_ptr > *parameter_current_range_ptr + 1) *parameter_current_limit_ptr = *parameter_current_range_ptr + 1; }
-          } else {                             /* key==3：-1 (数字项下限 0xb) */
+          } else {                             /* key_code==3：-1 (数字项下限 0xb) */
             if (item_index == 1) { if (*parameter_voltage_range_ptr > 0xa) (*parameter_voltage_range_ptr)--; }
             else if (item_index == 2) { if (*parameter_current_range_ptr > 0xa) (*parameter_current_range_ptr)--; }
             else if (item_index == 3) { if (*parameter_transformer_ratio_ptr > 0xa) (*parameter_transformer_ratio_ptr)--; }
@@ -856,8 +856,8 @@ do_dispatch:
           }
         }
       } else {
-        /* 非数字项(0,6..15)：key==2/0x16 +1、key==3/0x21 -1 */
-        if (key == 3 || key == 0x21) {         /* 减 */
+        /* 非数字项(0,6..15)：key_code==2/0x16 +1、key_code==3/0x21 -1 */
+        if (key_code == KEY_UP || key_code == KEY_FAST_DOWN) {         /* 减 */
           switch (item_index) {
             case 0: if (*parameter_control_mode_ptr == 0) *parameter_control_mode_ptr = 3; (*parameter_control_mode_ptr)--; break;
             case 6: if (*parameter_soft_start_time_ptr > 0) (*parameter_soft_start_time_ptr)--; break;
@@ -871,7 +871,7 @@ do_dispatch:
             case 14: if (*parameter_input_mode_ptr > 0) (*parameter_input_mode_ptr)--; break;
             case 15: if (*parameter_start_phase_ptr != 0) (*parameter_start_phase_ptr)--; break;
           }
-        } else {                               /* key==2/0x16：加 */
+        } else {                               /* key_code==2/0x16：加 */
           switch (item_index) {
             case 0: (*parameter_control_mode_ptr)++; if (*parameter_control_mode_ptr > 2) *parameter_control_mode_ptr = 0; break;
             case 6: (*parameter_soft_start_time_ptr)++; if (*parameter_soft_start_time_ptr > 0xc8) *parameter_soft_start_time_ptr = 0xc8; break;
@@ -927,7 +927,7 @@ do_dispatch:
      *     随后编辑空闲超时回到主屏 (0x7BD8-0x7C16) ---- */
     (*ui_idle_timeout_ticks_ptr)++;
     if (*parameter_control_mode_ptr < 2 && *parameter_soft_start_time_ptr == 0) *parameter_soft_start_time_ptr = 1;
-    if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = 1; disp_splash_screen(); }
+    if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); }
     return;
   }
 
@@ -939,29 +939,29 @@ do_dispatch:
        6=CT过载0x100016d8(<=0x10001640) 7=CT过载时间0x100016dc(<=0xc8)
        8=缺相0x100016dd(0..1) 9=三相平衡0x100016de(0..0x3c,%)
      编辑方向按反汇编：2/0x16 增、3/0x21 减；word 项 0x16/0x21 走 ±5。          */
-  if (*ui_screen_id_ptr == 4) {
+  if (*ui_screen_id_ptr == UI_SCREEN_PROTECTION_PARAMETERS) {
     (*ui_statistics_timeout_ticks_ptr)++;
-    /* ---- key==1：切换编辑态 ---- */
-    if (key == 1) {
+    /* ---- key_code==1：切换编辑态 ---- */
+    if (key_code == KEY_CONFIRM) {
       *ui_idle_timeout_ticks_ptr = 0;
       (*ui_view_mode_ptr)++;
       if (*ui_view_mode_ptr > 1) *ui_view_mode_ptr = 0;
       *ui_statistics_timeout_ticks_ptr = (*ui_view_mode_ptr == 0) ? 0xfb : 0x1f5;
     }
 
-    /* ---- key==4：保存并退回 参数子菜单(type2 屏) ---- */
-    else if (key == 4) {
-      *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = 2; *ui_item_index_ptr = 1;
+    /* ---- key_code==4：保存并退回 参数子菜单(type2 屏) ---- */
+    else if (key_code == KEY_BACK) {
+      *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_BASIC_PARAMETERS; *ui_item_index_ptr = 1;
       param_sync_live_to_eeprom(); disp_clear();
       disp_string((int)0x4814,0,0,0); disp_string((int)0x4824,1,0,1);
       disp_string((int)0x4834,2,0,0); disp_string((int)0x4844,3,0,0);
     }
 
-    /* ---- key==2/3 且 *ui_view_mode_ptr==0：项间导航 (ui_item_index_ptr=0..9) + 画页标题 ---- */
-    else if ((key == 2 || key == 3) && *ui_view_mode_ptr == 0) {
+    /* ---- key_code==2/3 且 *ui_view_mode_ptr==0：项间导航 (ui_item_index_ptr=0..9) + 画页标题 ---- */
+    else if ((key_code == KEY_DOWN || key_code == KEY_UP) && *ui_view_mode_ptr == 0) {
       *ui_idle_timeout_ticks_ptr = 0;
       *ui_statistics_timeout_ticks_ptr = 0xfb;
-      if (key == 3) { (*ui_item_index_ptr)++; if (*ui_item_index_ptr > 9) *ui_item_index_ptr = 9; }
+      if (key_code == KEY_UP) { (*ui_item_index_ptr)++; if (*ui_item_index_ptr > 9) *ui_item_index_ptr = 9; }
       else          { if (*ui_item_index_ptr > 0) (*ui_item_index_ptr)--; }
       /* 画当前项所在页 4 行标题；页2 的 2/3 行用空串占位 */
       if (*ui_item_index_ptr < 4) {
@@ -976,12 +976,12 @@ do_dispatch:
       }
     }
 
-    /* ---- key==2/0x16/3/0x21 且 *ui_view_mode_ptr==1：修改当前项值 ---- */
-    else if ((key == 2 || key == 0x16 || key == 3 || key == 0x21) && *ui_view_mode_ptr == 1) {
+    /* ---- key_code==2/0x16/3/0x21 且 *ui_view_mode_ptr==1：修改当前项值 ---- */
+    else if ((key_code == KEY_DOWN || key_code == KEY_FAST_UP || key_code == KEY_UP || key_code == KEY_FAST_DOWN) && *ui_view_mode_ptr == 1) {
       uint32_t item_index = *ui_item_index_ptr;
       *ui_idle_timeout_ticks_ptr = 0;
-      /* 增：key==2 / key==0x16 → uint8_t 项 +1（时间/缺相/三相平衡），word 项 +1(2)/+5(0x16) */
-      if (key == 2 || key == 0x16) {
+      /* 增：key_code==2 / key_code == KEY_FAST_UP → uint8_t 项 +1（时间/缺相/三相平衡），word 项 +1(2)/+5(0x16) */
+      if (key_code == KEY_DOWN || key_code == KEY_FAST_UP) {
         /* uint8_t 项 1/3/5/7 +1 clamp 0xc8；8 +1 clamp 1；9 +1 clamp 0x3c */
         if (item_index == 1) { (*parameter_overvoltage_time_ptr)++; if (*parameter_overvoltage_time_ptr > 0xc8) *parameter_overvoltage_time_ptr = 0xc8; }
         else if (item_index == 3) { (*parameter_undervoltage_time_ptr)++; if (*parameter_undervoltage_time_ptr > 0xc8) *parameter_undervoltage_time_ptr = 0xc8; }
@@ -989,21 +989,21 @@ do_dispatch:
         else if (item_index == 7) { (*parameter_ct_overload_time_ptr)++; if (*parameter_ct_overload_time_ptr > 0xc8) *parameter_ct_overload_time_ptr = 0xc8; }
         else if (item_index == 8) { (*parameter_phase_loss_enable_ptr)++; if (*parameter_phase_loss_enable_ptr > 1) *parameter_phase_loss_enable_ptr = 1; }
         else if (item_index == 9) { (*parameter_phase_balance_ptr)++; if (*parameter_phase_balance_ptr > 0x3c) *parameter_phase_balance_ptr = 0x3c; }
-        /* word 项 0/2/4/6：key==2 +1 / key==0x16 +5，上限 parameter_voltage_range_ptr / parameter_current_range_ptr / parameter_transformer_ratio_ptr */
+        /* word 项 0/2/4/6：key_code==2 +1 / key_code == KEY_FAST_UP +5，上限 parameter_voltage_range_ptr / parameter_current_range_ptr / parameter_transformer_ratio_ptr */
         if (item_index == 0) {
-          *parameter_overvoltage_limit_ptr += (key == 0x16) ? 5 : 1;
+          *parameter_overvoltage_limit_ptr += (key_code == KEY_FAST_UP) ? 5 : 1;
           if (*parameter_overvoltage_limit_ptr > *parameter_voltage_range_ptr) *parameter_overvoltage_limit_ptr = *parameter_voltage_range_ptr;
         } else if (item_index == 2) {
-          *parameter_undervoltage_limit_ptr += (key == 0x16) ? 5 : 1;
+          *parameter_undervoltage_limit_ptr += (key_code == KEY_FAST_UP) ? 5 : 1;
           if (*parameter_undervoltage_limit_ptr > *parameter_voltage_range_ptr) *parameter_undervoltage_limit_ptr = *parameter_voltage_range_ptr;
         } else if (item_index == 4) {
-          *parameter_if_overload_limit_ptr += (key == 0x16) ? 5 : 1;
+          *parameter_if_overload_limit_ptr += (key_code == KEY_FAST_UP) ? 5 : 1;
           if (*parameter_if_overload_limit_ptr > *parameter_current_range_ptr) *parameter_if_overload_limit_ptr = *parameter_current_range_ptr;
         } else if (item_index == 6) {
-          *parameter_ct_overload_limit_ptr += (key == 0x16) ? 5 : 1;
+          *parameter_ct_overload_limit_ptr += (key_code == KEY_FAST_UP) ? 5 : 1;
           if (*parameter_ct_overload_limit_ptr > *parameter_transformer_ratio_ptr) *parameter_ct_overload_limit_ptr = *parameter_transformer_ratio_ptr;
         }
-      } else if (key == 3 || key == 0x21) {
+      } else if (key_code == KEY_UP || key_code == KEY_FAST_DOWN) {
         /* 减：uint8_t 项 1/3/5/7/8 +1... 实为 >0 → -1；item9 下限 0x9 */
         if (item_index == 1) { uint8_t current_value=*parameter_overvoltage_time_ptr; if (current_value) *parameter_overvoltage_time_ptr = current_value-1; }
         else if (item_index == 3) { uint8_t current_value=*parameter_undervoltage_time_ptr; if (current_value) *parameter_undervoltage_time_ptr = current_value-1; }
@@ -1011,11 +1011,11 @@ do_dispatch:
         else if (item_index == 7) { uint8_t current_value=*parameter_ct_overload_time_ptr; if (current_value) *parameter_ct_overload_time_ptr = current_value-1; }
         else if (item_index == 8) { uint8_t current_value=*parameter_phase_loss_enable_ptr; if (current_value) *parameter_phase_loss_enable_ptr = current_value-1; }
         else if (item_index == 9) { uint8_t current_value=*parameter_phase_balance_ptr; if (current_value > 9) *parameter_phase_balance_ptr = current_value-1; }
-        /* 减：word 项 0/2/4/6：key==3 若 current_value>0 → -1(下限0)；key==0x21 若 current_value<6 先置5，再 -5(下限0) */
-        if (item_index == 0) { uint32_t current_value=*parameter_overvoltage_limit_ptr; if (key==0x21) { uint32_t adjusted_value=(current_value<6)?5:current_value; *parameter_overvoltage_limit_ptr = adjusted_value-5; } else if (current_value) *parameter_overvoltage_limit_ptr=current_value-1; }
-        else if (item_index == 2) { uint32_t current_value=*parameter_undervoltage_limit_ptr; if (key==0x21) { uint32_t adjusted_value=(current_value<6)?5:current_value; *parameter_undervoltage_limit_ptr = adjusted_value-5; } else if (current_value) *parameter_undervoltage_limit_ptr=current_value-1; }
-        else if (item_index == 4) { uint32_t current_value=*parameter_if_overload_limit_ptr; if (key==0x21) { uint32_t adjusted_value=(current_value<6)?5:current_value; *parameter_if_overload_limit_ptr = adjusted_value-5; } else if (current_value) *parameter_if_overload_limit_ptr=current_value-1; }
-        else if (item_index == 6) { uint32_t current_value=*parameter_ct_overload_limit_ptr; if (key==0x21) { uint32_t adjusted_value=(current_value<6)?5:current_value; *parameter_ct_overload_limit_ptr = adjusted_value-5; } else if (current_value) *parameter_ct_overload_limit_ptr=current_value-1; }
+        /* 减：word 项 0/2/4/6：key_code==3 若 current_value>0 → -1(下限0)；key_code == KEY_FAST_DOWN 若 current_value<6 先置5，再 -5(下限0) */
+        if (item_index == 0) { uint32_t current_value=*parameter_overvoltage_limit_ptr; if (key_code == KEY_FAST_DOWN) { uint32_t adjusted_value=(current_value<6)?5:current_value; *parameter_overvoltage_limit_ptr = adjusted_value-5; } else if (current_value) *parameter_overvoltage_limit_ptr=current_value-1; }
+        else if (item_index == 2) { uint32_t current_value=*parameter_undervoltage_limit_ptr; if (key_code == KEY_FAST_DOWN) { uint32_t adjusted_value=(current_value<6)?5:current_value; *parameter_undervoltage_limit_ptr = adjusted_value-5; } else if (current_value) *parameter_undervoltage_limit_ptr=current_value-1; }
+        else if (item_index == 4) { uint32_t current_value=*parameter_if_overload_limit_ptr; if (key_code == KEY_FAST_DOWN) { uint32_t adjusted_value=(current_value<6)?5:current_value; *parameter_if_overload_limit_ptr = adjusted_value-5; } else if (current_value) *parameter_if_overload_limit_ptr=current_value-1; }
+        else if (item_index == 6) { uint32_t current_value=*parameter_ct_overload_limit_ptr; if (key_code == KEY_FAST_DOWN) { uint32_t adjusted_value=(current_value<6)?5:current_value; *parameter_ct_overload_limit_ptr = adjusted_value-5; } else if (current_value) *parameter_ct_overload_limit_ptr=current_value-1; }
       }
       *ui_statistics_timeout_ticks_ptr = 0xfb;
     }
@@ -1052,25 +1052,25 @@ do_dispatch:
       }
     }
     (*ui_idle_timeout_ticks_ptr)++;
-    if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = 1; disp_splash_screen(); }
+    if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); }
     return;
   }
 
   /* =====================================================================*/
   /* ---------- case5 通讯屏 (0x8780-0x8C1A)，ui_screen_id_ptr==5，4 项（ui_item_index_ptr=0-3）单页 ---------- */
-  if (*ui_screen_id_ptr == 5) {
+  if (*ui_screen_id_ptr == UI_SCREEN_COMMUNICATION_PARAMETERS) {
     (*ui_statistics_timeout_ticks_ptr)++;
-    /* key==1：进入/退出编辑模式（ui_view_mode_ptr 0<->1） */
-    if (key == 1) {
+    /* key_code==1：进入/退出编辑模式（ui_view_mode_ptr 0<->1） */
+    if (key_code == KEY_CONFIRM) {
       *ui_idle_timeout_ticks_ptr = 0;
       (*ui_view_mode_ptr)++;
       if (*ui_view_mode_ptr > 1) *ui_view_mode_ptr = 0;
       *ui_statistics_timeout_ticks_ptr = (*ui_view_mode_ptr == 0) ? 0xfb : 0x1f5;
     }
-    /* key==4：返回基本参数主菜单（ui_screen_id_ptr=2/ui_item_index_ptr=2），立即写回 EEPROM */
-    else if (key == 4) {
+    /* key_code==4：返回基本参数主菜单（ui_screen_id_ptr=2/ui_item_index_ptr=2），立即写回 EEPROM */
+    else if (key_code == KEY_BACK) {
       *ui_idle_timeout_ticks_ptr = 0;
-      *ui_screen_id_ptr = 2;
+      *ui_screen_id_ptr = UI_SCREEN_BASIC_PARAMETERS;
       *ui_item_index_ptr = 2;
       param_sync_live_to_eeprom();
       disp_clear();
@@ -1080,11 +1080,11 @@ do_dispatch:
       disp_string(0x4844, 3, 0, 0);
     }
     /* 导航（ui_view_mode_ptr==0，key2/3 上下移，仅 4 项） */
-    else if ((key == 2 || key == 3) && *ui_view_mode_ptr == 0) {
+    else if ((key_code == KEY_DOWN || key_code == KEY_UP) && *ui_view_mode_ptr == 0) {
       *ui_idle_timeout_ticks_ptr = 0;
       *ui_statistics_timeout_ticks_ptr = 0xfb;
-      if (key == 3) { (*ui_item_index_ptr)++; if (*ui_item_index_ptr > 3) *ui_item_index_ptr = 3; }
-      if (key == 2) { if (*ui_item_index_ptr > 0) (*ui_item_index_ptr)--; }
+      if (key_code == KEY_UP) { (*ui_item_index_ptr)++; if (*ui_item_index_ptr > 3) *ui_item_index_ptr = 3; }
+      if (key_code == KEY_DOWN) { if (*ui_item_index_ptr > 0) (*ui_item_index_ptr)--; }
       if (*ui_item_index_ptr < 4) {   /* 重绘通讯页标题帧（值列 0xb/0xa 由刷新块绘制） */
         disp_string(0x6a18, 0, 0, 0);
         disp_string(0x6a2c, 1, 0, 0);
@@ -1093,16 +1093,16 @@ do_dispatch:
       }
     }
     /* 编辑（ui_view_mode_ptr==1，key2/0x16 增、key3/0x21 减；uint8_t 项恒 ±1，word 项恒 ±1） */
-    else if ((key == 2 || key == 0x16 || key == 3 || key == 0x21) && *ui_view_mode_ptr == 1) {
+    else if ((key_code == KEY_DOWN || key_code == KEY_FAST_UP || key_code == KEY_UP || key_code == KEY_FAST_DOWN) && *ui_view_mode_ptr == 1) {
       *ui_statistics_timeout_ticks_ptr = 0xfb;
-      if (key == 2 || key == 0x16) {   /* 增 */
+      if (key_code == KEY_DOWN || key_code == KEY_FAST_UP) {   /* 增 */
         *ui_idle_timeout_ticks_ptr = 0;
         if (*ui_item_index_ptr == 0) { if (*communication_address_ptr >= 0xf6) *communication_address_ptr = 0xf6; (*communication_address_ptr)++; }
         if (*ui_item_index_ptr == 1) { if (*baud_rate_index_ptr >= 7) *baud_rate_index_ptr = 6; (*baud_rate_index_ptr)++; }
         if (*ui_item_index_ptr == 2) { (*communication_parity_ptr)++; if (*communication_parity_ptr > 3) *communication_parity_ptr = 3; }
         if (*ui_item_index_ptr == 3) *communication_check_ptr = 1;
       }
-      if (key == 3 || key == 0x21) {   /* 减 */
+      if (key_code == KEY_UP || key_code == KEY_FAST_DOWN) {   /* 减 */
         *ui_idle_timeout_ticks_ptr = 0;
         if (*ui_item_index_ptr == 0) { if (*communication_address_ptr > 1) (*communication_address_ptr)--; }
         if (*ui_item_index_ptr == 1) { if (*baud_rate_index_ptr != 0) (*baud_rate_index_ptr)--; }
@@ -1124,22 +1124,22 @@ do_dispatch:
       if (*ui_item_index_ptr == 3 || *ui_item_index_ptr == 7) disp_string(0x6474, 3, 0xb, 0);
     }
     (*ui_idle_timeout_ticks_ptr)++;
-    if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = 1; disp_splash_screen(); }
+    if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); }
     return;
   }
 
   /* =====================================================================*/
   /* ---------- case8 相位参数校准 (0x9A84-0x9C5C)，ui_screen_id_ptr==8 ---------- */
-  if (*ui_screen_id_ptr == 8) {
+  if (*ui_screen_id_ptr == UI_SCREEN_PHASE_CALIBRATION) {
     *output_enable_state_byte_ptr = 1;
     /* 相位偏移 增（key3/0x21 上限 0x2b0）/ 减（key2/0x16 下限 0x45） */
-    if (key == 3 || key == 0x21) {
+    if (key_code == KEY_UP || key_code == KEY_FAST_DOWN) {
       *ui_idle_timeout_ticks_ptr = 0;
       (*frequency_adjustment_ptr)++;
       if (*frequency_adjustment_ptr > 0x2b0) *frequency_adjustment_ptr = 0x2b0;
       disp_offset(*frequency_adjustment_ptr, 2, 7, 1);
     }
-    if (key == 2 || key == 0x16) {
+    if (key_code == KEY_DOWN || key_code == KEY_FAST_UP) {
       *ui_idle_timeout_ticks_ptr = 0;
       if (*frequency_adjustment_ptr < 0x45) *frequency_adjustment_ptr = 0x45;
       (*frequency_adjustment_ptr)--;
@@ -1153,12 +1153,12 @@ do_dispatch:
       if (*operation_configuration_ptr == 0 && *ui_system_status_ptr != 1) { *ui_system_status_ptr = 1; disp_string(0x47dc + 0xc, 3, 0xa, 0); }
       if (*operation_configuration_ptr == 1 && *ui_system_status_ptr != 2) { *ui_system_status_ptr = 2; disp_string(0x47dc + 0x14, 3, 0xa, 0); }
     }
-    if (key == 5) { *operation_configuration_ptr = 1; *ui_idle_timeout_ticks_ptr = 0; }
-    if (key == 6) { *operation_configuration_ptr = 0; *ui_idle_timeout_ticks_ptr = 0; gpio_outputs_set(); }
+    if (key_code == KEY_START) { *operation_configuration_ptr = 1; *ui_idle_timeout_ticks_ptr = 0; }
+    if (key_code == KEY_STOP) { *operation_configuration_ptr = 0; *ui_idle_timeout_ticks_ptr = 0; gpio_outputs_set(); }
     run_stop_preset();
-    if (key == 4) {
+    if (key_code == KEY_BACK) {
       *ui_idle_timeout_ticks_ptr = 0;
-      *ui_screen_id_ptr = 2;
+      *ui_screen_id_ptr = UI_SCREEN_BASIC_PARAMETERS;
       *ui_item_index_ptr = 5;
       disp_clear();
       disp_string(0x6474 + 0x64, 0, 0, 0);
@@ -1183,7 +1183,7 @@ do_dispatch:
       *ui_idle_timeout_ticks_ptr = 0;
       *operation_configuration_ptr = 0;
       gpio_outputs_set();
-      *ui_screen_id_ptr = 1;
+      *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU;
       disp_splash_screen();
       *output_enable_state_byte_ptr = 0;
       *ui_system_status_ptr = 0;
@@ -1194,9 +1194,9 @@ do_dispatch:
   /* =====================================================================*/
   /* ---------- caseB 运行时间查询 (0x9C5C-0x9D86)，ui_screen_id_ptr==0xb ---------- */
   if (*ui_screen_id_ptr == 0xb) {
-    if (key == 4) {
+    if (key_code == KEY_BACK) {
       *ui_idle_timeout_ticks_ptr = 0;
-      *ui_screen_id_ptr = 2;
+      *ui_screen_id_ptr = UI_SCREEN_BASIC_PARAMETERS;
       *ui_item_index_ptr = 6;
       param_sync_live_to_eeprom();
       disp_clear();
@@ -1206,8 +1206,8 @@ do_dispatch:
       disp_string(0x6514, 3, 0, 0);
       return;
     }
-    /* key==0x17 统计清零 → 4 个时间 word 归零并重显 */
-    if (key == 0x17) {
+    /* key_code == KEY_CLEAR_STATISTICS 统计清零 → 4 个时间 word 归零并重显 */
+    if (key_code == KEY_CLEAR_STATISTICS) {
       *runtime_current_hour_ptr = 0;
       *runtime_current_minute_ptr = 0;
       *runtime_total_hour_ptr = 0;
@@ -1218,16 +1218,16 @@ do_dispatch:
       disp_uint2(*runtime_total_minute_ptr, 3, 0xa, 0);
     }
     (*ui_idle_timeout_ticks_ptr)++;
-    if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = 1; disp_splash_screen(); }
+    if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); }
     return;
   }
 
   /* =====================================================================*/
   /* ---------- case9 产品版本信息 (0x9D86-0x9E14)，ui_screen_id_ptr==9 ---------- */
-  if (*ui_screen_id_ptr == 9) {
-    if (key == 4) {
+  if (*ui_screen_id_ptr == UI_SCREEN_VERSION) {
+    if (key_code == KEY_BACK) {
       *ui_idle_timeout_ticks_ptr = 0;
-      *ui_screen_id_ptr = 2;
+      *ui_screen_id_ptr = UI_SCREEN_BASIC_PARAMETERS;
       *ui_item_index_ptr = 7;
       param_sync_live_to_eeprom();
       disp_clear();
@@ -1238,22 +1238,22 @@ do_dispatch:
       return;
     }
     (*ui_idle_timeout_ticks_ptr)++;
-    if (*ui_idle_timeout_ticks_ptr >= 0x3a98) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = 1; disp_splash_screen(); }
+    if (*ui_idle_timeout_ticks_ptr >= 0x3a98) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); }
     return;
   }
 
   /* =====================================================================*/
   /* ---------- case5A 电流手动平衡 (0x9E14-0x9FB8)，ui_screen_id_ptr==0x5a ---------- */
-  if (*ui_screen_id_ptr == 0x5a) {
+  if (*ui_screen_id_ptr == UI_SCREEN_MANUAL_BALANCE) {
     *output_enable_state_byte_ptr = 1;
     /* phase_balance_angle_ptr 增（key2/0x16 上限 0xc7=199）/ 减（key3/0x21 下限 2） */
-    if (key == 2 || key == 0x16) {
+    if (key_code == KEY_DOWN || key_code == KEY_FAST_UP) {
       *ui_idle_timeout_ticks_ptr = 0;
       (*phase_balance_angle_ptr)++;
       if (*phase_balance_angle_ptr > 0xc7) *phase_balance_angle_ptr = 0xc7;
       disp_signed_angle(*phase_balance_angle_ptr, 2, 7, 1);
     }
-    if (key == 3 || key == 0x21) {
+    if (key_code == KEY_UP || key_code == KEY_FAST_DOWN) {
       *ui_idle_timeout_ticks_ptr = 0;
       if (*phase_balance_angle_ptr < 2) *phase_balance_angle_ptr = 2;
       (*phase_balance_angle_ptr)--;
@@ -1266,12 +1266,12 @@ do_dispatch:
       if (*operation_configuration_ptr == 0 && *ui_system_status_ptr != 1) { *ui_system_status_ptr = 1; disp_string(0x47dc + 0xc, 3, 0xa, 0); }
       if (*operation_configuration_ptr == 1 && *ui_system_status_ptr != 2) { *ui_system_status_ptr = 2; disp_string(0x47dc + 0x14, 3, 0xa, 0); }
     }
-    if (key == 5) { *operation_configuration_ptr = 1; *ui_idle_timeout_ticks_ptr = 0; }
-    if (key == 6) { *operation_configuration_ptr = 0; *ui_idle_timeout_ticks_ptr = 0; }
+    if (key_code == KEY_START) { *operation_configuration_ptr = 1; *ui_idle_timeout_ticks_ptr = 0; }
+    if (key_code == KEY_STOP) { *operation_configuration_ptr = 0; *ui_idle_timeout_ticks_ptr = 0; }
     run_stop_preset();
-    if (key == 4) {
+    if (key_code == KEY_BACK) {
       *ui_idle_timeout_ticks_ptr = 0;
-      *ui_screen_id_ptr = 2;
+      *ui_screen_id_ptr = UI_SCREEN_BASIC_PARAMETERS;
       *ui_item_index_ptr = 8;
       disp_clear();
       disp_string((int)0xa130, 0, 0, 1);
@@ -1292,7 +1292,7 @@ do_dispatch:
     if (*ui_idle_timeout_ticks_ptr >= 0x3a98) {
       *ui_idle_timeout_ticks_ptr = 0;
       *operation_configuration_ptr = 0;
-      *ui_screen_id_ptr = 1;
+      *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU;
       disp_splash_screen();
       *output_enable_state_byte_ptr = 0;
     }
@@ -1302,8 +1302,8 @@ do_dispatch:
   /* =====================================================================*/
   /* ---------- caseC 运行时间清零/查询 (0x9FB8-0xA04E)，ui_screen_id_ptr==0xc ---------- */
   if (*ui_screen_id_ptr == 0xc) {
-    if (key == 4) { *ui_screen_id_ptr = 1; disp_splash_screen(); return; }
-    if (key == 0x17) {
+    if (key_code == KEY_BACK) { *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return; }
+    if (key_code == KEY_CLEAR_STATISTICS) {
       *runtime_current_hour_ptr = 0;
       *runtime_current_minute_ptr = 0;
       *runtime_total_hour_ptr = 0;
@@ -1314,14 +1314,14 @@ do_dispatch:
       disp_uint2(*runtime_total_minute_ptr, 3, 0xa, 0);
     }
     (*ui_idle_timeout_ticks_ptr)++;
-    if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = 1; disp_splash_screen(); }
+    if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); }
     return;
   }
 
   /* =====================================================================*/
   /* ---------- case14 运行状态监控页 (0xA04E-0xA2C8)，ui_screen_id_ptr==0x14 ---------- */
-  if (*ui_screen_id_ptr == 0x14) {
-    if (key == 4) { *ui_screen_id_ptr = 1; disp_splash_screen(); return; }
+  if (*ui_screen_id_ptr == UI_SCREEN_STATUS_MONITOR) {
+    if (key_code == KEY_BACK) { *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return; }
     /* 每 0xfa 次刷新状态行（标题 + 各故障位对应状态串） */
     (*ui_statistics_timeout_ticks_ptr)++;
     if (*ui_statistics_timeout_ticks_ptr > 0xfa) {
@@ -1349,14 +1349,14 @@ do_dispatch:
       }
     }
     (*ui_idle_timeout_ticks_ptr)++;
-    if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = 1; disp_splash_screen(); }
+    if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); }
     return;
   }
 
   /* =====================================================================*/
   /* ---------- case6 运行时间查询 + 初始参数密码 (0x8C1A-0x910C)，ui_screen_id_ptr==6 ---------- */
-  if (*ui_screen_id_ptr == 6) {
-    if (key == 1) {
+  if (*ui_screen_id_ptr == UI_SCREEN_RUNTIME_HOURS) {
+    if (key_code == KEY_CONFIRM) {
       /* 输入前密码 password_part_b_ptr（0x100015e6）：逐位校验 password_input_buffer_ptr(0x100015f2) */
       *ui_item_index_ptr = 0;
       while (*ui_item_index_ptr < 6) {
@@ -1368,7 +1368,7 @@ do_dispatch:
           disp_clear();
           disp_string(0x56dc, 1, 4, 0);
           sm6_delay_loop();
-          *ui_screen_id_ptr = 2;
+          *ui_screen_id_ptr = UI_SCREEN_BASIC_PARAMETERS;
           *ui_item_index_ptr = 3;
           disp_clear();
           disp_string(0x4814, 0, 0, 0);
@@ -1390,7 +1390,7 @@ do_dispatch:
       i2c_write_reg(0, 6);
       for (;;) {}   /* 0x8DEE 死等（系统重置进入初始参数） */
     }
-    else if (key == 0xe) {
+    else if (key_code == KEY_INITIAL_PARAMETER_PASSWORD) {
       /* 初始密码 password_part_c_ptr（0x100015ec）：校验 password_input_buffer_ptr */
       *ui_item_index_ptr = 0;
       while (*ui_item_index_ptr < 6) {
@@ -1401,7 +1401,7 @@ do_dispatch:
           disp_clear();
           disp_string(0x56dc, 1, 4, 0);
           sm6_delay_loop();
-          *ui_screen_id_ptr = 2;
+          *ui_screen_id_ptr = UI_SCREEN_BASIC_PARAMETERS;
           *ui_item_index_ptr = 3;
           disp_clear();
           disp_string(0x4814, 0, 0, 0);
@@ -1425,9 +1425,9 @@ do_dispatch:
       i2c_write_reg(0, 8);
       for (;;) {}
     }
-    else if (key == 4) {
+    else if (key_code == KEY_BACK) {
       *ui_idle_timeout_ticks_ptr = 0;
-      *ui_screen_id_ptr = 2;
+      *ui_screen_id_ptr = UI_SCREEN_BASIC_PARAMETERS;
       *ui_item_index_ptr = 3;
       param_sync_live_to_eeprom();
       disp_clear();
@@ -1437,10 +1437,10 @@ do_dispatch:
       disp_string(0x4814 + 0x30, 3, 0, 1);
       return;
     }
-    else if (key > 0) {
-      /* 密码数字输入（key==其它正值都当数字）——key<=0 走超时尾 */
+    else if (key_code != KEY_NONE) {
+      /* 密码数字输入（key_code==其它正值都当数字）——key_code<=0 走超时尾 */
       if (*ui_item_index_ptr < 6) {
-        password_input_buffer_ptr[*ui_item_index_ptr] = key;
+        password_input_buffer_ptr[*ui_item_index_ptr] = key_code;
         disp_render_char8(0x2a, 1, (uint8_t)(*ui_item_index_ptr + 7), 0);
         (*ui_item_index_ptr)++;
       }
@@ -1448,7 +1448,7 @@ do_dispatch:
     }
     /* 超时尾（0x1388=5000） */
     (*ui_idle_timeout_ticks_ptr)++;
-    if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = 1; disp_splash_screen(); }
+    if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); }
     return;
   }
 
@@ -1456,20 +1456,20 @@ do_dispatch:
   /* ---------- case7 PID 参数设置 (0x910C-0x9A84)，ui_screen_id_ptr==7 ---------- */
   /* PID 模式、各组 P/I 参数和闭环分区参数均通过语义化字节指针访问，
    * 保持相邻参数槽的读写宽度与原固件一致。 */
-  if (*ui_screen_id_ptr == 7) {
+  if (*ui_screen_id_ptr == UI_SCREEN_PID_PARAMETERS) {
     (*ui_statistics_timeout_ticks_ptr)++;
-    /* key==1 编辑/浏览切换：ui_view_mode_ptr 在 0/1 间翻转，随之调整 O 刷新节奏 */
-    if (key == 1) {
+    /* key_code==1 编辑/浏览切换：ui_view_mode_ptr 在 0/1 间翻转，随之调整 O 刷新节奏 */
+    if (key_code == KEY_CONFIRM) {
       *ui_idle_timeout_ticks_ptr = 0;
       (*ui_view_mode_ptr)++;
       if (*ui_view_mode_ptr > 1) *ui_view_mode_ptr = 0;
       if (*ui_view_mode_ptr == 0) *ui_statistics_timeout_ticks_ptr = 0xfb;
       if (*ui_view_mode_ptr == 1) *ui_statistics_timeout_ticks_ptr = 0x1f5;
     }
-    /* key==4 回主菜单：当前 PID 模式槽复制到显示缓冲 0x1000170e/0x1000170f */
-    else if (key == 4) {
+    /* key_code==4 回主菜单：当前 PID 模式槽复制到显示缓冲 0x1000170e/0x1000170f */
+    else if (key_code == KEY_BACK) {
       *ui_idle_timeout_ticks_ptr = 0;
-      *ui_screen_id_ptr = 2;
+      *ui_screen_id_ptr = UI_SCREEN_BASIC_PARAMETERS;
       *ui_item_index_ptr = 4;
       param_sync_live_to_eeprom();
       disp_clear();
@@ -1482,13 +1482,13 @@ do_dispatch:
       if (*parameter_pid_profile_ptr == 3) { *parameter_active_gain_a_ptr = *parameter_profile3_gain_a_ptr; *parameter_active_gain_b_ptr = *parameter_profile3_gain_b_ptr; }
       if (*parameter_pid_profile_ptr == 4) { *parameter_active_gain_a_ptr = *parameter_profile4_gain_a_ptr; *parameter_active_gain_b_ptr = *parameter_profile4_gain_b_ptr; }
     }
-    /* key==2/3/0x16/0x21：*ui_view_mode_ptr==1 编辑，否则 (key==2/3 && PIDMODE==4) 导航 */
-    if (key == 2 || key == 0x16 || key == 3 || key == 0x21) {
+    /* key_code==2/3/0x16/0x21：*ui_view_mode_ptr==1 编辑，否则 (key_code==2/3 && PIDMODE==4) 导航 */
+    if (key_code == KEY_DOWN || key_code == KEY_FAST_UP || key_code == KEY_UP || key_code == KEY_FAST_DOWN) {
       if (*ui_view_mode_ptr == 1) {
         *ui_statistics_timeout_ticks_ptr = 0xfb;
         /* ---------- 编辑 ---------- */
         *ui_idle_timeout_ticks_ptr = 0;
-        if (key == 3 || key == 0x21) {
+        if (key_code == KEY_UP || key_code == KEY_FAST_DOWN) {
           /* 降方向（0x933C-0x94E8） */
           if (*ui_item_index_ptr == 0) { (*parameter_pid_profile_ptr)++; if (*parameter_pid_profile_ptr >= 4) *parameter_pid_profile_ptr = 4; }
           if (*ui_item_index_ptr == 1) { if (*parameter_pid_profile_ptr == 4) { if (*parameter_profile4_gain_a_ptr > 1) (*parameter_profile4_gain_a_ptr)--; } }
@@ -1510,12 +1510,12 @@ do_dispatch:
           if (*ui_item_index_ptr == 8) { (*parameter_closed_loop_gain_low_ptr)++; if (*parameter_closed_loop_gain_low_ptr > *parameter_closed_loop_gain_mid_ptr) *parameter_closed_loop_gain_low_ptr = *parameter_closed_loop_gain_mid_ptr; }
         }
       }
-      else if ((key == 2 || key == 3) && *parameter_pid_profile_ptr == 4) {
+      else if ((key_code == KEY_DOWN || key_code == KEY_UP) && *parameter_pid_profile_ptr == 4) {
         /* ---------- 导航（0x921E-0x931A）：切换子项页标题 ---------- */
         *ui_idle_timeout_ticks_ptr = 0;
         *ui_statistics_timeout_ticks_ptr = 0xfb;
-        if (key == 3) { (*ui_item_index_ptr)++; if (*ui_item_index_ptr > 8) *ui_item_index_ptr = 8; }
-        if (key == 2) { if (*ui_item_index_ptr > 0) (*ui_item_index_ptr)--; }
+        if (key_code == KEY_UP) { (*ui_item_index_ptr)++; if (*ui_item_index_ptr > 8) *ui_item_index_ptr = 8; }
+        if (key_code == KEY_DOWN) { if (*ui_item_index_ptr > 0) (*ui_item_index_ptr)--; }
         if (*ui_item_index_ptr < 4) {
           disp_string(0x6aa4, 0, 0, 0);
           disp_string(0x6aa4 + 0x14, 1, 0, 0);
@@ -1612,7 +1612,7 @@ do_dispatch:
     (*ui_idle_timeout_ticks_ptr)++;
     if (*ui_idle_timeout_ticks_ptr >= 0xc350) {
       *ui_idle_timeout_ticks_ptr = 0;
-      *ui_screen_id_ptr = 1;
+      *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU;
       disp_splash_screen();
     }
     return;
@@ -1622,12 +1622,12 @@ do_dispatch:
    * 主界面：运行状态显示 + 故障/启停/急停 + 手动幅值调节。
    * 逐段对照 tools/_sm_case1E_0xA2C8_0xAB46.txt 翻译（零臆造；字符串直传原地址）。
    * ---------------------------------------------------------------- */
-  if (*ui_screen_id_ptr == 0x1e) {
-    /* ---- key==4 回主菜单（0xA2D0-A2E4） ---- */
-    if (key == 4) { *ui_screen_id_ptr = 1; disp_splash_screen(); *ui_idle_timeout_ticks_ptr = 0; return; }
+  if (*ui_screen_id_ptr == UI_SCREEN_AUTHENTICATION) {
+    /* ---- key_code==4 回主菜单（0xA2D0-A2E4） ---- */
+    if (key_code == KEY_BACK) { *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); *ui_idle_timeout_ticks_ptr = 0; return; }
 
-    /* ---- key==1 且当前停机 → 初始参数屏（0xA2E6-A32C） ---- */
-    if (key == 1 && *operation_configuration_ptr == 0) {
+    /* ---- key_code==1 且当前停机 → 初始参数屏（0xA2E6-A32C） ---- */
+    if (key_code == KEY_CONFIRM && *operation_configuration_ptr == 0) {
       disp_clear();
       *ui_screen_id_ptr = 0xa; *ui_item_index_ptr = 0; *ui_idle_timeout_ticks_ptr = 0; *ui_calibration_timeout_ticks_ptr = 0x3c; *ui_idle_refresh_ticks_ptr = 0;
       disp_string((int)0x4d9c, 1, 0, 0);
@@ -1702,13 +1702,13 @@ do_dispatch:
       *runtime_tick_ptr = 0; *runtime_current_minute_ptr = 0; *runtime_current_hour_ptr = 0;
       disp_string((int)0x4804 - 0x14, 3, 0xa, 0);
     }
-    if (*output_fault_flags_ptr == 0 && *stop_pending_ptr == 0 && *run_stop_state_ptr == 0 && *parameter_control_method_ptr == 0) {  /* 0xA85E 块A停机（run_stop_state_ptr==0，无 key 要求） */
+    if (*output_fault_flags_ptr == 0 && *stop_pending_ptr == 0 && *run_stop_state_ptr == 0 && *parameter_control_method_ptr == 0) {  /* 0xA85E 块A停机（run_stop_state_ptr==0，无 key_code 要求） */
       *stop_pending_ptr = 1; *stop_request_ptr = 0; *operation_configuration_ptr = 0;
       disp_string((int)0x4804 - 0x1c, 3, 0xa, 0);
     }
     if (*operation_configuration_ptr == 0 && *parameter_control_method_ptr != 0) *run_stop_state_ptr = 0;
     if (*output_fault_flags_ptr == 0 && *stop_request_ptr == 0) {
-      if (key == 5 || *ui_scan_stop_flag_ptr == 7) {
+      if (key_code == KEY_START || *ui_scan_stop_flag_ptr == 7) {
         if (*parameter_start_mode_ptr == 0 || (*ui_scan_stop_flag_ptr == 7 && *parameter_start_mode_ptr == 1 && *parameter_control_method_ptr != 0)) {
           *run_stop_state_ptr = 1; *stop_request_ptr = 1; *stop_pending_ptr = 0; *run_request_ptr = 0; *operation_configuration_ptr = 1; *status_message_shown_ptr = 0;
           *runtime_tick_ptr = 0; *runtime_current_minute_ptr = 0; *runtime_current_hour_ptr = 0;
@@ -1717,7 +1717,7 @@ do_dispatch:
       }
     }
     if (*output_fault_flags_ptr == 0 && *stop_pending_ptr == 0) {
-      if (key == 6 || *ui_scan_stop_flag_ptr == 8) {
+      if (key_code == KEY_STOP || *ui_scan_stop_flag_ptr == 8) {
         if (*parameter_start_mode_ptr == 0 || (*ui_scan_stop_flag_ptr == 8 && *parameter_start_mode_ptr == 1 && *parameter_control_method_ptr != 0)) {
           *run_stop_state_ptr = 0; *stop_pending_ptr = 1; *stop_request_ptr = 0; *operation_configuration_ptr = 0;
           disp_string((int)0x4804 - 0x1c, 3, 0xa, 0);
@@ -1735,13 +1735,13 @@ do_dispatch:
     }
     if (*parameter_control_method_ptr == 1) *output_reference_average_ptr = *output_secondary_reference_ptr;
     if (*parameter_control_method_ptr == 2) {
-      if (key == 2 || key == 0x16) {
+      if (key_code == KEY_DOWN || key_code == KEY_FAST_UP) {
         (*manual_reference_value_ptr)++;
         if (*manual_reference_value_ptr >= 0x3e8) *manual_reference_value_ptr = 0x3e8;
         if (*manual_reference_value_ptr <= 0xa) *manual_reference_value_ptr = 0xa;
         disp_fixed_1dec(*manual_reference_value_ptr, 0, 9, 0);
       }
-      if (key == 3 || key == 0x21) {
+      if (key_code == KEY_UP || key_code == KEY_FAST_DOWN) {
         if (*manual_reference_value_ptr <= 0xa) *manual_reference_value_ptr = 0x1;
         (*manual_reference_value_ptr)--;
         disp_fixed_1dec(*manual_reference_value_ptr, 0, 9, 0);
@@ -1757,7 +1757,7 @@ do_dispatch:
     (*ui_idle_timeout_ticks_ptr)++;
     if (*ui_idle_timeout_ticks_ptr >= 0x1388) {
       *ui_idle_timeout_ticks_ptr = 0;
-      *ui_screen_id_ptr = 1;
+      *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU;
       disp_splash_screen();
     }
     return;
