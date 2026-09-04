@@ -20,7 +20,7 @@
 - 不要求生成固件与原 BIN 字节完全相同，但要求状态、内存、外设和协议行为等价。
 - 未经明确授权，不执行硬件烧写。
 
-当前主要剩余问题：
+实施前主要剩余问题：
 
 - state_machine.c 约 1765 行，output_stage.c 约 1258 行，多个函数职责过多。
 - 状态与参数头文件约有 693 个地址宏，存在同地址多语义别名。
@@ -254,3 +254,33 @@ git diff --check
 - 构建零警告，格式检查通过。
 - 全部既有测试持续通过，新增护栏与结构测试通过。
 - 最终实机验证需在用户明确授权后单独执行。
+
+## 7. 实施状态（2026-09-04）
+
+本计划已在 `firmware-readability-2026-09-04` 分支按顺序完成。每个阶段都在进入下一阶段
+前独立构建、回归和提交；本轮没有执行硬件烧写。阶段提交如下：
+
+| 阶段 | 完成内容 | 提交 |
+|---|---|---|
+| 0—1 | 可读性护栏、领域类型、状态/参数语义映射和读宽报告归类 | `341a7f1`, `ea306e4` |
+| 2 | GPIO、TIMER、UART、ADC、PINSEL 等类型化硬件访问层 | `1c4ea39` |
+| 3 | 删除 stub，归位 UART3 接收和频率调节模块，收敛兼容接口 | `2dc5960` |
+| 4 | 按页面拆分状态机，保留页面调用和编辑顺序 | `8ace2b4` |
+| 5 | 参数、EEPROM 和 Modbus 描述表 | `6c0fc70` |
+| 6 | 输出级保护、闭环辅助逻辑和中断入口拆分 | `a4cbcd2` |
+| 7 | 显示字符串、输入引脚和显示/输入辅助函数语义化 | `1c6a86d` |
+| 8 | 统一编译选项、代码风格、零警告门槛和验证工具入口 | `003cd1b` |
+
+最终验证结果：
+
+- PowerShell 构建通过：`text 58592 / data 0 / bss 2188`，零编译警告。
+- `python test/run_tests.py`：`26/26` 模块通过。
+- `python tools/verification/verify_firmware_equivalence.py`：全部矩阵通过，显示全执行
+  `4/4` 通过。
+- `python tools/verification/verify_periph_xref.py`：通过。
+- `python tools/verification/verify_readwidth_all.py`：无未解释读宽差异。
+- `python test/static/test_readability_contract.py` 与 `git diff --check`：通过。
+
+活动固件源码已清除反编译变量命名；`firmware/globals.c`、`firmware/inc/globals.h` 和
+`firmware/stub.c` 不再存在。历史反汇编、原始 BIN、旧符号和迁移脚本仍保留在证据/归档范围，
+用于地址、访问宽度和行为等价性追溯，不属于当前固件源码接口。

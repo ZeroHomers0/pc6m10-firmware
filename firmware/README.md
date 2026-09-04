@@ -3,7 +3,11 @@
 目标B的 GCC 工程已经完成，不再是“12 个模块 + 07 stub”的早期骨架。07 状态机、08 Modbus
 分发、UART3 RX、启动链及数据映像均已进入正式构建；根目录反编译存档仍保留用于追溯。
 
-当前基线（2026-09-02）：`text 62840 / data 3000 / bss 2188`，`firmware.bin` SHA-256 为
+人工可读化分支最新验证（2026-09-04，`firmware-readability-2026-09-04`）：`text 58592 /
+data 0 / bss 2188`，零编译警告；`python test/run_tests.py` 通过 26/26，等价性、外设交叉
+引用和读宽验证全部通过。此次仅完成代码结构重构，没有重新烧写硬件。
+
+main 分支历史基线（2026-09-02）：`text 62840 / data 3000 / bss 2188`，`firmware.bin` SHA-256 为
 `C6D3F35DD6C5A451947C27BA1825D8CE35C43D031F4EA02E32A9438BB32AE74E`。离线验证通过
 `output_stage` 144/144、`state_machine` 130、`run_tests.py` 25/25；**自编译固件已烧写入板并
 经用户实机测试通过**（W8 分级实测流程未按计划执行、已废弃，详见 `../AGENTS.md`）。
@@ -14,6 +18,12 @@
 bash build.sh          # 产出 firmware.elf / firmware.hex / firmware.bin / firmware.map
 ```
 
+Windows PowerShell：
+
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File build.ps1
+```
+
 工具链：ARM GNU Toolchain 14.2.Rel1（`arm-none-eabi-gcc`，`-mcpu=cortex-m3 -mthumb`）。
 
 ## 目录
@@ -21,11 +31,15 @@ bash build.sh          # 产出 firmware.elf / firmware.hex / firmware.bin / fir
 | 文件 | 说明 |
 |---|---|
 | `startup.s` | Cortex-M3 启动：拷贝原 .data 镜像(fw_image)→0x10000000、清零原 .bss(0x1000213C-0x100029C8)、拷贝本 .data/清零 .bss、调 main()；向量表含 8 个真实 IRQ + weak 默认自旋 |
-| `lpc1765.ld` | FLASH 0x0/256K、SRAM0 0x10000000/32K（原固件 .data/.bss 布局）、SRAM1 0x2007C000/16K（globals）。**_estack=0x10006768**（复刻原 iar_init_core 最终 SP，避免栈覆盖 .bss） |
+| `lpc1765.ld` | FLASH 0x0/256K、SRAM0 0x10000000/32K（原固件 .data/.bss 布局）、SRAM1 0x2007C000/16K（编译期辅助数据）。**_estack=0x10006768**（复刻原 iar_init_core 最终 SP，避免栈覆盖 .bss） |
 | `data_image.s` | 原固件 SRAM .data 初始镜像（`assets/ram_data_image.bin`，8508B） |
 | `inc/firmware_state.h` | 系统、外设、输入、显示和运行时状态的语义化地址映射 |
 | `inc/firmware_parameters.h` | 配置、实时参数和 EEPROM 镜像的语义化地址映射 |
 | `inc/firmware_types.h` | 按键事件和固件领域类型 |
+| `inc/firmware_display_strings.h` | 显示字符串 Flash 地址的集中语义映射 |
+| `inc/firmware_input_pins.h` | 输入引脚和编码器 GPIO 掩码的语义映射 |
+| `compiler_flags.txt` | Makefile、Shell 和 PowerShell 共用编译选项 |
+| `COMPILER_PROFILE.md` | 编译警告门槛和硬件代码修改后的验证要求 |
 | `src/strpool.c` | **W7a 字符串表**（`tools/generation/generate_string_pool.py` 生成） |
 | `src/06_frequency_adjust.c` | 联锁页频率微调与 EEPROM 同步 |
 | `src/08_uart3_receive.c` | UART3 接收字节组帧 |

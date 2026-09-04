@@ -1,6 +1,6 @@
 # 文档索引
 
-> 最后更新：2026-09-02。当前进度优先级：`AGENTS.md` → 本文 → `docs/project/PROJECT_STATUS.md` → 历史文档。
+> 最后更新：2026-09-04。当前进度优先级：`AGENTS.md` → 本文 → `docs/project/PROJECT_STATUS.md` → 历史文档。
 >
 > **2026-09-02 结论**：自编译固件已烧写入板并经用户直接实机测试通过（含产品信息定制、X/O
 > 字形修复与电话行宽修正后的最终固件）。**W8 分级实测流程未按计划执行、已废弃**——用户未按
@@ -16,7 +16,8 @@
 | 构建与烧写操作 | `操作文档.md`（构建命令 + ISP 烧写 + SWD 烧写） |
 | 项目状态 | `docs/project/PROJECT_STATUS.md` |
 | 可读性重构记录（2026-09-04） | `docs/project/READABILITY_REFACTOR_2026-09-04.md` |
-| 人工可读化二阶段计划（暂未执行） | `docs/project/HUMAN_READABLE_REFACTOR_PLAN_2026-09-04.md` |
+| 人工可读化二阶段计划与实施状态 | `docs/project/HUMAN_READABLE_REFACTOR_PLAN_2026-09-04.md` |
+| 固件编译配置与警告策略 | `firmware/COMPILER_PROFILE.md` |
 | 应用指南 | `docs/project/APPLICATION_GUIDE_2026-08-21.md` |
 | 数据段 | `docs/project/DATA_SEGMENT_2026-08-21.md` |
 | 硬件印证 | `docs/analysis/HARDWARE_VERIFICATION_2026-08-20.md` |

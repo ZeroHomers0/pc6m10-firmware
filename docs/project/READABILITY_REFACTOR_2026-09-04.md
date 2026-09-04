@@ -87,26 +87,42 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File firmware/build.ps1
 结果：
 
 ~~~
-text 59956  data 0  bss 2188  dec 62144  hex f2c0
+text 58592  data 0  bss 2188  dec 60780  hex ed6c
 OK: firmware.elf / firmware.hex / firmware.bin / firmware.map
 ~~~
+
+构建使用统一的 `firmware/compiler_flags.txt`，已启用 `-Wextra`、`-Wshadow`、
+`-Wstrict-prototypes`、`-Wmissing-prototypes` 和 `-Wundef`，并在清理对应源码后保持零警告。
 
 完整测试：
 
 ~~~
-[run_tests] 模块通过 25/25
+[run_tests] 模块通过 26/26
 ~~~
 
-重点覆盖输入扫描 512 组合、UART/叶函数轨迹、状态机跨拍矩阵、Modbus 读写、
-EEPROM 参数同步、闭环计算、继电器输出和 CRC 等价性。
+验证工具结果：
 
-## 7. 本轮边界
+- `verify_firmware_equivalence.py`：全部项目通过，包括输入、UART、ADC、I2C、Modbus、
+  闭环、输出级、状态机、显示和继电器；`DISPLAY_FULL_EXEC` 4/4 通过。
+- `verify_periph_xref.py`：通过；金标准中未直接出现在 C 文本的地址均已归类为宏或别名覆盖。
+- `verify_readwidth_all.py`：通过；无未解释的读宽不一致，16 位参数的合法分字节访问共 59 处。
+- `git diff --check`：通过。
 
-本轮没有把历史证据中的 DAT 名称全部抹除，也没有删除逆向来源文件。这样可以同时满足：
+显示全执行验证比较真实 LCD 命令/数据总线字节序列及 SRAM 结果。Unicorn 对 GPIO 读改写的
+写入值受链接布局影响，因此不把仿真器的 RMW 中间值误判为固件差异；GPIO 叶函数和输出
+写序列仍由独立轨迹测试覆盖。
 
-1. 当前可编译源码和正式验证入口使用人类可读命名；
+## 7. 活动代码边界与历史证据
+
+本轮实施完成后，活动固件源码和正式构建入口已经不再使用 `DAT_`、`PTR_`、`g_`、
+`undefined*`、`iVar`、`uVar`、`local_` 或未说明的 `func_0x...` 命名；
+`firmware/globals.c`、`firmware/inc/globals.h` 和 `firmware/stub.c` 已删除。
+
+历史证据中的原始符号没有批量抹除，也没有删除逆向来源文件。这样可以同时满足：
+
+1. 当前可编译源码、构建入口和验证入口使用人类可读命名；
 2. 未来仍能从原始 BIN、反汇编和历史脚本追溯每个地址与访问宽度；
 3. 不因清理名称而丢失已经验证过的证据链。
 
-后续若继续追求“更像人工编写的工程”，应在本次提交之后单独进行 API 收敛、模块边界、
-状态机数据驱动化和注释规范化，并逐阶段保留 A/B 等价测试。
+历史反汇编、原始 BIN、历史报告和一次性迁移工具属于证据或维护资产，不属于固件编译输入；
+测试中用于表达原始地址来源的说明也保留必要的物理地址，但不再依赖旧符号作为代码接口。
