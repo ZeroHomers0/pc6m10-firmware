@@ -185,11 +185,10 @@ static void sm6_delay_loop(void)
  * 流程：entry 公共逻辑（state_entry_ticks_ptr/去抖/故障码/启停/统计）→ ui_screen_id_ptr 分发到各 case。
  * 各 case 以顺序 if 级联实现；case 内部按 key_code 分发。
  * ========================================================================== */
-void state_machine(KeyCode key_code)
-{
-  uint32_t delay_iteration;
 
-  /* ================= entry 公共逻辑 (0x458C-0x4B16) ================= */
+static void state_machine_update_entry(KeyCode key_code)
+{
+/* ================= entry 公共逻辑 (0x458C-0x4B16) ================= */
   (*state_entry_ticks_ptr)++;
   if (key_code != KEY_NONE) { *state_entry_ticks_ptr = 0; lcd_ctrl_line(1); }
   if (*state_entry_ticks_ptr > 0x1388) { *state_entry_ticks_ptr = 0; lcd_ctrl_line(0); }
@@ -285,7 +284,7 @@ void state_machine(KeyCode key_code)
   if (*output_fault_flags_ptr == 0 && *run_stop_debounce_result_ptr == 2) *output_fault_flags_ptr |= 0x4000;
 
   (*phase_loss_check_interval_ptr)++;
-  if (*phase_loss_check_interval_ptr <= 0x64) { goto do_dispatch; }
+  if (*phase_loss_check_interval_ptr > 0x64) {
   *phase_loss_check_interval_ptr = 0;
   if (*output_eint1_flag_ptr == 0 && *parameter_phase_loss_enable_ptr > 0) {
     (*phase_loss_counter_a_ptr)++;
@@ -302,11 +301,19 @@ void state_machine(KeyCode key_code)
   *output_eint1_flag_ptr = 0;
   *output_eint2_flag_ptr = 0;
   *output_eint3_flag_ptr = 0;
-  /* fallthrough → dispatch */
+  }
+}
 
-do_dispatch:
-  /* ================= 分发链（ui_screen_id_ptr 值→case 段） ================= */
-  if (*ui_screen_id_ptr == UI_SCREEN_MAIN_MENU) {
+static void state_machine_dispatch_pages(KeyCode key_code);
+
+void state_machine(KeyCode key_code)
+{
+  state_machine_update_entry(key_code);
+  state_machine_dispatch_pages(key_code);
+}
+
+static void state_machine_page_main(KeyCode key_code)
+{
     /* ---------- case1 运行状态屏 (0x4B16-0x541C) ---------- */
     if (key_code == KEY_CLEAR_STATISTICS && *operation_configuration_ptr == 0) {
       *ui_screen_id_ptr = UI_SCREEN_RUNTIME_CLEAR; *ui_item_index_ptr = 0; *ui_idle_timeout_ticks_ptr = 0;
@@ -473,9 +480,12 @@ do_dispatch:
         *output_secondary_reference_ptr = *manual_scaled_output_ptr;
       }
     return;
-  }
 
-  if (*ui_screen_id_ptr == 0xa) {
+}
+
+static void state_machine_page_calibration_menu(KeyCode key_code)
+{
+  uint32_t delay_iteration;
     /* ---------- caseA 参数密码屏 (0x541C-0x5572) ---------- */
     if (key_code == KEY_CONFIRM) {
       *ui_item_index_ptr = 0;
@@ -504,9 +514,12 @@ do_dispatch:
       if (*ui_calibration_timeout_ticks_ptr == 0) { *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return; }
     }
     return;
-  }
 
-  if (*ui_screen_id_ptr == UI_SCREEN_CALIBRATION_ACTIVE) {
+}
+
+static void state_machine_page_calibration_active(KeyCode key_code)
+{
+  uint32_t delay_iteration;
     /* ---------- case62 初始密码屏 (0x5572-0x5748) ---------- */
     if (key_code == KEY_CONFIRM) {
       *ui_item_index_ptr = 0;
@@ -535,9 +548,11 @@ do_dispatch:
       if (*ui_calibration_timeout_ticks_ptr == 0) { *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return; }
     }
     return;
-  }
 
-  if (*ui_screen_id_ptr == UI_SCREEN_CALIBRATION_RESULT) {
+}
+
+static void state_machine_page_calibration_result(KeyCode key_code)
+{
     /* ---------- case63 初始参数 (0x5748-0x6134)，ui_item_index_ptr=项0-10，ui_view_mode_ptr=0导航/1编辑 ---------- */
     if (key_code == KEY_CONFIRM) {
       *ui_idle_timeout_ticks_ptr = 0; (*ui_view_mode_ptr)++; if (*ui_view_mode_ptr > 1) *ui_view_mode_ptr = 0;
@@ -656,9 +671,11 @@ do_dispatch:
     (*ui_idle_timeout_ticks_ptr)++;
     if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; param_sync_live_to_eeprom(); *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return; }
     return;
-  }
 
-  if (*ui_screen_id_ptr == UI_SCREEN_BASIC_PARAMETERS) {
+}
+
+static void state_machine_page_basic_parameters(KeyCode key_code)
+{
     /* ---------- case2 主菜单页1 (0x6134-0x69D6)，ui_item_index_ptr=选项0-8 ---------- */
     if (key_code == KEY_BACK) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return; }
     if (key_code == KEY_DOWN || key_code == KEY_UP) {
@@ -768,16 +785,11 @@ do_dispatch:
     (*ui_idle_timeout_ticks_ptr)++;
     if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); }
     return;
-  }
 
-  /* ================= case3 基本参数屏 (0x69D6-0x7C1A) =================
-     说明：ui_item_index_ptr=当前项号 0-15；ui_view_mode_ptr=编辑态标志(0=在项间导航,1=修改当前项值)。
-     值映射(全部 bin 校验)：0=parameter_control_mode_ptr 0..2 | 1=parameter_voltage_range_ptr 0x1770 | 2=parameter_current_range_ptr 0x1770
-       | 3=0x10001640 0x1770 | 4=限位0x10001648(<=parameter_voltage_range_ptr+1) | 5=限位0x10001644(<=parameter_current_range_ptr+1)
-       | 6=0x1000164c 0xc8 | 7=0x1000164d 0xc8 | 8=0x10001650 0xb4 | 9=0x10001654 0xa0
-       | 10=parameter_control_method_ptr 0..2 | 11=0x10001656 0..1 | 12=parameter_emergency_stop_ptr 0..2 | 13=parameter_feedback_mode_ptr 0..1
-       | 14=parameter_input_mode_ptr 0..1 | 15=0x10001660 0xb4                                 */
-  if (*ui_screen_id_ptr == UI_SCREEN_BASIC_PARAMETER_EDIT) {
+}
+
+static void state_machine_page_basic_parameter_edit(KeyCode key_code)
+{
     uint32_t item_index = *ui_item_index_ptr;                              /* 项号 */
 
     /* 原汇编公共尾部 0x7446-0x744E 对刷新计数加一。提前执行可保持所有
@@ -929,17 +941,11 @@ do_dispatch:
     if (*parameter_control_mode_ptr < 2 && *parameter_soft_start_time_ptr == 0) *parameter_soft_start_time_ptr = 1;
     if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); }
     return;
-  }
 
-  /* ================= case4 保护参数屏 (0x7C1A-0x8780) =================
-     说明：ui_item_index_ptr=当前项号 0-9；ui_view_mode_ptr=编辑态标志(0=导航,1=修改)。10 项 = 3 页。
-     项映射(全部 bin 校验，§13)：0=过压0x100016c0(<=parameter_voltage_range_ptr) 1=过压时间0x100016c4(<=0xc8)
-       2=欠压0x100016c8(<=parameter_voltage_range_ptr) 3=欠压时间0x100016cc(<=0xc8)
-       4=IF过载0x100016d0(<=parameter_current_range_ptr) 5=IF过载时间0x100016d4(<=0xc8)
-       6=CT过载0x100016d8(<=0x10001640) 7=CT过载时间0x100016dc(<=0xc8)
-       8=缺相0x100016dd(0..1) 9=三相平衡0x100016de(0..0x3c,%)
-     编辑方向按反汇编：2/0x16 增、3/0x21 减；word 项 0x16/0x21 走 ±5。          */
-  if (*ui_screen_id_ptr == UI_SCREEN_PROTECTION_PARAMETERS) {
+}
+
+static void state_machine_page_protection(KeyCode key_code)
+{
     (*ui_statistics_timeout_ticks_ptr)++;
     /* ---- key_code==1：切换编辑态 ---- */
     if (key_code == KEY_CONFIRM) {
@@ -1054,11 +1060,11 @@ do_dispatch:
     (*ui_idle_timeout_ticks_ptr)++;
     if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); }
     return;
-  }
 
-  /* =====================================================================*/
-  /* ---------- case5 通讯屏 (0x8780-0x8C1A)，ui_screen_id_ptr==5，4 项（ui_item_index_ptr=0-3）单页 ---------- */
-  if (*ui_screen_id_ptr == UI_SCREEN_COMMUNICATION_PARAMETERS) {
+}
+
+static void state_machine_page_communication(KeyCode key_code)
+{
     (*ui_statistics_timeout_ticks_ptr)++;
     /* key_code==1：进入/退出编辑模式（ui_view_mode_ptr 0<->1） */
     if (key_code == KEY_CONFIRM) {
@@ -1126,11 +1132,11 @@ do_dispatch:
     (*ui_idle_timeout_ticks_ptr)++;
     if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); }
     return;
-  }
 
-  /* =====================================================================*/
-  /* ---------- case8 相位参数校准 (0x9A84-0x9C5C)，ui_screen_id_ptr==8 ---------- */
-  if (*ui_screen_id_ptr == UI_SCREEN_PHASE_CALIBRATION) {
+}
+
+static void state_machine_page_phase_calibration(KeyCode key_code)
+{
     *output_enable_state_byte_ptr = 1;
     /* 相位偏移 增（key3/0x21 上限 0x2b0）/ 减（key2/0x16 下限 0x45） */
     if (key_code == KEY_UP || key_code == KEY_FAST_DOWN) {
@@ -1189,11 +1195,11 @@ do_dispatch:
       *ui_system_status_ptr = 0;
     }
     return;
-  }
 
-  /* =====================================================================*/
-  /* ---------- caseB 运行时间查询 (0x9C5C-0x9D86)，ui_screen_id_ptr==0xb ---------- */
-  if (*ui_screen_id_ptr == 0xb) {
+}
+
+static void state_machine_page_runtime_query(KeyCode key_code)
+{
     if (key_code == KEY_BACK) {
       *ui_idle_timeout_ticks_ptr = 0;
       *ui_screen_id_ptr = UI_SCREEN_BASIC_PARAMETERS;
@@ -1220,11 +1226,11 @@ do_dispatch:
     (*ui_idle_timeout_ticks_ptr)++;
     if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); }
     return;
-  }
 
-  /* =====================================================================*/
-  /* ---------- case9 产品版本信息 (0x9D86-0x9E14)，ui_screen_id_ptr==9 ---------- */
-  if (*ui_screen_id_ptr == UI_SCREEN_VERSION) {
+}
+
+static void state_machine_page_version(KeyCode key_code)
+{
     if (key_code == KEY_BACK) {
       *ui_idle_timeout_ticks_ptr = 0;
       *ui_screen_id_ptr = UI_SCREEN_BASIC_PARAMETERS;
@@ -1240,11 +1246,11 @@ do_dispatch:
     (*ui_idle_timeout_ticks_ptr)++;
     if (*ui_idle_timeout_ticks_ptr >= 0x3a98) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); }
     return;
-  }
 
-  /* =====================================================================*/
-  /* ---------- case5A 电流手动平衡 (0x9E14-0x9FB8)，ui_screen_id_ptr==0x5a ---------- */
-  if (*ui_screen_id_ptr == UI_SCREEN_MANUAL_BALANCE) {
+}
+
+static void state_machine_page_manual_balance(KeyCode key_code)
+{
     *output_enable_state_byte_ptr = 1;
     /* phase_balance_angle_ptr 增（key2/0x16 上限 0xc7=199）/ 减（key3/0x21 下限 2） */
     if (key_code == KEY_DOWN || key_code == KEY_FAST_UP) {
@@ -1297,11 +1303,11 @@ do_dispatch:
       *output_enable_state_byte_ptr = 0;
     }
     return;
-  }
 
-  /* =====================================================================*/
-  /* ---------- caseC 运行时间清零/查询 (0x9FB8-0xA04E)，ui_screen_id_ptr==0xc ---------- */
-  if (*ui_screen_id_ptr == 0xc) {
+}
+
+static void state_machine_page_runtime_clear(KeyCode key_code)
+{
     if (key_code == KEY_BACK) { *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return; }
     if (key_code == KEY_CLEAR_STATISTICS) {
       *runtime_current_hour_ptr = 0;
@@ -1316,11 +1322,11 @@ do_dispatch:
     (*ui_idle_timeout_ticks_ptr)++;
     if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); }
     return;
-  }
 
-  /* =====================================================================*/
-  /* ---------- case14 运行状态监控页 (0xA04E-0xA2C8)，ui_screen_id_ptr==0x14 ---------- */
-  if (*ui_screen_id_ptr == UI_SCREEN_STATUS_MONITOR) {
+}
+
+static void state_machine_page_status_monitor(KeyCode key_code)
+{
     if (key_code == KEY_BACK) { *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return; }
     /* 每 0xfa 次刷新状态行（标题 + 各故障位对应状态串） */
     (*ui_statistics_timeout_ticks_ptr)++;
@@ -1351,11 +1357,11 @@ do_dispatch:
     (*ui_idle_timeout_ticks_ptr)++;
     if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); }
     return;
-  }
 
-  /* =====================================================================*/
-  /* ---------- case6 运行时间查询 + 初始参数密码 (0x8C1A-0x910C)，ui_screen_id_ptr==6 ---------- */
-  if (*ui_screen_id_ptr == UI_SCREEN_RUNTIME_HOURS) {
+}
+
+static void state_machine_page_runtime_hours(KeyCode key_code)
+{
     if (key_code == KEY_CONFIRM) {
       /* 输入前密码 password_part_b_ptr（0x100015e6）：逐位校验 password_input_buffer_ptr(0x100015f2) */
       *ui_item_index_ptr = 0;
@@ -1450,13 +1456,11 @@ do_dispatch:
     (*ui_idle_timeout_ticks_ptr)++;
     if (*ui_idle_timeout_ticks_ptr >= 0x1388) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); }
     return;
-  }
 
-  /* =====================================================================*/
-  /* ---------- case7 PID 参数设置 (0x910C-0x9A84)，ui_screen_id_ptr==7 ---------- */
-  /* PID 模式、各组 P/I 参数和闭环分区参数均通过语义化字节指针访问，
-   * 保持相邻参数槽的读写宽度与原固件一致。 */
-  if (*ui_screen_id_ptr == UI_SCREEN_PID_PARAMETERS) {
+}
+
+static void state_machine_page_pid(KeyCode key_code)
+{
     (*ui_statistics_timeout_ticks_ptr)++;
     /* key_code==1 编辑/浏览切换：ui_view_mode_ptr 在 0/1 间翻转，随之调整 O 刷新节奏 */
     if (key_code == KEY_CONFIRM) {
@@ -1616,13 +1620,11 @@ do_dispatch:
       disp_splash_screen();
     }
     return;
-  }
-  /* ------------------------------------------------------------------
-   * case1E 运行主界面 (0xA2C8-0xAB44)，ui_screen_id_ptr==0x1e
-   * 主界面：运行状态显示 + 故障/启停/急停 + 手动幅值调节。
-   * 逐段对照 tools/_sm_case1E_0xA2C8_0xAB46.txt 翻译（零臆造；字符串直传原地址）。
-   * ---------------------------------------------------------------- */
-  if (*ui_screen_id_ptr == UI_SCREEN_AUTHENTICATION) {
+
+}
+
+static void state_machine_page_authentication(KeyCode key_code)
+{
     /* ---- key_code==4 回主菜单（0xA2D0-A2E4） ---- */
     if (key_code == KEY_BACK) { *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); *ui_idle_timeout_ticks_ptr = 0; return; }
 
@@ -1760,6 +1762,65 @@ do_dispatch:
       *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU;
       disp_splash_screen();
     }
+    return;
+
+}
+
+static void state_machine_dispatch_pages(KeyCode key_code)
+{
+  switch (*ui_screen_id_ptr) {
+  case UI_SCREEN_MAIN_MENU:
+    state_machine_page_main(key_code);
+    return;
+  case UI_SCREEN_CALIBRATION_MENU:
+    state_machine_page_calibration_menu(key_code);
+    return;
+  case UI_SCREEN_CALIBRATION_ACTIVE:
+    state_machine_page_calibration_active(key_code);
+    return;
+  case UI_SCREEN_CALIBRATION_RESULT:
+    state_machine_page_calibration_result(key_code);
+    return;
+  case UI_SCREEN_BASIC_PARAMETERS:
+    state_machine_page_basic_parameters(key_code);
+    return;
+  case UI_SCREEN_BASIC_PARAMETER_EDIT:
+    state_machine_page_basic_parameter_edit(key_code);
+    return;
+  case UI_SCREEN_PROTECTION_PARAMETERS:
+    state_machine_page_protection(key_code);
+    return;
+  case UI_SCREEN_COMMUNICATION_PARAMETERS:
+    state_machine_page_communication(key_code);
+    return;
+  case UI_SCREEN_PHASE_CALIBRATION:
+    state_machine_page_phase_calibration(key_code);
+    return;
+  case UI_SCREEN_RUNTIME_QUERY:
+    state_machine_page_runtime_query(key_code);
+    return;
+  case UI_SCREEN_VERSION:
+    state_machine_page_version(key_code);
+    return;
+  case UI_SCREEN_MANUAL_BALANCE:
+    state_machine_page_manual_balance(key_code);
+    return;
+  case UI_SCREEN_RUNTIME_CLEAR:
+    state_machine_page_runtime_clear(key_code);
+    return;
+  case UI_SCREEN_STATUS_MONITOR:
+    state_machine_page_status_monitor(key_code);
+    return;
+  case UI_SCREEN_RUNTIME_HOURS:
+    state_machine_page_runtime_hours(key_code);
+    return;
+  case UI_SCREEN_PID_PARAMETERS:
+    state_machine_page_pid(key_code);
+    return;
+  case UI_SCREEN_AUTHENTICATION:
+    state_machine_page_authentication(key_code);
+    return;
+  default:
     return;
   }
 }
