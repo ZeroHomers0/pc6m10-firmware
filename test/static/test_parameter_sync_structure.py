@@ -11,7 +11,7 @@
 #                                         i2c_write_reg((char)live, reg+1); } /* 低字节 */
 #
 # 从源码自动提取所有 (live_sym, shadow_sym, reg, width) 元组，验证：
-#   INV1  每个符号真存在于 globals.c（无臆造地址）
+#   INV1  每个符号真存在于语义地址映射（无臆造地址）
 #   INV2  EEPROM reg 地址不冲突（16 位占 reg 和 reg+1）
 #   INV3  "仅不等才写"行为 = 构造虚拟数据，只有 live≠shadow 的参数才触发写
 #         （用固件逻辑镜像驱动；等值的参数必须不写）
@@ -21,20 +21,20 @@ import re, os, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SRC  = os.path.join(ROOT, 'firmware', 'src', '06_param_system.c')
-GLOB = os.path.join(ROOT, 'firmware', 'globals.c')
+MAPS = [os.path.join(ROOT, 'firmware', 'inc', 'firmware_state.h'),
+        os.path.join(ROOT, 'firmware', 'inc', 'firmware_parameters.h')]
 try:
     sys.stdout.reconfigure(encoding='utf-8')
 except Exception:
     pass
 
-def globals_symbols(text):
-    """symbol -> addr；含指针型与数值型（其值即地址），剔除局部/宏"""
+def semantic_symbols(text):
+    """从语义映射头文件提取 symbol -> (addr, width)。"""
     out = {}
     for m in re.finditer(
-            r'volatile\s+uint(?:8|16|32)_t\s+\*\s*([A-Za-z0-9_]+)\s*=\s*\(?[^;]*?(0x[0-9a-fA-F]+)',
+            r'#define\s+([A-Za-z0-9_]+)\s+\(\(volatile\s+(uint(?:8|16|32)_t)\s*\*\)\s*(0x[0-9a-fA-F]+)',
             text):
-        out[m.group(1)] = m.group(2).lower()
-    out['g_scratch'] = out.get('g_scratch', '0x100017ac')
+        out[m.group(1)] = (m.group(3).lower(), int(m.group(2)[4:-2]))
     return out
 
 def extract(src):
@@ -61,8 +61,9 @@ def extract(src):
 
 def main():
     src   = open(SRC, encoding='utf-8', errors='ignore').read()
-    gtext = open(GLOB, encoding='utf-8', errors='ignore').read()
-    sym   = globals_symbols(gtext)
+    sym = {}
+    for path in MAPS:
+        sym.update(semantic_symbols(open(path, encoding='utf-8', errors='ignore').read()))
     params = extract(src)
 
     passed=failed=0
@@ -75,11 +76,11 @@ def main():
 
     print(f"提取参数元组: {len(params)} 条（16位 k | 8位 {len(params)-sum(1 for p in params if p[3]==16)}）")
 
-    # INV1 符号存在
+    # INV1 语义映射存在
     allsym = set()
     for p in params: allsym.add(p[0]); allsym.add(p[1])
     miss = [s for s in allsym if s not in sym]
-    check("INV1 所有 live/shadow 符号存在于 globals.c", len(miss)==0, f"缺失 {miss}" if miss else "")
+    check("INV1 所有 live/shadow 符号存在于语义映射", len(miss)==0, f"缺失 {miss}" if miss else "")
 
     # INV2 reg 不冲突
     used={}; conflict=[]

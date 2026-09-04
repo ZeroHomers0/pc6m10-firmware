@@ -15,6 +15,7 @@
 | AI 逆向与重建总指南 | `docs/analysis/REVERSE_ENGINEERING_AI_GUIDE.md`（项目结构、证据链、A/B 差分方法、构建烧写、历史陷阱） |
 | 构建与烧写操作 | `操作文档.md`（构建命令 + ISP 烧写 + SWD 烧写） |
 | 项目状态 | `docs/project/PROJECT_STATUS.md` |
+| 可读性重构记录（2026-09-04） | `docs/project/READABILITY_REFACTOR_2026-09-04.md` |
 | 应用指南 | `docs/project/APPLICATION_GUIDE_2026-08-21.md` |
 | 数据段 | `docs/project/DATA_SEGMENT_2026-08-21.md` |
 | 硬件印证 | `docs/analysis/HARDWARE_VERIFICATION_2026-08-20.md` |

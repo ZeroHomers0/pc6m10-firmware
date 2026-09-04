@@ -29,7 +29,7 @@ CASES = [
     (0x00, 0x0000ABCD, 'reg00 → g_gain_sel (byte)'),
     (0x01, 0x0000ABCD, 'reg01 → g_gain_a   (word)'),
     (0x02, 0x0000ABCD, 'reg02 → g_gain_b   (word)'),
-    (0x03, 0x0000ABCD, 'reg03 → DAT_0000b4c4 (word)'),
+    (0x03, 0x0000ABCD, 'reg03 → modbus_response_buffer (word)'),
     (0x1A, 0x00001122, 'reg1A → g_scratch  (word, 保留区)'),
     (0x1F, 0x00001122, 'reg1F → g_scratch  (word, 保留区)'),
     (0x26, 0x00000011, 'reg26 → g_run_flag (byte)'),

@@ -13,12 +13,8 @@
  *   · 认证门控调用 → 11_auth.c（ADuM1201 隔离链路，HARDWARE_VERIFICATION §二.5）
  * ========================================================================== */
 
-/* ---------- 内存布局相关外部符号（按 Ghidra 命名） ---------- */
-/* RAM 段 0x1000E000 起；BSS 清零由 iar_init_core 执行 16 字。
- * tick_ready = 0x100007A0（TIMER0 节拍标志，主循环等它=1）
- * input_code = 0x100007A4（input_scan_state 返回值，传给 state_machine）
- * auth 相关：0x10000744=认证使能？0x10000748=重试计数 0x1000074C=认证结果 0x10000750=锁机标志
- */
+/* ---------- 固定地址工作区说明 ---------- */
+/* 主循环节拍、输入码和认证状态均通过 firmware_state.h 中的语义化映射访问。 */
 
 
 /* =============================================================================
@@ -28,41 +24,9 @@
  * ========================================================================== */
 #include "inc/types.h"
 #include "inc/reg.h"
-#include "inc/globals.h"
+#include "inc/firmware_api.h"
+#include "inc/firmware_state.h"
 #include <stdbool.h>
-
-/* ---------- 跨模块函数前向声明（签名与定义模块核实一致） ---------- */
-void pin_config(void);
-void gpio1_init(void);
-void gpio0_input_init(void);
-void read_input_p02(void);
-void gpio_inputs_dir_init(void);
-void i2c_gpio_init(void);
-void adc_init(void);
-void adc0_scan_channels(void);
-void load_config(void);
-void gpio2_init(void);
-void timer1_init(void);
-void timer2_init(void);
-void eint1_init(void);
-void eint2_init(void);
-void eint3_init(void);
-void uart3_init(uint divisor);
-void auth_challenge(void);
-void auth_retry(void);
-void param_sync_live_to_eeprom(void);
-void disp_splash_screen(void);
-void disp_clear(void);
-void disp_string(int str_addr, undefined4 row, uint col, undefined4 invert);
-void disp_offset(uint offset, undefined4 row, int col, undefined4 invert);
-undefined4 chk_p02_p03(void);
-undefined1 input_scan_state(void);
-void state_machine(int event);
-void output_stage(void);
-void uart3_rx_timeout_monitor(void);
-void modbus_dispatch(int param);
-void freq_adjust_sync(int event);
-void run_stop_preset(void);
 
 /* ==================== IAR EWARM 运行时（已移除，见文件头） ==================== */
 
@@ -74,15 +38,15 @@ void run_stop_preset(void);
 void WDT_IRQHandler(void)
 {
   WDMOD = WDMOD & 0xfb;
-  *(volatile int *)PTR_wdt_timeout_count_00000244 = *(volatile int *)PTR_wdt_timeout_count_00000244 + 1;
+  watchdog_timeout_count = watchdog_timeout_count + 1;
   return;
 }
 
 
 /* 0x00000200 —— 看门狗初始化（timeout_cnt=超时计数值，main 里传 200） */
-void wdt_init(uint timeout_cnt)
+void wdt_init(uint32_t timeout_cnt)
 {
-  *(volatile undefined4 *)PTR_wdt_timeout_count_00000244 = 0;
+  watchdog_timeout_count = 0;
   NVIC_ISER0 = 1;                       /* 使能 WDT IRQ（IRQ0） */
   WDTC = (timeout_cnt & 0x1ffff) << 0xd;    /* WDTC：看门狗定时值 */
   WDMOD = 3;                            /* WDEN+WDRESET */
@@ -106,7 +70,7 @@ void wd_feed(void)
 /* 0x00000248 —— TIMER0 初始化：MR0=1999（节拍周期），匹配中断 IRQ0 */
 void timer0_init(void)
 {
-  *(volatile uint *)(DAT_000002d8 + 0xc4) = *g_pconp | 2;  /* PCONP |= 2：TIMER0 上电 */
+  *(volatile uint32_t *)(system_scb_base + 0xc4) = *system_pconp | 2;  /* PCONP |= 2：TIMER0 上电 */
   TIMER0->TCR = 2;            /* 复位 TC/PC（先复位再配置） */
   TIMER0->PR = 0x18;          /* 预分频 24 */
   TIMER0->MR0 = 1999;         /* MR0 = 1999（节拍周期） */
@@ -122,17 +86,17 @@ void timer0_init(void)
  *   tick_ready=1（主循环等待它）；phase_cnt++（钳位 200）；tick_countdown--（若非0） */
 void TIMER0_IRQHandler(void)
 {
-  volatile uint8_t *phase_cnt;
+  volatile uint8_t *phase_counter_ptr;
 
   TIMER0->IR = 0xff;
-  *PTR_tick_ready_000002dc = 1;
-  phase_cnt = g_phase_cnt;
-  *g_phase_cnt = *g_phase_cnt + '\x01';
-  if (200 < (byte)*phase_cnt) {
-    *phase_cnt = 200;
+  *system_tick_ready_ptr = 1;
+  phase_counter_ptr = system_phase_counter_ptr;
+  *system_phase_counter_ptr = *system_phase_counter_ptr + '\x01';
+  if (200 < (uint8_t)*phase_counter_ptr) {
+    *phase_counter_ptr = 200;
   }
-  if (*PTR_tick_countdown_000002e4 != '\0') {
-    *PTR_tick_countdown_000002e4 = *PTR_tick_countdown_000002e4 + -1;
+  if (system_tick_countdown != '\0') {
+    system_tick_countdown = system_tick_countdown + -1;
   }
   return;
 }
@@ -141,57 +105,51 @@ void TIMER0_IRQHandler(void)
 /* ==================== 芯片时钟/电源初始化 ==================== */
 
 /* 0x00000440 —— 系统初始化：内部 RC → PLL0/PLL1 → 外设时钟树
- * 时钟/电源寄存器块 0x400FC000（SCB 区，对照 globals.c）：
- *   DAT_00000564=0x400FC1A0（PLL1 锁存等待）、DAT_00000558=0x400FC104、
- *   DAT_00000548=0x400FC088（PLL0STAT）、DAT_0000056c=0x400FC084（PLL0CFG）、
- *   DAT_00000570=0x400FC08C（PLL0FEED，pll_feed）、DAT_00000574=0x400FC080（PLL0CON）、
- *   DAT_00000578=0x400FC0A4（PLL1CFG）、DAT_0000057c=0x400FC0AC（PLL1FEED）、
- *   DAT_00000580=0x400FC0A0（PLL1CON）、DAT_00000584=0x400FC0A8（PLL1STAT）、
- *   DAT_00000588=0x400FC1A8（PCLKSEL0）、g_pconp=0x400FC0C4（PCONP）、
- *   DAT_00000594=0x400FC1C8（PCLKSEL1）。
+ * 时钟/电源寄存器块 0x400FC000（SCB 区，对照语义地址映射）：
+ *   所有 PLL、PCLK 和 PCONP 寄存器均通过 firmware_state.h 的语义化地址访问。
  * PLL 配置要点：改 PLLxCON 后须向 PLLxFEED 写 0xAA→0x55 序列锁存；随后
  *   do{}while 轮询 PLLxSTAT 位直到锁相完成。pll_feed 即 PLL0FEED 寄存器指针。 */
 void SystemInit(void)
 {
-  volatile uint32_t *pll_feed;
+  volatile uint32_t *pll0_feed_ptr;
 
-  *DAT_00000564 = 0x20;
+  *pll1_lock_control = 0x20;
   do {
-  } while ((*DAT_00000564 & 0x40) == 0);
-  *DAT_00000558 = 3;
-  DAT_00000554[0x43] = 1;
-  *DAT_0000056c = DAT_00000568;
-  pll_feed = DAT_00000570;
-  *DAT_00000570 = 0xaa;
-  *pll_feed = 0x55;
-  *DAT_00000574 = 1;
-  *DAT_00000570 = 0xaa;
-  DAT_00000554[0x23] = 0x55;
+  } while ((*pll1_lock_control & 0x40) == 0);
+  *pll_clock_config = 3;
+  system_clock_base[0x43] = 1;
+  *pll0_config = system_pll0_config_value;
+  pll0_feed_ptr = pll0_feed;
+  *pll0_feed = 0xaa;
+  *pll0_feed_ptr = 0x55;
+  *pll0_control = 1;
+  *pll0_feed = 0xaa;
+  system_clock_base[0x23] = 0x55;
   do {
-  } while ((*DAT_00000548 & 0x4000000) == 0);
-  *DAT_00000574 = 3;
-  DAT_00000554[0x23] = 0xaa;
-  *DAT_00000570 = 0x55;
+  } while ((*pll0_status & 0x4000000) == 0);
+  *pll0_control = 3;
+  system_clock_base[0x23] = 0xaa;
+  *pll0_feed = 0x55;
   do {
-  } while ((*DAT_00000548 & 0x3000000) == 0);
-  *DAT_00000578 = 0x23;
-  DAT_00000554[0x2b] = 0xaa;
-  *DAT_0000057c = 0x55;
-  *DAT_00000580 = 1;
-  *DAT_0000057c = 0xaa;
-  DAT_00000554[0x2b] = 0x55;
+  } while ((*pll0_status & 0x3000000) == 0);
+  *pll1_config = 0x23;
+  system_clock_base[0x2b] = 0xaa;
+  *pll1_feed = 0x55;
+  *pll1_control = 1;
+  *pll1_feed = 0xaa;
+  system_clock_base[0x2b] = 0x55;
   do {
-  } while ((*DAT_00000584 & 0x400) == 0);
-  *DAT_00000580 = 3;
-  DAT_00000554[0x2b] = 0xaa;
-  *DAT_0000057c = 0x55;
+  } while ((*pll1_status & 0x400) == 0);
+  *pll1_control = 3;
+  system_clock_base[0x2b] = 0xaa;
+  *pll1_feed = 0x55;
   do {
-  } while ((*DAT_00000584 & 0x300) == 0);
-  *DAT_00000588 = 0;
-  DAT_00000554[0x6b] = 0;
-  *g_pconp = DAT_0000058c;
-  *DAT_00000594 = 0;
-  *DAT_00000554 = 0x303a;
+  } while ((*pll1_status & 0x300) == 0);
+  *system_pclk_sel0 = 0;
+  system_clock_base[0x6b] = 0;
+  *system_pconp = system_pconp_default;
+  *system_pclk_sel1 = 0;
+  *system_clock_base = 0x303a;
   return;
 }
 
@@ -234,7 +192,7 @@ void stub_ret(void)
  *     0x1000074C==1（失败）→ 0x10000750=0（锁机）；0x10000748++（重试计数）
  *     成功后 param_sync_live_to_eeprom()（参数同步）
  *
- *   2026-08-27 决定（抄板）：永久强制 *DAT_00000750=1，防抄板认证不再启用，
+ *   2026-08-27 决定（抄板）：永久强制认证放行，防抄板认证不再启用，
  *   不因 EEPROM 认证状态锁机。0x1000072C 与状态机 SYNC_2C（07_state_machine.c）
  *   同址：=1 时跳过 RLY3/2/1 安全强制驱动，继电器走正常输出逻辑。
  *   安全强制驱动，继电器走正常输出逻辑。
@@ -248,9 +206,9 @@ void stub_ret(void)
  *   · 0x10000750==0（认证失败，正常不可达）→ 显示错误屏（0x754 区）死循环锁机 */
 void main(void)
 {
-  volatile uint8_t *p_input_code;
-  undefined1 input_code;
-  int interlock;
+  volatile uint8_t *input_code_ptr;
+  uint8_t input_key;
+  int interlock_state;
 
   SystemInit();
   pin_config();
@@ -272,15 +230,15 @@ void main(void)
   eint3_init();
   uart3_init(0);
   long_delay();
-  if ((*DAT_00000744 == '\0') && (*DAT_00000748 < 3)) {
+  if ((system_auth_enabled == '\0') && (system_auth_retry_count < 3)) {
     auth_challenge();
-    if (*DAT_0000074c == '\x01') {
-      *DAT_00000750 = 0;
+    if (system_auth_result == '\x01') {
+      system_access_granted = 0;
     }
-    if (*DAT_0000074c == '\0') {
-      *DAT_00000750 = 1;
+    if (system_auth_result == '\0') {
+      system_access_granted = 1;
     }
-    *DAT_00000748 = *DAT_00000748 + 1;
+    system_auth_retry_count = system_auth_retry_count + 1;
     param_sync_live_to_eeprom();
   }
   disp_splash_screen();
@@ -288,8 +246,8 @@ void main(void)
   wdt_init(200);
   /* —— 2026-08-27 决定（抄板）：防抄板认证永久放行，不再启用。
    *    忽略 auth_challenge/auth_retry 结果；1=放行、0=锁机（0x1000172C 与状态机 SYNC_2C 同址）。 */
-  *DAT_00000750 = 1;
-  if (*DAT_00000750 == 0) {
+  system_access_granted = 1;
+  if (system_access_granted == 0) {
     /* —— 认证失败：锁机屏（认证已永久放行，正常不可达） —— */
     disp_clear();
     disp_string(0x754,0,4,0);
@@ -299,19 +257,19 @@ void main(void)
     } while( true );
   }
   /* —— 认证通过 —— */
-  interlock = chk_p02_p03();
-  if (interlock < 1) {
+  interlock_state = chk_p02_p03();
+  if (interlock_state < 1) {
     /* —— 主循环（正常运行态）—— */
     do {
       do {
-      } while (*DAT_000007a0 != '\x01');   /* 等 tick_ready */
-      *DAT_000007a0 = '\0';
+      } while (system_tick_ready != '\x01');   /* 等系统节拍就绪 */
+      system_tick_ready = '\0';
       stub_ret();
       adc0_scan_channels();
-      input_code = input_scan_state();
-      *DAT_000007a4 = input_code;
+      input_key = input_scan_state();
+      system_input_code = input_key;
       adc0_scan_channels();
-      state_machine(*DAT_000007a4);
+      state_machine(system_input_code);
       output_stage();
       wd_feed();
       uart3_rx_timeout_monitor();
@@ -323,16 +281,16 @@ void main(void)
   disp_string(0x76c,0,4,0);
   disp_string(0x778,1,2,0);
   disp_string(0x784,2,2,0);
-  disp_offset(*DAT_0000078c,2,7,1);
+  disp_offset(system_display_offset,2,7,1);
   disp_string(0x790,3,0,0);
   do {
     do {
-    } while (*DAT_000007a0 != '\x01');
-    *DAT_000007a0 = '\0';
-    input_code = input_scan_state();
-    p_input_code = DAT_000007a4;
-    *DAT_000007a4 = input_code;
-    freq_adjust_sync(*p_input_code);
+    } while (system_tick_ready != '\x01');
+    system_tick_ready = '\0';
+    input_key = input_scan_state();
+    input_code_ptr = system_input_code_ptr;
+    system_input_code = input_key;
+    freq_adjust_sync(*input_code_ptr);
     run_stop_preset();
     wd_feed();
   } while( true );
@@ -342,11 +300,11 @@ void main(void)
 /* 0x000007A8 —— 简单延时（loops×50 空循环） */
 void Delay(int loops)
 {
-  int count = loops * 50;
+  int remaining_loops = loops * 50;
 
-  while (count != 0) {
+  while (remaining_loops != 0) {
     /* 空编译屏障：保留原固件的软件延时循环，同时避免volatile栈读写改变时序。 */
     __asm volatile ("" ::: "memory");
-    count--;
+    remaining_loops--;
   }
 }

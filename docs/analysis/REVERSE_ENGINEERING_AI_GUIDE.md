@@ -81,7 +81,9 @@ project-root/
 │  ├─ lpc1765.ld                     FLASH/SRAM、栈、数据镜像和 CRP 布局
 │  ├─ data_image.s                    嵌入原始 SRAM 初始化镜像
 │  ├─ assets/ram_data_image.bin       目标 BIN 解出的初始 SRAM 数据
-│  ├─ globals.c + inc/globals.h       DAT_/PTR_ 地址与访问类型
+│  ├─ inc/firmware_state.h            运行时状态与外设的语义地址映射
+│  ├─ inc/firmware_parameters.h       参数区与 EEPROM 镜像的语义地址映射
+│  ├─ inc/firmware_api.h              模块公共接口
 │  ├─ inc/reg.h                       目标 MCU 外设寄存器定义
 │  ├─ inc/consts.h                    已有证据支持的语义常量
 │  ├─ src/                            按业务模块组织的可读 C
@@ -197,7 +199,7 @@ project-root/
 #### 跨项目警告
 
 PC12M 已证明：CRC16 表地址与 PC6M 不同；输入消抖计数器的排列和 DAT 符号也不同。复制参考
-`globals.c` 后只改少数显眼地址，会制造“能编译但写错相邻字节”的系统性错误。
+复制参考地址映射后只改少数显眼地址，会制造“能编译但写错相邻字节”的系统性错误。
 
 #### 门禁
 

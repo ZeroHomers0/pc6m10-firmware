@@ -7,9 +7,9 @@
 
 C 侧地址展开支持四类形态（这是本工具与 verify_mem_xref 的关键差异）：
   1. 字面量     ：*(volatile uint*)0x40034004
-  2. 元素索引   ：DAT_xxx[N]            → base + N*elem   (uint32_t* elem=4, uint8_t* elem=1)
-  3. 字节偏移   ：(uint)DAT_xxx + 0xNN  → base + 0xNN
-  4. 局部别名   ：fio = DAT_xxx; fio[N]/fio+0xNN/*fio  （函数内赋值跟踪）
+ 2. 元素索引   ：semantic_address[N]   → base + N*elem   (uint32_t* elem=4, uint8_t* elem=1)
+ 3. 字节偏移   ：(uint)semantic_address + 0xNN → base + 0xNN
+ 4. 局部别名   ：fio = semantic_address; fio[N]/fio+0xNN/*fio（函数内赋值跟踪）
   5. 结构体宏   ：TIMER0->TCR 等（reg.h，基址+成员偏移）
 
 输出：
@@ -28,20 +28,22 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 os.chdir(ROOT)
 
 # ═══════════════════════════════════════════════════════════════════
-# 1. globals.c 符号表：name -> (base_addr:int, elem:int)
+# 1. 语义地址映射：name -> (base_addr:int, elem:int)
 # ═══════════════════════════════════════════════════════════════════
 def load_syms():
     syms = {}
-    text = open('firmware/globals.c', encoding='utf-8', errors='ignore').read()
-    # 指针类型：volatile uint32_t *NAME = (uint32_t *)0xADDR
-    for m in re.finditer(
-            r'(?:volatile\s+)?(uint32_t|uint8_t)\s*\*\s*(DAT_\w+|g_\w+|PTR_\w+)\s*=\s*'
-            r'\((?:uint32_t|uint8_t)\s*\*\)\s*0x([0-9A-Fa-f]+)', text):
-        syms[m.group(2)] = (int(m.group(3), 16), 4 if m.group(1) == 'uint32_t' else 1)
-    # 值类型：uint32_t DAT_xxx = 0xADDR（+N 为字节偏移）
-    for m in re.finditer(r'uint32_t\s+(DAT_\w+|g_\w+)\s*=\s*0x([0-9A-Fa-f]+)', text):
-        if m.group(1) not in syms:
-            syms[m.group(1)] = (int(m.group(2), 16), 1)
+    map_files = ('firmware/inc/firmware_state.h',
+                 'firmware/inc/firmware_parameters.h')
+    for path in map_files:
+        text = open(path, encoding='utf-8', errors='ignore').read()
+        # 指针映射：#define NAME ((volatile uint32_t *)0xADDRu)
+        for m in re.finditer(
+                r'#define\s+(\w+)\s+\(\(\s*volatile\s+(uint32_t|uint8_t)\s*\*\s*\)\s*'
+                r'0x([0-9A-Fa-f]+)', text):
+            syms[m.group(1)] = (int(m.group(3), 16), 4 if m.group(2) == 'uint32_t' else 1)
+        # 值映射：#define NAME 0xADDRu（值型地址按字节偏移使用）
+        for m in re.finditer(r'#define\s+(\w+)\s+0x([0-9A-Fa-f]+)(?:u|U|UL|ul)?\b', text):
+            syms.setdefault(m.group(1), (int(m.group(2), 16), 1))
     return syms
 
 SYMS = load_syms()
@@ -133,7 +135,7 @@ def parse_c_addrs(src_path):
 
     def scan_sym(ln, name, base, elem):
         r"""在单行 ln 上展开符号 name(base,elem) 的全部访问形态，返回命中地址集合。
-        \b 前缀防 PTR_DAT_xxx 误配子串 DAT_xxx；(?<![\w)]) 排除 (uint)NAME 右括号前导
+        \b 前缀避免把其他标识符当成地址映射；(?<![\w)]) 排除 (uint)NAME 右括号前导
         （字节转换形态）；(?![0-9a-fA-F])/(?!\d) 防 0x34 被回溯截断成 0x3。"""
         out = set()
         esc = re.escape(name)
@@ -147,7 +149,7 @@ def parse_c_addrs(src_path):
         for m in re.finditer(r'\b' + esc + r'\[(0x[0-9a-fA-F]+|\d+)\]', ln):
             n = int(m.group(1), 16) if m.group(1).startswith('0x') else int(m.group(1))
             out.add(base + n * elem)
-        # (uint)NAME + 0xNN 字节偏移（无 \b：((uint)g_adc 双层括号之间无单词边界；转换前导已锚定）
+        # (uint)NAME + 0xNN 字节偏移（转换前导已锚定）
         for m in re.finditer(r'\((?:uint|uint32_t|int)\)\s*' + esc + r'\s*\+\s*(0x[0-9a-fA-F]+|\d+)', ln):
             off = int(m.group(1), 16) if m.group(1).startswith('0x') else int(m.group(1))
             out.add(base + off)
@@ -159,7 +161,7 @@ def parse_c_addrs(src_path):
 
     for ln in code.split('\n'):
         # ① 先更新别名（赋值语句；本行若兼有访问按新值展开——真实代码赋值行无访问）
-        for m in re.finditer(r'(\w+)\s*=\s*(DAT_\w+|g_\w+|PTR_\w+|TIMER[0-3])\s*;', ln):
+        for m in re.finditer(r'(\w+)\s*=\s*(\w+)\s*;', ln):
             aliases[m.group(1)] = m.group(2)
         # ② 字面量直接访问
         for m in re.finditer(r'(?<![0-9a-zA-Z_])(0x[0-9a-fA-F]{7,8})(?![0-9a-zA-Z_])', ln):

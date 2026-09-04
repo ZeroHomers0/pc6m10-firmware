@@ -1,20 +1,12 @@
 /* =============================================================================
- * types.h — Ghidra 反编译类型映射（firmware/inc）
- * 让反编译 C 直接用 Ghidra 类型名编译。
+ * types.h — 固定宽度基础类型（firmware/inc）
+ *
+ * 业务源码使用 stdint.h 的标准类型；本文件只保留统一入口，不再暴露
+ * Ghidra 反编译阶段的 undefined/byte 等兼容别名。
  * ========================================================================== */
 #ifndef TYPES_H
 #define TYPES_H
 
 #include <stdint.h>
-
-typedef uint8_t  undefined1;
-typedef uint16_t undefined2;
-typedef uint32_t undefined4;
-typedef uint64_t undefined8;
-typedef uint8_t  undefined;
-typedef uint8_t  byte;
-typedef uint16_t ushort;
-typedef unsigned int uint;
-typedef uint64_t ulonglong;
 
 #endif /* TYPES_H */

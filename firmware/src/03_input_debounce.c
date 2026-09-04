@@ -4,31 +4,32 @@
  * ========================================================================== */
 #include "inc/types.h"
 #include "inc/reg.h"
-#include "inc/globals.h"
+#include "inc/firmware_api.h"
+#include "inc/firmware_state.h"
 
 /* 0x00001578 —— 输入引脚方向配置（置输入模式）
- *   DAT_00001974=0x2009C000（FIO 池基址）
+ *   input_fio_base_ptr=0x2009C000（FIO 池基址）
  *   [8]  = FIO0DIR（+0x20）；[0x18]=FIO1DIR（+0x60）
  *   配置为输入：P0.28/27（0x10000000/0x8000000）、P1.16/17（0x10000/0x20000）、
  *   P0.9（0x200）、P0.6（0x40）、P0.2/0.3（0x4/0x8） */
 void gpio_inputs_dir_init(void)
 {
-  volatile uint32_t *fio;
+  volatile uint32_t *gpio_base;
 
-  fio = DAT_00001974;
-  DAT_00001974[8] = DAT_00001974[8] & 0xfff7ffff;   /* P1.17 输入 */
-  fio[8] = fio[8] & 0xfffbffff;               /* P1.16 输入 */
-  *fio = *fio & 0xbfffffff;                   /* P0.30 输入 */
-  *fio = *fio & 0xdfffffff;                   /* P0.29 输入 */
-  fio[0x18] = fio[0x18] & 0xfdffffff;         /* P2.25 输入 */
-  fio[0x18] = fio[0x18] & 0xfbffffff;         /* P2.24 输入 */
-  *fio = *fio & 0xf7ffffff;                   /* P0.27 输入 */
-  *fio = *fio & 0xefffffff;                   /* P0.28 输入 */
-  fio[8] = fio[8] & 0xfffeffff;               /* P1.16 输入 */
-  fio[8] = fio[8] & 0xfffdffff;               /* P1.17 输入 */
-  *fio = *fio & 0xffffffbf;                   /* P0.6 输入 */
-  *fio = *fio & 0xfffffffb;                   /* P0.3 输入 */
-  *fio = *fio & 0xfffffff7;                   /* P0.2 输入 */
+  gpio_base = input_fio_base_ptr;
+  input_fio_base_ptr[8] = input_fio_base_ptr[8] & 0xfff7ffff;   /* P1.17 输入 */
+  gpio_base[8] = gpio_base[8] & 0xfffbffff;               /* P1.16 输入 */
+  *gpio_base = *gpio_base & 0xbfffffff;                   /* P0.30 输入 */
+  *gpio_base = *gpio_base & 0xdfffffff;                   /* P0.29 输入 */
+  gpio_base[0x18] = gpio_base[0x18] & 0xfdffffff;         /* P2.25 输入 */
+  gpio_base[0x18] = gpio_base[0x18] & 0xfbffffff;         /* P2.24 输入 */
+  *gpio_base = *gpio_base & 0xf7ffffff;                   /* P0.27 输入 */
+  *gpio_base = *gpio_base & 0xefffffff;                   /* P0.28 输入 */
+  gpio_base[8] = gpio_base[8] & 0xfffeffff;               /* P1.16 输入 */
+  gpio_base[8] = gpio_base[8] & 0xfffdffff;               /* P1.17 输入 */
+  *gpio_base = *gpio_base & 0xffffffbf;                   /* P0.6 输入 */
+  *gpio_base = *gpio_base & 0xfffffffb;                   /* P0.3 输入 */
+  *gpio_base = *gpio_base & 0xfffffff7;                   /* P0.2 输入 */
   return;
 }
 
@@ -43,132 +44,132 @@ void gpio_inputs_dir_init(void)
  *     0x0E=编码器加（A=0,B=1,P1.16=0，计数>0x1E 触发）
  *   （0x16/0x21 = state_machine 的 r4 快进/快退码；0x0B/0x17/0x0E 为慢/组合键）
  *   全部输入就绪（非 0）→ 返回 0x1000197C 锁存值 */
-undefined1 input_scan_state(void)
+uint8_t input_scan_state(void)
 {
-  volatile uint32_t *scan_cnt;
-  volatile uint8_t *cnt_p;
+  volatile uint32_t *scan_counter_ptr;
+  volatile uint8_t *counter_ptr;
 
-  scan_cnt = DAT_00001978;
+  scan_counter_ptr = input_scan_counter_ptr;
   /* —— 任一输入未就绪（P1.16/P1.17/P0.28/P0.27/P2.9/P2.8 为 0）→ 进入扫描 —— */
-  if ((((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) == 0) ||
-        ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) == 0)) ||
-       ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) == 0)) ||
-      (((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) == 0 ||
-       ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x2000000) == 0)))) ||
-     ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x4000000) == 0)) {
-    *DAT_00001978 = *DAT_00001978 + 1;
-    if (*scan_cnt == 0x19) {
+  if ((((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x80000) == 0) ||
+        ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x40000) == 0)) ||
+       ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x40000000) == 0)) ||
+      (((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x20000000) == 0 ||
+       ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x2000000) == 0)))) ||
+     ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x4000000) == 0)) {
+    *input_scan_counter_ptr = *input_scan_counter_ptr + 1;
+    if (*scan_counter_ptr == 0x19) {
       /* 连续 0x19 拍后锁存旋转方向（A/B 相组合，1..6） */
-      if ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) == 0) &&
-          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) != 0)) &&
-         (((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) != 0 &&
-          ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) != 0 &&
-            ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x2000000) != 0)) &&
-           ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x4000000) != 0)))))) {
-        *DAT_0000197c = 1;
+      if ((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x80000) == 0) &&
+          ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x40000) != 0)) &&
+         (((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x40000000) != 0 &&
+          ((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x20000000) != 0 &&
+            ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x2000000) != 0)) &&
+           ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x4000000) != 0)))))) {
+        *input_direction_latch_ptr = 1;
       }
-      if (((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) != 0) &&
-           ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) == 0)) &&
-          (((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) != 0 &&
-           (((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) != 0 &&
-            ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x2000000) != 0)))))) &&
-         ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x4000000) != 0)) {
-        *DAT_0000197c = 2;
+      if (((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x80000) != 0) &&
+           ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x40000) == 0)) &&
+          (((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x40000000) != 0 &&
+           (((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x20000000) != 0 &&
+            ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x2000000) != 0)))))) &&
+         ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x4000000) != 0)) {
+        *input_direction_latch_ptr = 2;
       }
-      if (((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) != 0) &&
-           ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) != 0)) &&
-          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) == 0)) &&
-         ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) != 0 &&
-           ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x2000000) != 0)) &&
-          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x4000000) != 0)))) {
-        *DAT_0000197c = 3;
+      if (((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x80000) != 0) &&
+           ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x40000) != 0)) &&
+          ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x40000000) == 0)) &&
+         ((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x20000000) != 0 &&
+           ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x2000000) != 0)) &&
+          ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x4000000) != 0)))) {
+        *input_direction_latch_ptr = 3;
       }
-      if ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) != 0) &&
-          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) != 0)) &&
-         (((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) != 0 &&
-          ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) == 0 &&
-            ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x2000000) != 0)) &&
-           ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x4000000) != 0)))))) {
-        *DAT_0000197c = 4;
+      if ((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x80000) != 0) &&
+          ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x40000) != 0)) &&
+         (((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x40000000) != 0 &&
+          ((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x20000000) == 0 &&
+            ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x2000000) != 0)) &&
+           ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x4000000) != 0)))))) {
+        *input_direction_latch_ptr = 4;
       }
-      if ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) != 0) &&
-          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) != 0)) &&
-         ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) != 0 &&
-           (((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) != 0 &&
-            ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x2000000) == 0)))) &&
-          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x4000000) != 0)))) {
-        *DAT_0000197c = 5;
+      if ((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x80000) != 0) &&
+          ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x40000) != 0)) &&
+         ((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x40000000) != 0 &&
+           (((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x20000000) != 0 &&
+            ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x2000000) == 0)))) &&
+          ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x4000000) != 0)))) {
+        *input_direction_latch_ptr = 5;
       }
-      if ((((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) != 0) &&
-            ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) != 0)) &&
-           ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) != 0)) &&
-          (((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) != 0 &&
-           ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x2000000) != 0)))) &&
-         ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x4000000) == 0)) {
-        *DAT_0000197c = 6;
+      if ((((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x80000) != 0) &&
+            ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x40000) != 0)) &&
+           ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x40000000) != 0)) &&
+          (((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x20000000) != 0 &&
+           ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x2000000) != 0)))) &&
+         ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x4000000) == 0)) {
+        *input_direction_latch_ptr = 6;
       }
     }
-    if (0xf9 < *DAT_00001978) {
-      *DAT_00001978 = 0xf5;
-      *DAT_0000197c = 0;
-      cnt_p = DAT_00001980;
-      if ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) == 0) &&
-          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) != 0)) &&
-         (((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) != 0 &&
-          ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) != 0 &&
-            ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x2000000) != 0)) &&
-           ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x4000000) != 0)))))) {
-        *DAT_00001980 = *DAT_00001980 + 1;
-        if (0xb < *cnt_p) {
-          *cnt_p = 0xb;
+    if (0xf9 < *input_scan_counter_ptr) {
+      *input_scan_counter_ptr = 0xf5;
+      *input_direction_latch_ptr = 0;
+      counter_ptr = input_encoder_counter_ptr;
+      if ((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x80000) == 0) &&
+          ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x40000) != 0)) &&
+         (((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x40000000) != 0 &&
+          ((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x20000000) != 0 &&
+            ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x2000000) != 0)) &&
+           ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x4000000) != 0)))))) {
+        *input_encoder_counter_ptr = *input_encoder_counter_ptr + 1;
+        if (0xb < *counter_ptr) {
+          *counter_ptr = 0xb;
         }
-        if (*DAT_00001980 == 10) {
+        if (*input_encoder_counter_ptr == 10) {
           return 0xb;          /* 0x0B = 慢加事件（计数 10） */
         }
       }
-      cnt_p = DAT_00001980;
-      if ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) != 0) &&
-          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) == 0)) &&
-         ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) != 0 &&
-           (((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) != 0 &&
-            ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x2000000) != 0)))) &&
-          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x4000000) != 0)))) {
+      counter_ptr = input_encoder_counter_ptr;
+      if ((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x80000) != 0) &&
+          ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x40000) == 0)) &&
+         ((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x40000000) != 0 &&
+           (((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x20000000) != 0 &&
+            ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x2000000) != 0)))) &&
+          ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x4000000) != 0)))) {
         return 0x16;           /* 0x16 = 快加（A=1,B=0） */
       }
-      if (((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) != 0) &&
-           ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) != 0)) &&
-          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) == 0)) &&
-         ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) != 0 &&
-           ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x2000000) != 0)) &&
-          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x4000000) != 0)))) {
+      if (((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x80000) != 0) &&
+           ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x40000) != 0)) &&
+          ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x40000000) == 0)) &&
+         ((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x20000000) != 0 &&
+           ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x2000000) != 0)) &&
+          ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x4000000) != 0)))) {
         return 0x21;           /* 0x21 = 快减（P0.28=1,P0.27=1,P1.16=0） */
       }
-      if ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) != 0) &&
-          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) == 0)) &&
-         (((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) == 0 &&
-          ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) != 0 &&
-            ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x2000000) != 0)) &&
-           ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x74) & 0x4000000) != 0)))))) {
-        *DAT_00001980 = *DAT_00001980 + 1;
-        if (0x1f < *cnt_p) {
-          *cnt_p = 0x1f;
+      if ((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x80000) != 0) &&
+          ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x40000) == 0)) &&
+         (((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x40000000) == 0 &&
+          ((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x20000000) != 0 &&
+            ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x2000000) != 0)) &&
+           ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x4000000) != 0)))))) {
+        *input_encoder_counter_ptr = *input_encoder_counter_ptr + 1;
+        if (0x1f < *counter_ptr) {
+          *counter_ptr = 0x1f;
         }
-        if (*DAT_00001980 == 0x1e) {
+        if (*input_encoder_counter_ptr == 0x1e) {
           return 0x17;         /* 0x17 = 慢减事件（计数 0x1E=30） */
         }
       }
-      cnt_p = DAT_00001c10;
-      if ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x80000) == 0) &&
-          ((*(volatile uint *)((uint32_t)DAT_00001974 + 0x34) & 0x40000) != 0)) &&
-         ((((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x40000000) != 0 &&
-           (((*(volatile uint *)((uint32_t)DAT_00001974 + 0x14) & 0x20000000) == 0 &&
-            ((*(volatile uint *)(DAT_00001c0c + 0x74) & 0x2000000) != 0)))) &&
-          ((*(volatile uint *)(DAT_00001c0c + 0x74) & 0x4000000) != 0)))) {
-        *DAT_00001c10 = *DAT_00001c10 + 1;
-        if (0x1f < *cnt_p) {
-          *cnt_p = 0x1f;
+      counter_ptr = input_encoder_counter_ptr;
+      if ((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x80000) == 0) &&
+          ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x40000) != 0)) &&
+         ((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x40000000) != 0 &&
+           (((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x20000000) == 0 &&
+            ((*(volatile uint32_t *)(input_run_stop_fio_base_ptr + 0x74) & 0x2000000) != 0)))) &&
+          ((*(volatile uint32_t *)(input_run_stop_fio_base_ptr + 0x74) & 0x4000000) != 0)))) {
+        *input_encoder_counter_ptr = *input_encoder_counter_ptr + 1;
+        if (0x1f < *counter_ptr) {
+          *counter_ptr = 0x1f;
         }
-        if (*DAT_00001c10 == 0x1e) {
+        if (*input_encoder_counter_ptr == 0x1e) {
           return 0xe;          /* 0x0E = 组合键事件（计数 0x1E） */
         }
       }
@@ -176,103 +177,102 @@ undefined1 input_scan_state(void)
   }
   else {
     /* —— 全部输入就绪（稳定）—— */
-    if (0x18 < *DAT_00001978) {
-      *DAT_00001978 = 0;
-      return *DAT_0000197c;    /* 返回锁存方向 */
+    if (0x18 < *input_scan_counter_ptr) {
+      *input_scan_counter_ptr = 0;
+      return *input_direction_latch_ptr;    /* 返回锁存方向 */
     }
-    *DAT_0000197c = 0;
-    *DAT_00001978 = 0;
-    *DAT_00001980 = 0;
+    *input_direction_latch_ptr = 0;
+    *input_scan_counter_ptr = 0;
+    *input_encoder_counter_ptr = 0;
   }
   return 0;
 }
-
 /* 0x000019C6 —— RUN/STOP 按钮扫描（P0.28/P0.27）
  *   P0.28 低且 P0.27 高（RUN 按下，计数 0x32=50）→ 返回 7
  *   P0.28 高且 P0.27 低（STOP 按下，计数 0x32）→ 返回 8
  *   双模式：0x10001C14==0 单次触发；!=0 保持模式（0x10001C20 锁存 7/8）
  *   0x10001C0C = FIO 池基址（0x2009C000） */
-undefined1 scan_run_stop(void)
+uint8_t scan_run_stop(void)
 {
-  volatile uint8_t *cnt_p;
-  undefined1 evt;
+  volatile uint8_t *counter_ptr;
+  uint8_t event_code;
 
-  cnt_p = DAT_00001c18;
-  if (*DAT_00001c14 == '\0') {
+  counter_ptr = input_run_counter_ptr;
+  if (*input_run_stop_mode_ptr == '\0') {
     /* —— 单次触发模式 —— */
-    if (((*(volatile uint *)(DAT_00001c0c + 0x14) & 0x10000000) == 0) &&
-       ((*(volatile uint *)(DAT_00001c0c + 0x14) & 0x8000000) != 0)) {
-      *DAT_00001c18 = *DAT_00001c18 + 1;
-      if (*cnt_p == 0x32) {
-        *cnt_p = 0x32;
+    if (((*(volatile uint32_t *)(input_run_stop_fio_base_ptr + 0x14) & 0x10000000) == 0) &&
+       ((*(volatile uint32_t *)(input_run_stop_fio_base_ptr + 0x14) & 0x8000000) != 0)) {
+      *input_run_counter_ptr = *input_run_counter_ptr + 1;
+      if (*counter_ptr == 0x32) {
+        *counter_ptr = 0x32;
         return 7;              /* RUN */
       }
-      if (0x32 < *DAT_00001c18) {
-        *DAT_00001c18 = 0x32;
+      if (0x32 < *input_run_counter_ptr) {
+        *input_run_counter_ptr = 0x32;
       }
     }
     else {
-      *DAT_00001c18 = 0;
+      *input_run_counter_ptr = 0;
     }
-    cnt_p = DAT_00001c1c;
-    if (((*(volatile uint *)(DAT_00001c0c + 0x14) & 0x10000000) == 0) ||
-       ((*(volatile uint *)(DAT_00001c0c + 0x14) & 0x8000000) != 0)) {
-      *DAT_00001c1c = 0;
+    counter_ptr = input_stop_counter_ptr;
+    if (((*(volatile uint32_t *)(input_run_stop_fio_base_ptr + 0x14) & 0x10000000) == 0) ||
+       ((*(volatile uint32_t *)(input_run_stop_fio_base_ptr + 0x14) & 0x8000000) != 0)) {
+      *input_stop_counter_ptr = 0;
     }
     else {
-      *DAT_00001c1c = *DAT_00001c1c + 1;
-      if (*cnt_p == 0x32) {
-        *cnt_p = 0x32;
+      *input_stop_counter_ptr = *input_stop_counter_ptr + 1;
+      if (*counter_ptr == 0x32) {
+        *counter_ptr = 0x32;
         return 8;              /* STOP */
       }
-      if (0x32 < *DAT_00001c1c) {
-        *DAT_00001c1c = 0x32;
+      if (0x32 < *input_stop_counter_ptr) {
+        *input_stop_counter_ptr = 0x32;
       }
     }
-    evt = 0;
+    event_code = 0;
   }
   else {
     /* —— 保持模式：去抖后锁存到 0x10001C20 —— */
-    if ((*(volatile uint *)(DAT_00001c0c + 0x14) & 0x10000000) == 0) {
-      *DAT_00001c18 = *DAT_00001c18 + 1;
-      if (0x31 < *cnt_p) {
-        *cnt_p = 0x32;
-        *DAT_00001c20 = 7;
+    if ((*(volatile uint32_t *)(input_run_stop_fio_base_ptr + 0x14) & 0x10000000) == 0) {
+      *input_run_counter_ptr = *input_run_counter_ptr + 1;
+      if (0x31 < *counter_ptr) {
+        *counter_ptr = 0x32;
+        *input_run_stop_latch_ptr = 7;
       }
     }
     else {
-      *DAT_00001c18 = 0;
+      *input_run_counter_ptr = 0;
     }
-    cnt_p = DAT_00001c1c;
-    if ((*(volatile uint *)(DAT_00001c0c + 0x14) & 0x10000000) == 0) {
-      *DAT_00001c1c = 0;
+    counter_ptr = input_stop_counter_ptr;
+    if ((*(volatile uint32_t *)(input_run_stop_fio_base_ptr + 0x14) & 0x10000000) == 0) {
+      *input_stop_counter_ptr = 0;
     }
     else {
-      *DAT_00001c1c = *DAT_00001c1c + 1;
-      if (0x31 < *cnt_p) {
-        *cnt_p = 0x32;
-        *DAT_00001c20 = 8;
+      *input_stop_counter_ptr = *input_stop_counter_ptr + 1;
+      if (0x31 < *counter_ptr) {
+        *counter_ptr = 0x32;
+        *input_run_stop_latch_ptr = 8;
       }
     }
-    evt = *DAT_00001c20;
+    event_code = *input_run_stop_latch_ptr;
   }
-  return evt;
+  return event_code;
 }
 
 /* 0x00001AB8 —— P0.9 去抖（24V 交流方波检测，阈值 0xF=15）：
  *   持续高 0xF 拍 → 返回 1（清零计数）；低 → 清零 */
-undefined4 debounce_p09(void)
+uint32_t debounce_p09(void)
 {
-  volatile uint8_t *p_cnt;
+  volatile uint8_t *counter_ptr;
 
-  p_cnt = DAT_00001c24;
-  if ((*(volatile uint *)(DAT_00001c0c + 0x14) & 0x200) == 0) {   /* P0.9 低 */
-    *DAT_00001c24 = 0;
+  counter_ptr = input_p09_counter_ptr;
+  if ((*(volatile uint32_t *)(input_run_stop_fio_base_ptr + 0x14) & 0x200) == 0) {   /* P0.9 低 */
+    *input_p09_counter_ptr = 0;
   }
   else {
-    *DAT_00001c24 = *DAT_00001c24 + 1;
-    if (0xf < *p_cnt) {
-      *p_cnt = 0;
+    *input_p09_counter_ptr = *input_p09_counter_ptr + 1;
+    if (0xf < *counter_ptr) {
+      *counter_ptr = 0;
       return 1;
     }
   }
@@ -281,130 +281,130 @@ undefined4 debounce_p09(void)
 
 /* 0x00001AE6 —— P1.16 去抖（外故障，阈值 0xFA=250）：
  *   高持续 0xFA 拍 → 返回 1；低持续 0xFA 拍 → 返回 2（边沿双向） */
-undefined4 debounce_p116(void)
+uint32_t debounce_p116(void)
 {
-  volatile uint8_t *cnt_p;
+  volatile uint8_t *counter_ptr;
 
-  cnt_p = DAT_00001c28;
-  if ((*(volatile uint *)(DAT_00001c0c + 0x34) & 0x10000) == 0) {   /* P1.16 低 */
-    *DAT_00001c28 = 0;
+  counter_ptr = input_p116_high_counter_ptr;
+  if ((*(volatile uint32_t *)(input_run_stop_fio_base_ptr + 0x34) & 0x10000) == 0) {   /* P1.16 低 */
+    *input_p116_high_counter_ptr = 0;
   }
   else {
-    *DAT_00001c28 = *DAT_00001c28 + 1;
-    if (0xfa < *cnt_p) {
-      *cnt_p = 0xfa;
+    *input_p116_high_counter_ptr = *input_p116_high_counter_ptr + 1;
+    if (0xfa < *counter_ptr) {
+      *counter_ptr = 0xfa;
       return 1;              /* 高沿 */
     }
   }
-  cnt_p = DAT_00001c2c;
-  if ((*(volatile uint *)(DAT_00001c0c + 0x34) & 0x10000) == 0) {
-    *DAT_00001c2c = *DAT_00001c2c + 1;
-    if (0xfa < *cnt_p) {
-      *cnt_p = 0xfa;
+  counter_ptr = input_p116_low_counter_ptr;
+  if ((*(volatile uint32_t *)(input_run_stop_fio_base_ptr + 0x34) & 0x10000) == 0) {
+    *input_p116_low_counter_ptr = *input_p116_low_counter_ptr + 1;
+    if (0xfa < *counter_ptr) {
+      *counter_ptr = 0xfa;
       return 2;              /* 低沿 */
     }
   }
   else {
-    *DAT_00001c2c = 0;
+    *input_p116_low_counter_ptr = 0;
   }
   return 0;
 }
 
 /* 0x00001B3E —— P1.17 去抖（复位，阈值 0x32=50，同 P1.16 结构） */
-undefined4 debounce_p117(void)
+uint32_t debounce_p117(void)
 {
-  volatile uint8_t *cnt_p;
+  volatile uint8_t *counter_ptr;
 
-  cnt_p = DAT_00001c30;
-  if ((*(volatile uint *)(DAT_00001c0c + 0x34) & 0x20000) == 0) {   /* P1.17 低 */
-    *DAT_00001c30 = 0;
+  counter_ptr = input_p117_high_counter_ptr;
+  if ((*(volatile uint32_t *)(input_run_stop_fio_base_ptr + 0x34) & 0x20000) == 0) {   /* P1.17 低 */
+    *input_p117_high_counter_ptr = 0;
   }
   else {
-    *DAT_00001c30 = *DAT_00001c30 + 1;
-    if (0x32 < *cnt_p) {
-      *cnt_p = 0x32;
+    *input_p117_high_counter_ptr = *input_p117_high_counter_ptr + 1;
+    if (0x32 < *counter_ptr) {
+      *counter_ptr = 0x32;
       return 1;
     }
   }
-  cnt_p = DAT_00001c34;
-  if ((*(volatile uint *)(DAT_00001c0c + 0x34) & 0x20000) == 0) {
-    *DAT_00001c34 = *DAT_00001c34 + 1;
-    if (0x32 < *cnt_p) {
-      *cnt_p = 0x32;
+  counter_ptr = input_p117_low_counter_ptr;
+  if ((*(volatile uint32_t *)(input_run_stop_fio_base_ptr + 0x34) & 0x20000) == 0) {
+    *input_p117_low_counter_ptr = *input_p117_low_counter_ptr + 1;
+    if (0x32 < *counter_ptr) {
+      *counter_ptr = 0x32;
       return 2;
     }
   }
   else {
-    *DAT_00001c34 = 0;
+    *input_p117_low_counter_ptr = 0;
   }
   return 0;
 }
 
 /* 0x00001B96 —— P0.6 去抖（急停，阈值 0x32=50） */
-undefined4 debounce_p06(void)
+uint32_t debounce_p06(void)
 {
-  volatile uint8_t *cnt_p;
+  volatile uint8_t *counter_ptr;
 
-  cnt_p = DAT_00001c38;
-  if ((*(volatile uint *)(DAT_00001c0c + 0x14) & 0x40) == 0) {      /* P0.6 低 */
-    *DAT_00001c38 = 0;
+  counter_ptr = input_p06_high_counter_ptr;
+  if ((*(volatile uint32_t *)(input_run_stop_fio_base_ptr + 0x14) & 0x40) == 0) {      /* P0.6 低 */
+    *input_p06_high_counter_ptr = 0;
   }
   else {
-    *DAT_00001c38 = *DAT_00001c38 + 1;
-    if (0x32 < *cnt_p) {
-      *cnt_p = 0x32;
+    *input_p06_high_counter_ptr = *input_p06_high_counter_ptr + 1;
+    if (0x32 < *counter_ptr) {
+      *counter_ptr = 0x32;
       return 1;
     }
   }
-  cnt_p = DAT_00001c3c;
-  if ((*(volatile uint *)(DAT_00001c0c + 0x14) & 0x40) == 0) {
-    *DAT_00001c3c = *DAT_00001c3c + 1;
-    if (0x32 < *cnt_p) {
-      *cnt_p = 0x32;
+  counter_ptr = input_p06_low_counter_ptr;
+  if ((*(volatile uint32_t *)(input_run_stop_fio_base_ptr + 0x14) & 0x40) == 0) {
+    *input_p06_low_counter_ptr = *input_p06_low_counter_ptr + 1;
+    if (0x32 < *counter_ptr) {
+      *counter_ptr = 0x32;
       return 2;
     }
   }
   else {
-    *DAT_00001c3c = 0;
+    *input_p06_low_counter_ptr = 0;
   }
   return 0;
 }
 
 /* 0x00001BEE —— P0.2 与 P0.3 双低联锁检查：同时为 0 → 返回 1（安全联锁），否则 0
  *   main 中开机判断：<1 才进主循环，否则显示联锁错误屏 */
-undefined4 chk_p02_p03(void)
+uint32_t chk_p02_p03(void)
 {
-  undefined4 ret;
+  uint32_t result;
 
-  if (((*(volatile uint *)(DAT_00001c0c + 0x14) & 4) == 0) && ((*(volatile uint *)(DAT_00001c0c + 0x14) & 8) == 0)) {
-    ret = 1;
+  if (((*(volatile uint32_t *)(input_run_stop_fio_base_ptr + 0x14) & 4) == 0) && ((*(volatile uint32_t *)(input_run_stop_fio_base_ptr + 0x14) & 8) == 0)) {
+    result = 1;
   }
   else {
-    ret = 0;
+    result = 0;
   }
-  return ret;
+  return result;
 }
 
 /* 0x000010F8C —— P0 输入初始化（P0.2/3/28/27 等置输入，配合 read_input_p02） */
 void gpio0_input_init(void)
 {
-  volatile uint32_t *fio;
+  volatile uint32_t *gpio_base;
 
-  fio = DAT_00010fcc;
-  *DAT_00010fcc = *DAT_00010fcc & 0xfffffffb;   /* P0.3 输入 */
-  *fio = *fio & 0xefffffff;               /* P0.28 输入 */
-  *fio = *fio & 0xf7ffffff;               /* P0.27 输入 */
+  gpio_base = input_gpio0_base;
+  *input_gpio0_base = *input_gpio0_base & 0xfffffffb;   /* P0.3 输入 */
+  *gpio_base = *gpio_base & 0xefffffff;               /* P0.28 输入 */
+  *gpio_base = *gpio_base & 0xf7ffffff;               /* P0.27 输入 */
   return;
 }
 
 /* 0x000010FAE —— 读 P0.2 状态到 0x100010FD0（RUN/STOP 模式选择读取） */
-undefined4 read_input_p02(void)
+uint32_t read_input_p02(void)
 {
-  if ((*(volatile uint *)((uint32_t)DAT_00010fcc + 0x14) & 4) == 0) {
-    *DAT_00010fd0 = 0;
+  if ((*(volatile uint32_t *)((uint32_t)input_gpio0_base + 0x14) & 4) == 0) {
+    input_p02_state = 0;
   }
   else {
-    *DAT_00010fd0 = 1;
+    input_p02_state = 1;
   }
   return 0;
 }

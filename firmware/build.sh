@@ -44,7 +44,6 @@ rm -f *.o src/*.o firmware.elf firmware.hex firmware.bin firmware.map
 echo "== 编译 =="
 "$CC" $CFLAGS -c -o startup.o startup.s
 "$CC" $CFLAGS -c -o data_image.o data_image.s
-"$CC" $CFLAGS -c -o globals.o globals.c
 "$CC" $CFLAGS -c -o stub.o stub.c
 for f in src/*.c; do
   echo "  $f"
@@ -59,6 +58,8 @@ echo "== 产物 =="
 "$OBJCOPY" -O ihex firmware.elf firmware.hex
 # --gap-fill 0xFF：CRP 占位引入的 0xCC..0x2FB 间隙（以及任何未用区）以 0xFF
 # 填充，与 Flash 擦除态一致，避免 J-Link 把无关的 0x00 写进该区域。
-"$OBJCOPY" --gap-fill 0xFF -O binary firmware.elf firmware.bin
+"$OBJCOPY" --gap-fill 0xFF -O binary \
+    --only-section=.isr_vector --only-section=.crp --only-section=.text --only-section=.fw_image \
+    firmware.elf firmware.bin
 "$TC/arm-none-eabi-size" firmware.elf
 echo "OK: firmware.elf / firmware.hex / firmware.bin"

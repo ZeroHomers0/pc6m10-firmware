@@ -6,7 +6,7 @@
 # 背景：state_machine 有两条吸合路径（07_state_machine.c）：
 #   · 375 行  if (*RUN != 0) fio0_pin22_ctrl(1)      —— RLY1 运行继电器（设计意图）
 #   · 397 行  if (*SYNC_2C != 1) { RLY3/RLY2/RLY1 }  —— 锁机强制三继电器全吸合
-# 其中 SYNC_2C(0x1000172C) = 锁机标志（globals.c DAT_00000750=0x1000172C；
+# 其中 SYNC_2C(0x1000172C) = 锁机标志（旧地址证据槽 0x750；
 #   1=放行 / 0=锁机，README §关键语义澄清）。main() 认证段 01_startup.c:291
 #   强制置 1（抄板永久放行）→ 真实上电后 397 行恒不触发。
 #
@@ -53,7 +53,7 @@ EXTRA_MAPS = [
     (0xE0000000, 0x00100000),   # NVIC/SCS
 ]
 
-# 无故障停机运行态（同 w8_stack_watermark，SYNC_2C 地址按 globals.c 修正）
+# 无故障停机运行态（同 w8_stack_watermark，SYNC_2C 地址按证据修正）
 PRESET = [
     (0x1000172C, 1, 4),   # SYNC_2C = 1 放行（case 按需覆盖）
     (0x10001624, 0, 4),   # FAULT = 0

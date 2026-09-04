@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""verify_readwidth_all.py — 从反汇编自动提取 SRAM 访问宽度，对照 globals.c 找读宽 bug
+"""verify_readwidth_all.py — 从反汇编自动提取 SRAM 访问宽度，对照语义地址映射找读宽 bug
 
 原理：evidence/reverse/disassembly/functions/*.txt 每处内存解引用都有注释 `; ref 0x1000xxxx (no mem)`，
 其上一条指令的操作码决定访问宽度：
@@ -7,7 +7,8 @@
   ldr/str    -> word（4 字节）
   ldrh/strh  -> half（2 字节）
 
-对照 globals.c 里 `volatile uintN_t *DAT_xxx = (uintN_t *)0xADDR` 的定义宽度，
+对照 `firmware/inc/firmware_state.h` 和 `firmware/inc/firmware_parameters.h`
+中语义映射的定义宽度，
 找出：
   A) 反汇编 byte 访问、但符号定义为 uint32_t*（word 读多/写多 → 污染相邻槽）  【高危】
   B) 反汇编 word 访问、但符号定义为 uint8_t*（word 读少/写少 → 数据截断）      【高危】
@@ -19,7 +20,10 @@ sys.stdout.reconfigure(encoding='utf-8')
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DISASM = os.path.join(ROOT, 'evidence', 'reverse', 'disassembly', 'functions')
-GLOBALS = os.path.join(ROOT, 'firmware', 'globals.c')
+MAP_FILES = [
+    os.path.join(ROOT, 'firmware', 'inc', 'firmware_state.h'),
+    os.path.join(ROOT, 'firmware', 'inc', 'firmware_parameters.h'),
+]
 
 SRAM = re.compile(r';\s*ref\s+(0x1000[0-9a-fA-F]{4})\s*\(no mem\)')
 OP = re.compile(r'^\s*[0-9a-fA-F]{8}\s+(\S+)\s')
@@ -61,17 +65,19 @@ for fn in files:
                     pass
             prev_line = line
 
-# 2) 解析 globals.c 符号定义：addr -> (name, width)
+# 2) 解析语义地址映射：addr -> (name, width)
 DEF = re.compile(
-    r'volatile\s+(uint32_t|uint8_t|uint16_t)\s+\*(DAT_[0-9a-fA-F]+)\s*=\s*'
-    r'\((uint32_t|uint8_t|uint16_t)\s*\*\)\s*0x([0-9a-fA-F]+)'
+    r'#define\s+(\w+)\s+.*?volatile\s+'
+    r'(uint32_t|uint8_t|uint16_t)\s*\*\s*\)\s*0x([0-9a-fA-F]+)'
 )
 def_by_addr = {}   # addr -> list of (name, width)
-for m in DEF.finditer(open(GLOBALS, encoding='latin-1').read()):
-    w = m.group(1)
-    name = m.group(2)
-    addr = int(m.group(4), 16)
-    def_by_addr.setdefault(addr, []).append((name, w))
+for map_file in MAP_FILES:
+    with open(map_file, encoding='utf-8') as f:
+        for m in DEF.finditer(f.read()):
+            name = m.group(1)
+            w = m.group(2)
+            addr = int(m.group(3), 16)
+            def_by_addr.setdefault(addr, []).append((name, w))
 
 def gw(w):
     return {'uint8_t': 'byte', 'uint16_t': 'half', 'uint32_t': 'word'}[w]

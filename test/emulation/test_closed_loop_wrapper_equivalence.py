@@ -18,7 +18,7 @@ except Exception:
 from unicorn import *  # noqa
 
 FUNC_ORIG = 0x10F0A                # 原始固件里的 closed_loop_wrapper
-CNT  = 0x100020F4                  # 重算计数（DAT_00010f84）
+CNT  = 0x100020F4                  # 重算计数（closed_loop_recalculation_count）
 LO, HI = 0x10001000, 0x10003F00
 
 # (setpoint, feedback, coef_a, coef_b, cnt_init, 说明)

@@ -120,7 +120,7 @@ ORIG_BIN = os.path.join(ROOT, 'LPC1765.bin')
 
 def load_original(bin_path=ORIG_BIN):
     """加载原始 LPC1765.bin 到 flash 0x0，映射同样的 SRAM0/SRAM1、设同样 SP。
-    原始固件的指针全局（DAT_0000b4c4 等）存于 flash 0xb4c4，运行期从 flash 读目标地址，
+    原始固件的指针字槽存于 flash 0xb4c4，运行期从 flash 读目标地址，
     与编译版（指针存 SRAM1）.data 的区别不影响目标 SRAM 写入。"""
     e = Uc(UC_ARCH_ARM, UC_MODE_THUMB)
     e.mem_map(FLASH_BASE, FLASH_MAP, UC_PROT_ALL)

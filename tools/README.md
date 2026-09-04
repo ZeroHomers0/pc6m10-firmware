@@ -8,7 +8,7 @@
 |---|---|
 | `codex_audit_crc_tables.py` | 独立比对 CRC 表 vs 原始固件 |
 | `codex_audit_function_coverage.py` | 原始函数入口 vs 可编译源码/ELF 覆盖 |
-| `codex_audit_globals.py` | `globals.c` DAT/PTR 字面量 vs 原 BIN 逐项比对 |
+| `codex_audit_globals.py` | 历史 DAT/PTR 字面量审计工具（不参与当前语义源码流程） |
 | `codex_audit_strpool.py` | `strpool.c` 映射簇 vs 原 BIN 独立核对 |
 
 ### generation/ — 从原 BIN/反编译生成源码或报告
@@ -17,7 +17,7 @@
 |---|---|
 | `extract_data_segments.py` | 提取数据段常量（字符串/查表/指针）→ `evidence/reverse/reports/_data_extract.txt` |
 | `extract_ram_data_image.py` | IAR 压缩 `.data` 解压 → `firmware/assets/ram_data_image.bin` + 校验 |
-| `generate_globals.py` | 提取 DAT_/PTR_ 符号 → `globals.h/.c` |
+| `generate_globals.py` | 历史 DAT_/PTR_ 生成工具（不参与当前语义源码流程） |
 | `generate_string_pool.py` | 生成 `strpool.c`（GBK blob + 簇表 + strpool_map） |
 | `locate_sram_mirrors.py` | 定位 SRAM `.data` 初始镜像 + 字符串池补扫（结论已并入 `extract_ram_data_image`） |
 
@@ -38,20 +38,20 @@
 | 脚本 | 功能 |
 |---|---|
 | `apply_consts_08.py` / `09` / `12` | 对应 `.c` 的语义常量 → `consts.h` 宏 |
-| `fix_readwidth.py` | byte 槽被定义为 word 的符号 → `uint8_t*` |
+| `fix_readwidth.py` | 历史 byte 槽位宽修复工具（当前语义映射已直接维护） |
 | `rename_locals.py` | 按函数边界做局部变量/参数重命名 |
-| `rename_symbols.py` | 全局变量语义化命名（DAT_ → 人类可读名） |
+| `rename_symbols.py` | 历史全局变量语义化迁移工具（当前源码已完成迁移） |
 
 ### verification/ — 离线验证（当前主入口：`verify_firmware_equivalence.py`）
 
 | 脚本 | 功能 |
 |---|---|
 | `verify_firmware_equivalence.py` | **主入口**：直接执行原固件 vs 新 ELF 的关键函数 |
-| `check_readwidth.py` | 反汇编 strb/str vs `globals.c` 类型，找 byte 槽被定义 word |
+| `check_readwidth.py` | 反汇编 strb/str vs 语义地址映射类型，找 byte 槽被定义 word |
 | `verify_mem_xref.py` | 模块 `.c` SRAM 访问 vs 金标准 ref，双向判漏 |
 | `verify_modbus_c.py` | `08_modbus_dispatch.c` 写分支 vs asm 分支表 |
 | `verify_periph_xref.py` | 外设地址（0x2xxxxxxx/0x4xxxxxxx）交叉引用验证 |
-| `verify_readwidth_all.py` | 反汇编自动提取 SRAM 访问宽度 vs `globals.c` |
+| `verify_readwidth_all.py` | 反汇编自动提取 SRAM 访问宽度 vs 语义地址映射 |
 | `verify_sm_addresses.py` | `07_state_machine.c` SRAM 地址 vs 金标准 |
 | `verify_startup.py` | host 模拟 Reset_Handler 启动链路 |
 | `verify_strpool.py` | `strpool_map` 字符串映射正确性 |

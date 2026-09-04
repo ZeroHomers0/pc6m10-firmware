@@ -2,11 +2,11 @@
  * LPC1765FBD100 (ST33C 变频电源 / PC6M-10 三相晶闸管移相触发板)
  * 反编译源码导出 — 模块 08：UART3（Modbus RTU 从站）+ CRC16
  *
- * UART3 硬件：g_uart3 = UART3 基址 0x4009C000（U3RBR/U3THR=+0x00、
+ * UART3 硬件：uart3_peripheral_base = UART3 基址 0x4009C000（U3RBR/U3THR=+0x00、
  *   U3IER=+0x04、U3IIR/FCR=+0x08、U3LCR=+0x0C、U3LSR=+0x14、U3DLL=+0x00、
- *   U3DLM=+0x04）。DAT_0000b00c = FIO 池 0x2009C000（+0x20 FIO0DIR、+0x3c FIO1CLR，
- *   RS485 方向/空闲态）；DAT_0000b014 = SCB 0x400FC000（+0xc4 PCONP UART3 上电）；
- *   g_pinsel = PINSEL 0x4002C000（+0 引脚复用为 UART3 TXD/RXD）。
+ *   U3DLM=+0x04）。uart3_gpio_base = FIO 池 0x2009C000（+0x20 FIO0DIR、+0x3c FIO1CLR，
+ *   RS485 方向/空闲态）；uart3_scb_base = SCB 0x400FC000（+0xc4 PCONP UART3 上电）；
+ *   uart3_pin_select_registers = PINSEL 0x4002C000（+0 引脚复用为 UART3 TXD/RXD）。
  *   L0 修正：上游反汇编注"B00C=SCB(0x400F4000)"有误，实为 FIO 池 0x2009C000。
  * 波特率：U3LCR=0x80.. 0x9B（DLAB 置位写分频），分频值 = PCLK /
  *   (波特率×查表系数/1000)，系数随 PCLK 表 0x1000B028（BAUD_FAC_0/BAUD_FAC_3/...）。
@@ -26,14 +26,16 @@
 /* =============================================================================
  * src/08_uart3_modbus.c — 反编译模块 08（UART3 RS485 Modbus RTU 从站）可编译副本
  * 目标B 阶段4 修正：
- *   1) 补 include（types.h/reg.h/globals.h）。
- *   2) DAT_0000b00c 等 = UART3 指针表（flash 0xB00C-0xB094，初值 0x4009C000 基址），
- *      value 型下 DAT_x+off = 字节偏移 ✓（UART3 寄存器）。
+ *   1) 补 include（types.h/reg.h/firmware_state.h/firmware_parameters.h）。
+ *   2) uart3_gpio_base 等 = UART3 指针表（flash 0xB00C-0xB094，初值 0x4009C000 基址），
+ *      value 型下 address_table_entry+off = 字节偏移 ✓（UART3 寄存器）。
  *   3) 跨模块函数 extern。
  * ========================================================================== */
 #include "inc/types.h"
 #include "inc/reg.h"
-#include "inc/globals.h"
+#include "inc/firmware_api.h"
+#include "inc/firmware_state.h"
+#include "inc/firmware_parameters.h"
 #include "inc/consts.h"
 #include <stdbool.h>
 
@@ -42,101 +44,98 @@
 extern const uint8_t crc16_hi_tbl[256];
 extern const uint8_t crc16_lo_tbl[256];
 
-/* 0xAED0 RX 组帧子例程（骨架 stub 在 firmware/stub.c，W1 还原） */
-void func_0x0000aed0(void);
-
 /* 0x0000AC24 —— UART3 初始化：波特率重算 + 8N1 + 使能 TX/RX
  *   0x1000B01C=数据位(0/1/2/3→LCR 0x87/8B/9B/83 含 DLAB)；
  *   0x1000B024=波特率索引(0..7)→查表 0x1000B028 得系数，分频=PCLK/(波特率×系数/1000) */
-void uart3_init(uint divisor)
+void uart3_init(uint32_t divisor)
 {
-  int fio;
+  volatile uint8_t *gpio_base;
   volatile uint32_t *pinsel;
   volatile uint8_t *uart3;
 
-  fio = DAT_0000b00c;
-  *(volatile uint *)(DAT_0000b00c + 0x20) = *(volatile uint *)(DAT_0000b00c + 0x20) | 0x20000000;
-  *(volatile uint *)(fio + 0x3c) = *(volatile uint *)(fio + 0x3c) | 0x20000000;
-  *(volatile uint *)(DAT_0000b014 + 0xc4) = *g_pconp | 0x2000000;   /* PCONP UART3 上电 */
-  pinsel = g_pinsel;
-  *g_pinsel = *g_pinsel | 2;                            /* PINSEL UART3 引脚 */
+  gpio_base = uart3_gpio_base;
+  *(volatile uint32_t *)(uart3_gpio_base + 0x20) = *(volatile uint32_t *)(uart3_gpio_base + 0x20) | 0x20000000;
+  *(volatile uint32_t *)(gpio_base + 0x3c) = *(volatile uint32_t *)(gpio_base + 0x3c) | 0x20000000;
+  *(volatile uint32_t *)(uart3_scb_base + 0xc4) = *system_pconp | 0x2000000;   /* PCONP UART3 上电 */
+  pinsel = uart3_pin_select_registers;
+  *uart3_pin_select_registers = *uart3_pin_select_registers | 2;                            /* PINSEL UART3 引脚 */
   *pinsel = *pinsel | 8;
-  if (*g_uart_frame_sel == '\0') {
-    g_uart3[0xc] = 0x87;                                   /* LCR：8 位+DLAB */
+  if (*communication_frame_mode_ptr == '\0') {
+    uart3_peripheral_base[0xc] = 0x87;                                   /* LCR：8 位+DLAB */
   }
-  if (*g_uart_frame_sel == '\x01') {
-    g_uart3[0xc] = 0x8b;
+  if (*communication_frame_mode_ptr == '\x01') {
+    uart3_peripheral_base[0xc] = 0x8b;
   }
-  if (*g_uart_frame_sel == '\x02') {
-    g_uart3[0xc] = 0x9b;
+  if (*communication_frame_mode_ptr == '\x02') {
+    uart3_peripheral_base[0xc] = 0x9b;
   }
-  if (*g_uart_frame_sel == '\x03') {
-    g_uart3[0xc] = 0x83;
+  if (*communication_frame_mode_ptr == '\x03') {
+    uart3_peripheral_base[0xc] = 0x83;
   }
-  uart3 = g_uart3;
-  if (*g_baud_idx < 3) {
-    divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(volatile int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_0) /
+  uart3 = uart3_peripheral_base;
+  if (*communication_baud_index_ptr < 3) {
+    divisor = (uint32_t)(uint16_t)((uint64_t)uart3_peripheral_clock /
+                            ((uint64_t)(uint32_t)(*(volatile int *)(uart3_baud_rate_table_base + *communication_baud_index_ptr * 4) * BAUD_FAC_0) /
                             1000));
   }
-  if (*g_baud_idx == 3) {
-    divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(volatile int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_3) /
+  if (*communication_baud_index_ptr == 3) {
+    divisor = (uint32_t)(uint16_t)((uint64_t)uart3_peripheral_clock /
+                            ((uint64_t)(uint32_t)(*(volatile int *)(uart3_baud_rate_table_base + *communication_baud_index_ptr * 4) * BAUD_FAC_3) /
                             1000));
   }
-  if (*g_baud_idx == 4) {
-    divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(volatile int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_4) /
+  if (*communication_baud_index_ptr == 4) {
+    divisor = (uint32_t)(uint16_t)((uint64_t)uart3_peripheral_clock /
+                            ((uint64_t)(uint32_t)(*(volatile int *)(uart3_baud_rate_table_base + *communication_baud_index_ptr * 4) * BAUD_FAC_4) /
                             1000));
   }
-  if (*g_baud_idx == 5) {
-    divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(volatile int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_5) /
+  if (*communication_baud_index_ptr == 5) {
+    divisor = (uint32_t)(uint16_t)((uint64_t)uart3_peripheral_clock /
+                            ((uint64_t)(uint32_t)(*(volatile int *)(uart3_baud_rate_table_base + *communication_baud_index_ptr * 4) * BAUD_FAC_5) /
                             1000));
   }
-  if (*g_baud_idx == 6) {
-    divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(volatile int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_6) /
+  if (*communication_baud_index_ptr == 6) {
+    divisor = (uint32_t)(uint16_t)((uint64_t)uart3_peripheral_clock /
+                            ((uint64_t)(uint32_t)(*(volatile int *)(uart3_baud_rate_table_base + *communication_baud_index_ptr * 4) * BAUD_FAC_6) /
                             1000));
   }
-  if (*g_baud_idx == 7) {
-    divisor = (uint)(ushort)((ulonglong)DAT_0000b02c /
-                            ((ulonglong)(uint)(*(volatile int *)(DAT_0000b028 + *g_baud_idx * 4) * BAUD_FAC_7) /
+  if (*communication_baud_index_ptr == 7) {
+    divisor = (uint32_t)(uint16_t)((uint64_t)uart3_peripheral_clock /
+                            ((uint64_t)(uint32_t)(*(volatile int *)(uart3_baud_rate_table_base + *communication_baud_index_ptr * 4) * BAUD_FAC_7) /
                             1000));
   }
-  g_uart3[4] = (char)(divisor + ((uint)((int)divisor >> 0x1f) >> 0x18) >> 8);  /* DLM=高字节 */
+  uart3_peripheral_base[4] = (char)(divisor + ((uint32_t)((int)divisor >> 0x1f) >> 0x18) >> 8);  /* DLM=高字节 */
   *uart3 = (char)divisor;                                         /* DLL=低字节 */
-  if (*g_uart_frame_sel == '\0') {
+  if (*communication_frame_mode_ptr == '\0') {
     uart3[0xc] = 7;                                             /* LCR：8N1，清 DLAB */
   }
-  if (*g_uart_frame_sel == '\x01') {
-    g_uart3[0xc] = 0xb;
+  if (*communication_frame_mode_ptr == '\x01') {
+    uart3_peripheral_base[0xc] = 0xb;
   }
-  if (*g_uart_frame_sel == '\x02') {
-    g_uart3[0xc] = 0x1b;
+  if (*communication_frame_mode_ptr == '\x02') {
+    uart3_peripheral_base[0xc] = 0x1b;
   }
-  if (*g_uart_frame_sel == '\x03') {
-    g_uart3[0xc] = 3;
+  if (*communication_frame_mode_ptr == '\x03') {
+    uart3_peripheral_base[0xc] = 3;
   }
-  g_uart3[8] = 7;                                           /* FCR：使能 FIFO+清 */
-  uart3 = g_uart3;
+  uart3_peripheral_base[8] = 7;                                           /* FCR：使能 FIFO+清 */
+  uart3 = uart3_peripheral_base;
   NVIC_ISER0 = 0x100;
-  *(volatile uint *)(g_uart3 + 4) = *(volatile uint *)(g_uart3 + 4) | 1;  /* IER RBR 中断 */
-  *(volatile uint *)(uart3 + 4) = *(volatile uint *)(uart3 + 4) | 2;              /* IER THRE 中断 */
+  *(volatile uint32_t *)(uart3_peripheral_base + 4) = *(volatile uint32_t *)(uart3_peripheral_base + 4) | 1;  /* IER RBR 中断 */
+  *(volatile uint32_t *)(uart3 + 4) = *(volatile uint32_t *)(uart3 + 4) | 2;              /* IER THRE 中断 */
   return;
 }
 
 /* 0x0000AE0C —— UART3 发送 1 字节（U3THR 写 + 等 THRE 位）
  *   0x1000B030=发送状态、0x1000B038=发送长度、0x1000B03C=发送缓冲 */
-void uart3_tx_byte(undefined1 tx_byte)
+void uart3_tx_byte(uint8_t tx_byte)
 {
-  *(volatile uint *)(DAT_0000b00c + 0x38) = *(volatile uint *)(DAT_0000b00c + 0x38) | 0x20000000;
-  *g_uart_tx_state = 6;
-  *g_uart_tx_flag = 0;
-  *g_uart_tx_len = tx_byte;
+  *(volatile uint32_t *)(uart3_gpio_base + 0x38) = *(volatile uint32_t *)(uart3_gpio_base + 0x38) | 0x20000000;
+  *uart3_tx_state_ptr = 6;
+  *uart3_tx_index_ptr = 0;
+  *uart3_tx_length_ptr = tx_byte;
   do {
-  } while ((g_uart3[0x14] & 0x20) == 0);                    /* 等 THRE */
-  *g_uart3 = *g_uart_tx_buf;
+  } while ((uart3_peripheral_base[0x14] & 0x20) == 0);                    /* 等 THRE */
+  *uart3_peripheral_base = *uart3_tx_buffer_ptr;
   return;
 }
 
@@ -150,25 +149,25 @@ void uart3_rx_timeout_monitor(void)
   volatile uint32_t *tick_cnt;
   volatile uint8_t *tx_tick;
 
-  rx_gap_cnt = g_uart_rx_timeout;
-  if ((*g_comm_detect != '\0') &&
-     (*g_uart_rx_timeout = *g_uart_rx_timeout + 1, 0x7530 < *rx_gap_cnt)) {
-    *g_uart_rx_timeout = 0;
-    *DAT_0000b048 = *DAT_0000b048 | 0x8000;
+  rx_gap_cnt = uart3_rx_timeout_ptr;
+  if ((*communication_detection_ptr != '\0') &&
+     (*uart3_rx_timeout_ptr = *uart3_rx_timeout_ptr + 1, 0x7530 < *rx_gap_cnt)) {
+    *uart3_rx_timeout_ptr = 0;
+    *output_fault_flags_ptr = *output_fault_flags_ptr | 0x8000;
   }
-  tick_cnt = g_uart_global_tick;
-  *g_uart_global_tick = *g_uart_global_tick + 1;
+  tick_cnt = uart3_global_tick_ptr;
+  *uart3_global_tick_ptr = *uart3_global_tick_ptr + 1;
   if (300 < *tick_cnt) {
     *tick_cnt = 0;
     uart3_init(0);
   }
-  tx_tick = g_uart_tx_busy;
-  if (*g_uart_tx_state == '\x01') {
-    *g_uart_tx_busy = *g_uart_tx_busy + 1;
+  tx_tick = uart3_tx_busy_ptr;
+  if (*uart3_tx_state_ptr == '\x01') {
+    *uart3_tx_busy_ptr = *uart3_tx_busy_ptr + 1;
     if (10 < *tx_tick) {
       *tx_tick = 0;
-      *g_uart_tx_state = '\x05';
-      *(volatile uint *)(g_uart3 + 4) = *(volatile uint *)(g_uart3 + 4) & 0xfffffffe;
+      *uart3_tx_state_ptr = '\x05';
+      *(volatile uint32_t *)(uart3_peripheral_base + 4) = *(volatile uint32_t *)(uart3_peripheral_base + 4) & 0xfffffffe;
     }
   }
   return;
@@ -181,22 +180,22 @@ void uart3_rx_timeout_monitor(void)
 void UART3_IRQHandler(void)
 {
   volatile uint8_t *tx_idx;
-  uint iir_cause;
+  uint32_t iir_cause;
 
-  iir_cause = *(volatile uint *)(g_uart3 + 8) & 0xe;                 /* IIR 中断原因 */
+  iir_cause = *(volatile uint32_t *)(uart3_peripheral_base + 8) & 0xe;                 /* IIR 中断原因 */
   if (iir_cause == 4) {
-    func_0x0000aed0();   /* RX 组帧子例程（extraout_r3 伪影已删：IIR 原因保持原值） */
+    uart3_receive_frame();   /* RX 组帧子例程（IIR 原因保持原值） */
   }
-  tx_idx = g_uart_tx_flag;
+  tx_idx = uart3_tx_index_ptr;
   if (iir_cause == 2) {
-    *g_uart_tx_flag = *g_uart_tx_flag + 1;                           /* 发送索引++ */
-    if (*tx_idx < *g_uart_tx_len) {                               /* 未发完 */
-      *g_uart3 = *(volatile undefined1 *)(g_uart_tx_buf + (uint)*g_uart_tx_flag);
+    *uart3_tx_index_ptr = *uart3_tx_index_ptr + 1;                           /* 发送索引++ */
+    if (*tx_idx < *uart3_tx_length_ptr) {                               /* 未发完 */
+      *uart3_peripheral_base = *(volatile uint8_t *)(uart3_tx_buffer_ptr + (uint32_t)*uart3_tx_index_ptr);
     }
     else {                                                        /* 发完 */
-      *(volatile uint *)(DAT_0000b00c + 0x3c) = *(volatile uint *)(DAT_0000b00c + 0x3c) | 0x20000000;
-      *g_uart_tx_state = 0;
-      *(volatile uint *)(g_uart3 + 4) = *(volatile uint *)(g_uart3 + 4) | 1;
+      *(volatile uint32_t *)(uart3_gpio_base + 0x3c) = *(volatile uint32_t *)(uart3_gpio_base + 0x3c) | 0x20000000;
+      *uart3_tx_state_ptr = 0;
+      *(volatile uint32_t *)(uart3_peripheral_base + 4) = *(volatile uint32_t *)(uart3_peripheral_base + 4) | 1;
     }
   }
   return;
@@ -233,103 +232,103 @@ uint16_t crc16(uint8_t *data,uint16_t len)
  *   组基址表：组1→0x1000B06C/0x1000B074、组2→0x1000B07C/0x1000B080、
  *   组3→0x1000B084/0x1000B088、组4→0x1000B08C/0x1000B090；
  *   reg 0x00-0x3F 映射 0x1000B4B8..0x1000B590（0x1A-0x1F/0x24-0x25 等保留返回 0） */
-undefined4 modbus_read_reg(uint *out_val,uint reg_addr)
+uint32_t modbus_read_reg(uint32_t *out_val,uint32_t reg_addr)
 {
-  *g_reg_cur_idx = reg_addr & 0xfff;
-  if (*g_cfg_pid_sel == '\x01') {
-    *g_act_gain_a = *DAT_0000b06c;
-    *g_act_gain_b = *DAT_0000b074;
+  *modbus_register_index_ptr = reg_addr & 0xfff;
+  if (*modbus_pid_selection_ptr == '\x01') {
+    *parameter_active_gain_a_ptr = *parameter_profile1_gain_a_ptr;
+    *parameter_active_gain_b_ptr = *parameter_profile1_gain_b_ptr;
   }
-  if (*g_cfg_pid_sel == '\x02') {
-    *g_act_gain_a = *DAT_0000b07c;
-    *g_act_gain_b = *DAT_0000b080;
+  if (*modbus_pid_selection_ptr == '\x02') {
+    *parameter_active_gain_a_ptr = *parameter_profile2_gain_a_ptr;
+    *parameter_active_gain_b_ptr = *parameter_profile2_gain_b_ptr;
   }
-  if (*g_cfg_pid_sel == '\x03') {
-    *g_act_gain_a = *DAT_0000b084;
-    *g_act_gain_b = *DAT_0000b088;
+  if (*modbus_pid_selection_ptr == '\x03') {
+    *parameter_active_gain_a_ptr = *parameter_profile3_gain_a_ptr;
+    *parameter_active_gain_b_ptr = *parameter_profile3_gain_b_ptr;
   }
-  if (*g_cfg_pid_sel == '\x04') {
-    *g_act_gain_a = *DAT_0000b08c;
-    *g_act_gain_b = *DAT_0000b090;
+  if (*modbus_pid_selection_ptr == '\x04') {
+    *parameter_active_gain_a_ptr = *parameter_profile4_gain_a_ptr;
+    *parameter_active_gain_b_ptr = *parameter_profile4_gain_b_ptr;
   }
-  switch((char)*g_reg_cur_idx) {
+  switch((char)*modbus_register_index_ptr) {
   case '\0':
-    *out_val = (uint)*g_gain_sel;
+    *out_val = (uint32_t)*parameter_control_mode_ptr;
     break;
   case '\x01':
-    *out_val = *g_gain_a;
+    *out_val = *parameter_voltage_range_ptr;
     break;
   case '\x02':
-    *out_val = *g_gain_b;
+    *out_val = *parameter_current_range_ptr;
     break;
   case '\x03':
-    *out_val = *DAT_0000b4c4;
+    *out_val = *parameter_transformer_ratio_ptr;
     break;
   case '\x04':
-    *out_val = *DAT_0000b4c8;
+    *out_val = *parameter_voltage_limit_ptr;
     break;
   case '\x05':
-    *out_val = *DAT_0000b4cc;
+    *out_val = *parameter_current_limit_ptr;
     break;
   case '\x06':
-    *out_val = (uint)*DAT_0000b4d0;
+    *out_val = (uint32_t)*parameter_soft_start_time_ptr;
     break;
   case '\a':
-    *out_val = (uint)*DAT_0000b4d4;
+    *out_val = (uint32_t)*parameter_soft_stop_time_ptr;
     break;
   case '\b':
-    *out_val = *DAT_0000b4d8;
+    *out_val = *parameter_phase_limit_ptr;
     break;
   case '\t':
-    *out_val = (uint)*g_out_fine;
+    *out_val = (uint32_t)*parameter_master_slave_offset_ptr;
     break;
   case '\n':
-    *out_val = (uint)*DAT_0000b4e0;
+    *out_val = (uint32_t)*parameter_control_method_ptr;
     break;
   case '\v':
-    *out_val = (uint)*DAT_0000b4e4;
+    *out_val = (uint32_t)*parameter_start_mode_ptr;
     break;
   case '\f':
-    *out_val = *DAT_0000b4e8;
+    *out_val = *parameter_overvoltage_limit_ptr;
     break;
   case '\r':
-    *out_val = (uint)*DAT_0000b4ec;
+    *out_val = (uint32_t)*parameter_overvoltage_time_ptr;
     break;
   case '\x0e':
-    *out_val = *DAT_0000b4f0;
+    *out_val = *parameter_undervoltage_limit_ptr;
     break;
   case '\x0f':
-    *out_val = (uint)*DAT_0000b4f4;
+    *out_val = (uint32_t)*parameter_undervoltage_time_ptr;
     break;
   case '\x10':
-    *out_val = *DAT_0000b4f8;
+    *out_val = *parameter_if_overload_limit_ptr;
     break;
   case '\x11':
-    *out_val = (uint)*DAT_0000b4fc;
+    *out_val = (uint32_t)*parameter_if_overload_time_ptr;
     break;
   case '\x12':
-    *out_val = *DAT_0000b500;
+    *out_val = *parameter_ct_overload_limit_ptr;
     break;
   case '\x13':
-    *out_val = (uint)*DAT_0000b504;
+    *out_val = (uint32_t)*parameter_ct_overload_time_ptr;
     break;
   case '\x14':
-    *out_val = (uint)*DAT_0000b508;
+    *out_val = (uint32_t)*parameter_phase_loss_enable_ptr;
     break;
   case '\x15':
-    *out_val = (uint)*DAT_0000b50c;
+    *out_val = (uint32_t)*parameter_phase_balance_ptr;
     break;
   case '\x16':
-    *out_val = (uint)*g_cfg_pid_sel;
+    *out_val = (uint32_t)*modbus_pid_selection_ptr;
     break;
   case '\x17':
-    *out_val = (uint)*g_act_gain_a;
+    *out_val = (uint32_t)*parameter_active_gain_a_ptr;
     break;
   case '\x18':
-    *out_val = (uint)*g_act_gain_b;
+    *out_val = (uint32_t)*parameter_active_gain_b_ptr;
     break;
   case '\x19':
-    *out_val = (uint)*g_phase_calib;
+    *out_val = (uint32_t)*parameter_phase_calib_ptr;
     break;
   case '\x1a':
     *out_val = 0;
@@ -350,16 +349,16 @@ undefined4 modbus_read_reg(uint *out_val,uint reg_addr)
     *out_val = 0;
     break;
   case ' ':
-    *out_val = *DAT_0000b520;
+    *out_val = *modbus_runtime_value_a_ptr;
     break;
   case '!':
-    *out_val = *DAT_0000b524;
+    *out_val = *modbus_runtime_value_b_ptr;
     break;
   case '\"':
-    *out_val = *DAT_0000b528;
+    *out_val = *modbus_runtime_minutes_ptr;
     break;
   case '#':
-    *out_val = *DAT_0000b52c;
+    *out_val = *modbus_runtime_hours_ptr;
     break;
   case '$':
     *out_val = 0;
@@ -368,79 +367,79 @@ undefined4 modbus_read_reg(uint *out_val,uint reg_addr)
     *out_val = 0;
     break;
   case '&':
-    *out_val = (uint)*g_run_flag;
+    *out_val = (uint32_t)*modbus_run_flag_ptr;
     break;
   case '\'':
-    *out_val = *DAT_0000b534;
+    *out_val = *adc_output_reference_ptr;
     break;
   case '(':
-    *out_val = *DAT_0000b538;
+    *out_val = *adc_output_current_a_ptr;
     break;
   case ')':
-    *out_val = *DAT_0000b53c;
+    *out_val = *adc_output_current_b_ptr;
     break;
   case '*':
-    *out_val = *DAT_0000b540;
+    *out_val = *adc_output_current_c_ptr;
     break;
   case '+':
-    *out_val = *DAT_0000b544;
+    *out_val = *adc_field_output_ptr;
     break;
   case ',':
-    *out_val = *DAT_0000b548;
+    *out_val = *adc_voltage_output_ptr;
     break;
   case '-':
-    *out_val = *DAT_0000b54c;
+    *out_val = *modbus_auxiliary_value_ptr;
     break;
   case '.':
-    *out_val = (uint)*g_slave_addr;
+    *out_val = (uint32_t)*communication_slave_address_ptr;
     break;
   case '/':
-    *out_val = *g_baud_idx;
+    *out_val = *communication_baud_index_ptr;
     break;
   case '0':
-    *out_val = (uint)*g_uart_frame_sel;
+    *out_val = (uint32_t)*communication_frame_mode_ptr;
     break;
   case '1':
-    *out_val = (uint)*g_comm_detect;
+    *out_val = (uint32_t)*communication_detection_ptr;
     break;
   case '2':
-    *out_val = *DAT_0000b560;
+    *out_val = *parameter_current_calibration_a_ptr;
     break;
   case '3':
-    *out_val = *DAT_0000b564;
+    *out_val = *parameter_current_calibration_b_ptr;
     break;
   case '4':
-    *out_val = *DAT_0000b568;
+    *out_val = *parameter_current_calibration_c_ptr;
     break;
   case '5':
-    *out_val = *DAT_0000b56c;
+    *out_val = *parameter_field_calibration_ptr;
     break;
   case '6':
-    *out_val = *DAT_0000b570;
+    *out_val = *parameter_voltage_calibration_ptr;
     break;
   case '7':
-    *out_val = (uint)*DAT_0000b574;
+    *out_val = (uint32_t)*parameter_emergency_stop_ptr;
     break;
   case '8':
-    *out_val = (uint)*DAT_0000b578;
+    *out_val = (uint32_t)*parameter_auxiliary_mode_ptr;
     break;
   case '9':
-    *out_val = (uint)*DAT_0000b57c;
+    *out_val = (uint32_t)*parameter_feedback_mode_ptr;
     break;
   case ':':
-    *out_val = (uint)*DAT_0000b580;
+    *out_val = (uint32_t)*parameter_input_mode_ptr;
     break;
   case ';':
-    *out_val = (uint)*g_out_phase;
+    *out_val = (uint32_t)*parameter_output_phase_ptr;
     break;
   case '<':
-    *out_val = *g_reg61_remote_en;
+    *out_val = *parameter_remote_enable_ptr;
     break;
   case '=':
-    *out_val = *g_reg62_start_phase;
+    *out_val = *parameter_start_phase_ptr;
     break;
   case '>':
-    *out_val = *DAT_0000b590;
+    *out_val = *output_divisor_ptr;
   }
   return 0;
 }
@@ -448,198 +447,198 @@ undefined4 modbus_read_reg(uint *out_val,uint reg_addr)
 /* 0x0000B2E0 —— Modbus 写保持寄存器（src_val=数据指针、reg_addr=寄存器号）
  *   0x1000B594=寄存器号；0x1A-0x1F/0x24-0x25/0x2B-0x2F/0x40-0x42 等映射到
  *   0x1000B5A0（保留/汇总区），0x2B-0x3D 段写 0x1000B984..0x1000B9C4 */
-undefined4 modbus_write_multi(undefined4 *src_val,uint reg_addr)
+uint32_t modbus_write_multi(uint32_t *src_val,uint32_t reg_addr)
 {
   volatile uint32_t *reg_ofs;
 
-  reg_ofs = g_reg_cur_idx;
-  *g_reg_cur_idx = reg_addr & 0xfff;
+  reg_ofs = modbus_register_index_ptr;
+  *modbus_register_index_ptr = reg_addr & 0xfff;
   switch((char)*reg_ofs) {
   case '\0':
-    *g_gain_sel = *(volatile undefined1 *)src_val;
+    *parameter_control_mode_ptr = *(volatile uint8_t *)src_val;
     break;
   case '\x01':
-    *g_gain_a = *src_val;
+    *parameter_voltage_range_ptr = *src_val;
     break;
   case '\x02':
-    *g_gain_b = *src_val;
+    *parameter_current_range_ptr = *src_val;
     break;
   case '\x03':
-    *DAT_0000b4c4 = *src_val;
+    *parameter_transformer_ratio_ptr = *src_val;
     break;
   case '\x04':
-    *DAT_0000b4c8 = *src_val;
+    *parameter_voltage_limit_ptr = *src_val;
     break;
   case '\x05':
-    *DAT_0000b4cc = *src_val;
+    *parameter_current_limit_ptr = *src_val;
     break;
   case '\x06':
-    *DAT_0000b4d0 = *(volatile undefined1 *)src_val;
+    *parameter_soft_start_time_ptr = *(volatile uint8_t *)src_val;
     break;
   case '\a':
-    *DAT_0000b4d4 = *(volatile undefined1 *)src_val;
+    *parameter_soft_stop_time_ptr = *(volatile uint8_t *)src_val;
     break;
   case '\b':
-    *DAT_0000b4d8 = *src_val;
+    *parameter_phase_limit_ptr = *src_val;
     break;
   case '\t':
-    *g_out_fine = *(volatile undefined1 *)src_val;
+    *parameter_master_slave_offset_ptr = *(volatile uint8_t *)src_val;
     break;
   case '\n':
-    *DAT_0000b4e0 = *(volatile undefined1 *)src_val;
+    *parameter_control_method_ptr = *(volatile uint8_t *)src_val;
     break;
   case '\v':
-    *DAT_0000b4e4 = *(volatile undefined1 *)src_val;
+    *parameter_start_mode_ptr = *(volatile uint8_t *)src_val;
     break;
   case '\f':
-    *DAT_0000b4e8 = *src_val;
+    *parameter_overvoltage_limit_ptr = *src_val;
     break;
   case '\r':
-    *DAT_0000b4ec = *(volatile undefined1 *)src_val;
+    *parameter_overvoltage_time_ptr = *(volatile uint8_t *)src_val;
     break;
   case '\x0e':
-    *DAT_0000b4f0 = *src_val;
+    *parameter_undervoltage_limit_ptr = *src_val;
     break;
   case '\x0f':
-    *DAT_0000b4f4 = *(volatile undefined1 *)src_val;
+    *parameter_undervoltage_time_ptr = *(volatile uint8_t *)src_val;
     break;
   case '\x10':
-    *DAT_0000b4f8 = *src_val;
+    *parameter_if_overload_limit_ptr = *src_val;
     break;
   case '\x11':
-    *DAT_0000b4fc = *(volatile undefined1 *)src_val;
+    *parameter_if_overload_time_ptr = *(volatile uint8_t *)src_val;
     break;
   case '\x12':
-    *DAT_0000b500 = *src_val;
+    *parameter_ct_overload_limit_ptr = *src_val;
     break;
   case '\x13':
-    *DAT_0000b504 = *(volatile undefined1 *)src_val;
+    *parameter_ct_overload_time_ptr = *(volatile uint8_t *)src_val;
     break;
   case '\x14':
-    *DAT_0000b508 = *(volatile undefined1 *)src_val;
+    *parameter_phase_loss_enable_ptr = *(volatile uint8_t *)src_val;
     break;
   case '\x15':
-    *DAT_0000b50c = *(volatile undefined1 *)src_val;
+    *parameter_phase_balance_ptr = *(volatile uint8_t *)src_val;
     break;
   case '\x16':
-    *g_cfg_pid_sel = *(volatile undefined1 *)src_val;
+    *modbus_pid_selection_ptr = *(volatile uint8_t *)src_val;
     break;
   case '\x17':
-    *DAT_0000b598 = *(volatile undefined1 *)src_val;
+    *parameter_profile4_gain_a_ptr = *(volatile uint8_t *)src_val;
     break;
   case '\x18':
-    *DAT_0000b59c = *(volatile undefined1 *)src_val;
+    *parameter_profile4_gain_b_ptr = *(volatile uint8_t *)src_val;
     break;
   case '\x19':
-    *g_phase_calib = *(volatile undefined1 *)src_val;
+    *parameter_phase_calib_ptr = *(volatile uint8_t *)src_val;
     break;
   case '\x1a':
-    *g_scratch = *src_val;
+    *modbus_write_scratch_ptr = *src_val;
     break;
   case '\x1b':
-    *g_scratch = *src_val;
+    *modbus_write_scratch_ptr = *src_val;
     break;
   case '\x1c':
-    *g_scratch = *src_val;
+    *modbus_write_scratch_ptr = *src_val;
     break;
   case '\x1d':
-    *g_scratch = *src_val;
+    *modbus_write_scratch_ptr = *src_val;
     break;
   case '\x1e':
-    *g_scratch = *src_val;
+    *modbus_write_scratch_ptr = *src_val;
     break;
   case '\x1f':
-    *g_scratch = *src_val;
+    *modbus_write_scratch_ptr = *src_val;
     break;
   case ' ':
-    *DAT_0000b520 = *src_val;
+    *modbus_runtime_value_a_ptr = *src_val;
     break;
   case '!':
-    *DAT_0000b524 = *src_val;
+    *modbus_runtime_value_b_ptr = *src_val;
     break;
   case '\"':
-    *DAT_0000b528 = *src_val;
+    *modbus_runtime_minutes_ptr = *src_val;
     break;
   case '#':
-    *DAT_0000b52c = *src_val;
+    *modbus_runtime_hours_ptr = *src_val;
     break;
   case '$':
-    *g_scratch = *src_val;
+    *modbus_write_scratch_ptr = *src_val;
     break;
   case '%':
-    *g_scratch = *src_val;
+    *modbus_write_scratch_ptr = *src_val;
     break;
   case '&':
-    *g_run_flag = *(volatile undefined1 *)src_val;
+    *modbus_run_flag_ptr = *(volatile uint8_t *)src_val;
     break;
   case '\'':
-    *DAT_0000b534 = *src_val;
+    *adc_output_reference_ptr = *src_val;
     break;
   case '(':
-    *g_scratch = *src_val;
+    *modbus_write_scratch_ptr = *src_val;
     break;
   case ')':
-    *g_scratch = *src_val;
+    *modbus_write_scratch_ptr = *src_val;
     break;
   case '*':
-    *g_scratch = *src_val;
+    *modbus_write_scratch_ptr = *src_val;
     break;
   case '+':
-    *g_scratch = *src_val;
+    *modbus_write_scratch_ptr = *src_val;
     break;
   case ',':
-    *g_scratch = *src_val;
+    *modbus_write_scratch_ptr = *src_val;
     break;
   case '-':
-    *g_scratch = *src_val;
+    *modbus_write_scratch_ptr = *src_val;
     break;
   case '.':
-    *g_slave_addr = *(volatile undefined1 *)src_val;
+    *communication_slave_address_ptr = *(volatile uint8_t *)src_val;
     break;
   case '/':
-    *g_baud_idx = *src_val;
+    *communication_baud_index_ptr = *src_val;
     break;
   case '0':
-    *g_uart_frame_sel = *(volatile undefined1 *)src_val;
+    *communication_frame_mode_ptr = *(volatile uint8_t *)src_val;
     break;
   case '1':
-    *g_comm_detect = *(volatile undefined1 *)src_val;
+    *communication_detection_ptr = *(volatile uint8_t *)src_val;
     break;
   case '2':
-    *DAT_0000b998 = *src_val;
+    *parameter_current_calibration_a_ptr = *src_val;
     break;
   case '3':
-    *DAT_0000b99c = *src_val;
+    *parameter_current_calibration_b_ptr = *src_val;
     break;
   case '4':
-    *DAT_0000b9a0 = *src_val;
+    *parameter_current_calibration_c_ptr = *src_val;
     break;
   case '5':
-    *DAT_0000b9a4 = *src_val;
+    *parameter_field_calibration_ptr = *src_val;
     break;
   case '6':
-    *DAT_0000b9a8 = *src_val;
+    *parameter_voltage_calibration_ptr = *src_val;
     break;
   case '7':
-    *DAT_0000b9ac = *(volatile undefined1 *)src_val;
+    *parameter_emergency_stop_ptr = *(volatile uint8_t *)src_val;
     break;
   case '8':
-    *DAT_0000b9b0 = *(volatile undefined1 *)src_val;
+    *parameter_auxiliary_mode_ptr = *(volatile uint8_t *)src_val;
     break;
   case '9':
-    *DAT_0000b9b4 = *(volatile undefined1 *)src_val;
+    *parameter_feedback_mode_ptr = *(volatile uint8_t *)src_val;
     break;
   case ':':
-    *DAT_0000b9b8 = *(volatile undefined1 *)src_val;
+    *parameter_input_mode_ptr = *(volatile uint8_t *)src_val;
     break;
   case ';':
-    *g_out_phase = *(volatile undefined1 *)src_val;
+    *parameter_output_phase_ptr = *(volatile uint8_t *)src_val;
     break;
   case '<':
-    *g_reg61_remote_en = *src_val;
+    *parameter_remote_enable_ptr = *src_val;
     break;
   case '=':
-    *g_reg62_start_phase = *src_val;
+    *parameter_start_phase_ptr = *src_val;
   }
   return 0;
 }

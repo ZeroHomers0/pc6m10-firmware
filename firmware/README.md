@@ -23,19 +23,20 @@ bash build.sh          # 产出 firmware.elf / firmware.hex / firmware.bin / fir
 | `startup.s` | Cortex-M3 启动：拷贝原 .data 镜像(fw_image)→0x10000000、清零原 .bss(0x1000213C-0x100029C8)、拷贝本 .data/清零 .bss、调 main()；向量表含 8 个真实 IRQ + weak 默认自旋 |
 | `lpc1765.ld` | FLASH 0x0/256K、SRAM0 0x10000000/32K（原固件 .data/.bss 布局）、SRAM1 0x2007C000/16K（globals）。**_estack=0x10006768**（复刻原 iar_init_core 最终 SP，避免栈覆盖 .bss） |
 | `data_image.s` | 原固件 SRAM .data 初始镜像（`assets/ram_data_image.bin`，8508B） |
-| `globals.c/h` | 847 个 DAT_/PTR_ 符号定义/声明（`tools/generation/generate_globals.py` 生成） |
+| `inc/firmware_state.h` | 系统、外设、输入、显示和运行时状态的语义化地址映射 |
+| `inc/firmware_parameters.h` | 配置、实时参数和 EEPROM 镜像的语义化地址映射 |
 | `src/strpool.c` | **W7a 字符串表**（`tools/generation/generate_string_pool.py` 生成） |
 | `stub.c` | 收尾子例程：`freq_adjust_sync(0xAB48)` + 已按原指令恢复的 UART3 RX 组帧 `func_0x0000aed0` |
 | `src/` | 13 个可编译模块 + `strpool.c`（01_startup 移除 IAR runtime；07_state_machine.c / 08_modbus_dispatch.c 已 W1a/W1b 完整还原） |
 | `inc/reg.h` | LPC1765 外设寄存器宏（FIO/TIMER/UART3/ADC/SCB/PINSEL/NVIC/WDT） |
-| `inc/types.h` | Ghidra 类型映射（undefined1/4/8、byte、uint…） |
+| `inc/types.h` | 固定宽度基础类型统一入口（不再定义反编译兼容别名） |
 
 ## 历史构建基准（2026-08-21，已被当前基线取代）
 
 - 零错误零警告；text 35904 / data 3388 / bss 2188；bin 39284B < 256K（阶段1-3 骨架基准）
 - 向量表：SP=0x10006768、Reset=0xD4；8 个 IRQ handler 全部绑定（nm 核实）
 - SRAM0 布局与原始固件一致：.data 0x10000000-0x1000213C(8508B)、.bss 0x1000213C-0x100029C8(2188B)
-- globals 放 SRAM1 隔离，不覆盖 DAT_ 指针指向的 SRAM0 变量区
+- 语义地址映射直接访问原固件 SRAM/外设地址，不额外生成反编译全局对象
 
 ## W1b + W7 追加（2026-08-21，本会话）
 
@@ -54,14 +55,14 @@ bash build.sh          # 产出 firmware.elf / firmware.hex / firmware.bin / fir
   - **读宽**：PID_MODE(0x10001710)及 PID 槽全程 ldrb，用 SM7B 字节宏（避免 word 污染相邻槽）。
 - **case7 补充**：编辑增减方向——MENU2==0 时 down(key3/0x21)使 PID_MODE++(clamp 4)/up(key2/0x16)使 PID_MODE--；P(0x10001717)/I(0x10001718) 仅 PID_MODE==4 可编辑;增益槽 0x10001722/23/24/25 级联下限（23≤22、25≤24、26≤25,各自 clamp 0xfa/0x80）；导航 MENU2 0-8,子页标题 0x6aa4(0-3)/0x9400(4-7)/0x9450+0x5ba4(8-c)。
 - **12_closed_loop 核对（2026-08-22）**：PID 核心 0x108b0(closed_loop_integral)+0x10f0a(closed_loop_wrapper)。对照 `_disasm/000108b0_FUN_000108b0.txt` 全文逐段核对：死区三档判断 / 分段除数表 4 套(通道1×2+通道2×2,各10段) / 控制方式2固定除数0x46 / PID公式(mla/mls/sdiv,P/I/D系数槽0x10002100-130读写顺序) / 上下限钳位(0x116520/0x5cc60) / wrapper节流 全部等价。修正 1 处：
-  - **读宽差异（5 槽）**：死区槽 0x10001722/23/24/25/26 反汇编全程 `ldrb`（byte），globals 原为 `volatile uint32_t*`（word 读，非4对齐地址读相邻4字节）。改 `volatile uint8_t*`（globals.h 5 extern + globals.c 5 定义）；`DAT_00010cdc`(0x1000211c 增益输出槽)保持 word（asm `str`）。
+  - **读宽差异（5 槽）**：死区槽 0x10001722/23/24/25/26 反汇编全程 `ldrb`（byte），早期地址映射曾按 `volatile uint32_t*` 访问，可能读写相邻4字节；现已统一为 `volatile uint8_t*` 语义映射。`0x1000211c` 增益输出槽保持 word（asm `str`）。
   - **等价槽**：0x10cf4==0x10f40==0x10002128(除数)、0x10cfc==0x10f44==0x10001638(A_RANGE)、0x10cf8==0x10f48==0x10002024、0x10cf0==0x10f4c==0x1000163c(V_RANGE)——IAR 同地址多 literal 槽，C 混用等价。
 - **06_param_system 核对（2026-08-22）**：load_config(0x25dc)+param_sync_live_to_eeprom(0x35f2)。对照 `_disasm/000025dc`/`000035f2` 全文核对魔数检查/银行A·B读入/默认回写/shadow→live 拷贝/增益对选择/16 位参数分高低字节全部等价。修正 2 处：
-  - **#P1a（系统性读宽错误，279 符号）**：参数 byte 槽（0x10001634/4c/4d/54-5b/64/7c-8b/94/95/c4/cc/d4/dc-e4/ec/f4/fc-ff/1704-06/0c-0f/10-21/22/24-2b）在 globals 全被定义为 `volatile uint32_t*`（word），而反汇编全程 `ldrb/strb`。word 写污染相邻 byte 槽（尤其 PID 槽 0x10001710-21 连续排列）。`tools/fix_readwidth.py`（幂等，findall 处理 gen_globals 挤在同一行的多符号）批量改 279 符号 uint32_t*→uint8_t*（globals.c 定义 + inc/globals.h extern）。
+  - **#P1a（系统性读宽错误，279 槽）**：参数 byte 槽（0x10001634/4c/4d/54-5b/64/7c-8b/94/95/c4/cc/d4/dc-e4/ec/f4/fc-ff/1704-06/0c-0f/10-21/22/24-2b）早期统一按 word 访问，可能污染相邻 byte 槽；现已在语义参数映射中统一为 `volatile uint8_t*`。
   - **#P1b（局部指针类型 2 处）**：load_config 的 `puVar1`、param_sync 的 `pcVar1` 原声明 `volatile uint32_t*`，实际只用于 byte 参数（`i2c_write_reg(*pcVar1, reg)` 单字节写），改 `volatile uint8_t*`。
   - **读宽判定依据**：param_sync 反汇编 0x35f4 `ldr r0,[0x3988]`+`ldrb r0,[r0]`（byte）vs 0x361e `ldr r0,[r0]`（word）——byte 参数 ldrb、word 参数 ldr；16 位参数（如 reg 0xb/0xc）用 `*(int*)DAT` 强转分高低字节。line 348-350 重复写 `[0x10001722]=[0x10001727]` 经反汇编 0x3512-0x351e 证实为原固件 IAR 冗余写（非伪影），C 忠实复现。
 - **04_i2c 核对（2026-08-22）**：I2C GPIO 位带模拟 9 函数（0x1c40-0x1ebc）。对照 `_disasm/00001c40`…`00001ebc` 全文核对：FIO 偏移（[0]=FIO0DIR/[5]=+0x14 PIN/[6]=+0x18 SET/[7]=+0x1C CLR）、延时循环（5/param×10000）、START/STOP 时序、write_byte 移位 `(data<<1)&0xFF`=`lsls #0x19+lsrs #0x18`、ACK 读 FIO0PIN bit10、read_byte 收位、write_reg/read_reg 的 [0xA6][reg][val] 序列 全部等价。修正 2 处：
-  - **#I1（读宽）**：`DAT_00001f00`（ACK 记录）值实为 `0x1000158c`（非头注释写的 0x10001F00），反汇编 `strb`（byte 写），globals 原 `uint32_t*`→改 `uint8_t*`（globals.c 定义 + inc/globals.h extern）。
+  - **#I1（读宽）**：ACK 记录地址实为 `0x1000158c`（非早期注释中的 `0x10001F00`），反汇编为 `strb`（byte 写），现已在语义状态映射中按 `uint8_t*` 访问。
   - **#I2（头注释）**：`DAT_00001f00=0x10001F00` 更正为 `0x1000158C`。
 - **08_modbus_dispatch 核对（2026-08-22）**：modbus_dispatch(0xB642)。对照 `_disasm/0000b642` 抽查核对（W1a 已精读 5161 条还原，本次验证等价性，**无新差异**）：
   - 帧态门控（状态==1 写 0x100017B8 后落到 !=5 检查，语义同 C 的 return）、从站匹配（FIO4CLR|=0x20000000 P4.29 + 清状态 + IER|=1）、功能码分发（0x03/0x06/0x10）全等价。

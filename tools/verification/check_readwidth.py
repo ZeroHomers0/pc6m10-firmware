@@ -1,4 +1,5 @@
-# check_readwidth.py — 对照反汇编 strb/str 与 globals.c 类型，找出"byte 槽被定义为 word"的符号
+# check_readwidth.py — 对照反汇编 strb/str 与语义地址映射类型，找出
+# "byte 槽被定义为 word"的映射
 import re, sys
 
 # byte 地址集合（load_config + param_sync 反汇编 strb 目标，合并去重）
@@ -16,28 +17,38 @@ BYTE_ADDRS = set("""
 0x1000172b
 """.split())
 
-# 读 globals.c
+# 读取当前语义地址映射。映射保留原始访问宽度，但不再依赖反编译生成的
+# globals.c / DAT_ 符号。
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
-with open(ROOT / "firmware/globals.c", encoding="latin-1") as f:
-    lines = f.readlines()
+mapping_files = [
+    ROOT / "firmware/inc/firmware_state.h",
+    ROOT / "firmware/inc/firmware_parameters.h",
+]
+lines = []
+for mapping_file in mapping_files:
+    lines.extend(mapping_file.read_text(encoding="utf-8").splitlines(True))
 
-# 匹配：volatile uint32_t *DAT_xxx = (uint32_t *)0xADDR;  (可能 uint8_t)
-pat = re.compile(r'^(\s*)(volatile\s+)(uint32_t|uint8_t)(\s+\*DAT_\w+\s*=\s*\()(uint32_t|uint8_t)(\s*\*\))0x([0-9a-fA-F]+)')
+# 匹配语义宏中的 typed address：
+#   #define name ((volatile uint32_t *)0xADDRu)
+#   #define name (*((volatile uint8_t *)0xADDRu))
+pat = re.compile(
+    r'^\s*#define\s+(\w+)\s+.*?volatile\s+'
+    r'(uint32_t|uint8_t|uint16_t)\s*\*\s*\)\s*0x([0-9a-fA-F]+)'
+)
 
 byte_def_as_word = []   # 需要 word->byte 的
 for i, line in enumerate(lines, 1):
     m = pat.match(line)
     if not m:
         continue
-    typ = m.group(3)
-    addr = "0x" + m.group(7).lower()
+    name, typ, raw_addr = m.groups()
+    addr = "0x" + raw_addr.lower()
     if addr in BYTE_ADDRS and typ == "uint32_t":
-        byte_def_as_word.append((i, line.rstrip("\n"), addr))
+        byte_def_as_word.append((i, name, addr))
 
 print(f"=== 需要 uint32_t* -> uint8_t* 的符号（byte 槽被定义为 word）共 {len(byte_def_as_word)} 个 ===")
-for i, line, addr in byte_def_as_word:
-    name = line.split("*")[1].split()[0]
+for i, name, addr in byte_def_as_word:
     print(f"{i:4d}  {name:20s} {addr}")
 
 # 反向检查：定义成 uint8_t* 但实际是 word 槽的（不该有，仅报告）
@@ -47,7 +58,7 @@ for i, line in enumerate(lines, 1):
     m = pat.match(line)
     if not m:
         continue
-    typ = m.group(3)
-    addr = "0x" + m.group(7).lower()
+    name, typ, raw_addr = m.groups()
+    addr = "0x" + raw_addr.lower()
     if typ == "uint8_t" and addr not in BYTE_ADDRS:
-        print(f"{i:4d}  {line.rstrip()}")
+        print(f"{i:4d}  {name:20s} {addr}")

@@ -19,7 +19,7 @@ LDFLAGS := -T lpc1765.ld -nostdlib
 LDLIBS  := -lgcc
 
 TARGET  := firmware
-OBJS    := startup.o data_image.o globals.o stub.o \
+OBJS    := startup.o data_image.o stub.o \
            $(patsubst src/%.c,src/%.o,$(wildcard src/*.c))
 
 all: $(TARGET).elf $(TARGET).hex $(TARGET).bin
@@ -32,18 +32,18 @@ $(TARGET).elf: $(OBJS) lpc1765.ld
 	$(AS) $(ASFLAGS) -c -o $@ $<
 
 # src/ 下 C 模块
-src/%.o: src/%.c inc/globals.h inc/reg.h inc/types.h
+src/%.o: src/%.c inc/reg.h inc/types.h inc/firmware_api.h inc/firmware_state.h inc/firmware_parameters.h inc/consts.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-# 根目录 C（globals.c / stub.c）
-%.o: %.c inc/globals.h inc/reg.h inc/types.h
+# 根目录 C（stub.c）
+%.o: %.c inc/reg.h inc/types.h inc/firmware_api.h inc/firmware_state.h inc/firmware_parameters.h inc/consts.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 %.hex: %.elf
 	$(OBJCOPY) -O ihex $< $@
 
 %.bin: %.elf
-	$(OBJCOPY) -O binary $< $@
+	$(OBJCOPY) --gap-fill 0xFF -O binary --only-section=.isr_vector --only-section=.crp --only-section=.text --only-section=.fw_image $< $@
 
 size: $(TARGET).elf
 	$(SIZE) $<

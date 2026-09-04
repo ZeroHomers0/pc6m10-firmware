@@ -681,7 +681,7 @@ add_p("保护计算综合 Uf、IF、三相电流、同步相位、外部故障�
 
 heading("8  工程结构与编码规范", 1)
 heading("8.1 工程目录", 2)
-code("firmware/\n  startup.s             向量表与复位入口\n  lpc1765.ld            Flash/SRAM/CRP 链接布局\n  data_image.s          SRAM 初始数据镜像\n  globals.c             全局地址与对象定义\n  inc/                  类型、寄存器、常量和全局声明\n  src/                  业务与驱动模块\n  build.sh              推荐构建入口\n  Makefile              make 构建入口\n  firmware.elf/.bin/.hex/.map  构建产物\ntest/                   自动化测试\ntools/jlink/            仓库版 J-Link 工具\ntools/w8/               串口、Modbus、波形和实机辅助工具")
+code("firmware/\n  startup.s             向量表与复位入口\n  lpc1765.ld            Flash/SRAM/CRP 链接布局\n  data_image.s          SRAM 初始数据镜像\n  inc/firmware_state.h  运行时状态与外设的语义地址映射\n  inc/firmware_parameters.h 参数区与 EEPROM 镜像的语义地址映射\n  inc/firmware_api.h    模块公共接口\n  src/                  业务与驱动模块\n  build.sh              推荐构建入口\n  Makefile              make 构建入口\n  firmware.elf/.bin/.hex/.map  构建产物\ntest/                   自动化测试\ntools/jlink/            仓库版 J-Link 工具\ntools/w8/               串口、Modbus、波形和实机辅助工具")
 
 heading("8.2 编码规范", 2)
 for x in [

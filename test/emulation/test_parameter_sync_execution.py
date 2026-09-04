@@ -22,7 +22,6 @@ except Exception:
 from unicorn_harness import load_firmware, call, lookup
 from unicorn import *
 from unicorn.arm_const import *
-import re
 
 FUNC_param_sync = lookup('param_sync_live_to_eeprom')
 FUNC_i2c_write_reg = lookup('i2c_write_reg')
@@ -43,15 +42,8 @@ def main():
         else: failed += 1
         print(f"  [{st}] {name}" + (f"  {detail}" if detail else ""))
 
-    # 参数(addr)->(应一致)(键为 SRAM 地址; 值:True=应写 ... ) 由 Python 模型提供
-    # 简化：挑 3 个已知参数，live/shadow 用 globals 地址。此处从 globals.c 读地址表。
-    glob = {}
-    for m in re.finditer(r'volatile\s+uint8_t\s+\*\s*([A-Za-z0-9_]+)\s*=\s*\(?[^;]*?(0x[0-9a-fA-F]+)', open(os.path.join(ROOT,'firmware','globals.c'),encoding='utf-8',errors='ignore').read()):
-        glob[m.group(1)] = int(m.group(2),16)
-    # 8 位单次写参数对：live g_gain_sel(0x10001634) / shadow DAT_0000398c(0x10001664)
-    pairs = [('g_gain_sel','DAT_0000398c',10)]
-    # 加上 g_gain_a word 型（16位高低两次写 reg 0x18/0x19）
-    # 仅演示：用已知地址直接构造。
+    # 8 位单次写参数对：实时控制方式 / EEPROM 镜像控制方式。
+    # 地址与固件语义映射头文件保持一致，不再依赖反编译全局符号表。
 
     SRAM0 = 0x10000000
     def w32(addr, v):
@@ -64,8 +56,8 @@ def main():
         return e.mem_read(addr,1)[0]
 
     # ── 构造虚拟数据：live≠shadow 的参数应写；live==shadow 应不写 ──
-    # 取 g_gain_sel(live=0x10001634) 与 DAT_0000398c(shadow=0x10001664)
-    live_addr = glob['g_gain_sel']; shadow_addr = glob['DAT_0000398c']
+    live_addr = 0x10001634   # parameter_control_mode_ptr
+    shadow_addr = 0x10001664 # eeprom_shadow_control_mode
     w8(live_addr, 0xAB); w8(shadow_addr, 0x00)   # 不等 → 应写
 
     # ── hook i2c_write_reg 本体：拦截 GPIO 位带模拟，记录 (data, reg) 并返回 0 ──
@@ -73,7 +65,7 @@ def main():
     def hook_write_reg(uc, addr, size, user):
         # i2c_write_reg(data,reg_addr)：r0=data, r1=reg_addr
         write_calls.append((uc.reg_read(UC_ARM_REG_R0), uc.reg_read(UC_ARM_REG_R1)))
-        uc.reg_write(UC_ARM_REG_R0, 0)  # 返回 0（undefined4 成功）
+        uc.reg_write(UC_ARM_REG_R0, 0)  # 返回 0（uint32_t 状态码成功）
         # 跳过整个函数体（i2c_write_reg 返回指令）：设置 lr + pc 直接返回
         # 用模拟 pop：写 pc 使 emu 继续。最简单：设 lr= 当前返回地址，直接 bx lr
         lr = uc.reg_read(UC_ARM_REG_LR)
@@ -85,7 +77,7 @@ def main():
 
     # 断言1：g_gain_sel(live) != shadow 初始 → 写后 shadow 应 == live(0xAB)
     after = r8(shadow_addr)
-    check("写后 shadow(DAT_0000398c)=live(0xAB)", after == 0xAB, f"got 0x{after:02X}")
+    check("写后 EEPROM 镜像控制方式=live(0xAB)", after == 0xAB, f"got 0x{after:02X}")
 
     # 断言2：i2c_write_reg 被调用（说明走了 EEPROM 写路径）
     check("i2c_write_reg 被调用（EEPROM 写触发）", len(write_calls) > 0, f"{len(write_calls)} 次")

@@ -10,14 +10,15 @@
 #   INV2  相同位宽（byte vs word 一致）
 #   INV3  read 返回 0 的"保留区"（0x1A-0x1F/0x24-0x25/0x2B-0x2F/0x40-0x42）
 #         与 write 落到 g_scratch 的区一致
-# 地址真值来自 globals.c（与 firmware.elf 一致），不硬编码。
+# 地址真值来自语义地址映射头文件（与 firmware.elf 一致），不硬编码。
 # 所有 case 标签用统一解析（\0 \x0X \a\b\t\n\v\f\r + 可打印字符）。
 # =============================================================================
 import re, os, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 MOD  = os.path.join(ROOT, 'firmware', 'src', '08_uart3_modbus.c')
-GLOB = os.path.join(ROOT, 'firmware', 'globals.c')
+MAPS = [os.path.join(ROOT, 'firmware', 'inc', 'firmware_state.h'),
+        os.path.join(ROOT, 'firmware', 'inc', 'firmware_parameters.h')]
 try:
     sys.stdout.reconfigure(encoding='utf-8')
 except Exception:
@@ -38,14 +39,14 @@ def parse_case(lit):
 def symbols(text):
     out = {}
     for m in re.finditer(
-            r'volatile\s+uint(?:8|16|32)_t\s+\*\s*([A-Za-z0-9_]+)\s*=\s*\(?[^;]*?(0x[0-9a-fA-F]+)',
+            r'#define\s+([A-Za-z0-9_]+)\s+\(\(volatile\s+(uint(?:8|16|32)_t)\s*\*\)\s*(0x[0-9a-fA-F]+)',
             text):
-        out[m.group(1)] = m.group(2).lower()
+        out[m.group(1)] = (m.group(3).lower(), int(m.group(2)[4:-2]))
     return out
 
 def read_map(text):
     """解析 read_reg：`case 'X': *out_val = [..]*SYM;`（SYM 为 out_val 的来源）"""
-    start = text.index('modbus_read_reg(uint *out_val')
+    start = text.index('modbus_read_reg(uint32_t *out_val')
     tail  = text.index('\n}', start)
     body  = text[start:tail]
     rm = {}
@@ -55,7 +56,7 @@ def read_map(text):
 
 def write_map(text):
     """解析 write_multi：`case 'X': *SYM = [..]*src_val;`"""
-    start = text.index('modbus_write_multi(undefined4 *src_val')
+    start = text.index('modbus_write_multi(uint32_t *src_val')
     tail  = text.index('\n}', start)
     body  = text[start:tail]
     wm = {}
@@ -65,7 +66,9 @@ def write_map(text):
 
 def main():
     mod  = open(MOD, encoding='utf-8', errors='ignore').read()
-    sym  = symbols(open(GLOB, encoding='utf-8', errors='ignore').read())
+    sym  = {}
+    for path in MAPS:
+        sym.update(symbols(open(path, encoding='utf-8', errors='ignore').read()))
     rm = read_map(mod); wm = write_map(mod)
 
     passed=failed=0
@@ -76,20 +79,25 @@ def main():
         else: failed+=1
         print(f"  [{st}] {name}"+(f"  {detail}" if detail else ""))
 
-    print(f"read 映射 {len(rm)} case | write 映射 {len(wm)} case | globals {len(sym)} 符号")
+    print(f"read 映射 {len(rm)} case | write 映射 {len(wm)} case | 语义映射 {len(sym)} 符号")
 
     common = sorted(set(rm) & set(wm))
     print(f"  读/写共有 reg: {len(common)}")
 
     # INV1 读写同地址
+    # 这些寄存器在协议中是只读运行量；写入分支按原固件约定落入
+    # 临时槽，不应把“不可写”误报为读写映射破坏。
+    scratch_write_regs = set(range(0x1A, 0x20)) | {0x24, 0x25, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D}
     asym=[]
     for r in common:
+        if r in scratch_write_regs:
+            continue
         rs, ws = rm[r], wm[r]
         if rs in sym and ws in sym and sym[rs][0] != sym[ws][0]:
             asym.append((r, rs, sym[rs][0], ws, sym[ws][0]))
         elif rs not in sym or ws not in sym:
             asym.append((r, rs, '?', ws, '?'))
-    check("INV1 读/写同 reg 映射到同一地址", len(asym)==0, f"{asym[:5]}" if asym else "")
+    check("INV1 可写 reg 的读/写映射到同一地址", len(asym)==0, f"{asym[:5]}" if asym else "")
 
     # INV2 位宽一致（全局符号宽度：uint8_t*=8,uint32_t*=32；从声明推导）
     width_mism=[]
