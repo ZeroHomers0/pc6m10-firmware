@@ -19,7 +19,7 @@
 
 > **【2026-08-23 更新】** 下述 §2/§3 为 2026-08-21 初评快照，已部分过时。最新状态：`firmware/`
 > 已**可编译**（`bash build.sh` 零警告，text 61936 / data 3000 / bss 2188）；**W1 两大函数 C 级还原已完成**
-> （07 state_machine 18 case / 08 modbus_dispatch 51 分支，`stub.c` 保留于根、只载 freq_adjust_sync + func_0x0000aed0；
+> （07 state_machine 18 case / 08 modbus_dispatch 51 分支，频率调节与 UART3 接收已归入对应 src 模块；
 > 07/08 对金标准地址全覆盖无臆造）；
 > 可读性重构 3 组提交已落地。独立差分验证 `output_stage` 144/144、`state_machine` 115/115，
 > 测试套件 11/11 通过。W1-W7 在当前离线验证范围内完成，下一步为 W8 分级硬件验证。
@@ -68,7 +68,7 @@
 | # | 工作项 | 说明 | 依赖 |
 |---|---|---|---|
 | W1 | 两大函数 C 级还原 | state_machine / modbus_dispatch 从伪代码转为可编译 C | — |
-| **W1 进度** | ✅ **已完成**（2026-08-22） | 07 state_machine 18 case / 08 modbus_dispatch 51 分支真实 C 还原（迁入 src/07、src/08_modbus_dispatch）；`stub.c` 保留于根（freq_adjust_sync 0xAB48 + func_0x0000aed0）；编译进 ELF@0x41B4 / 0x86E4；07/08 对金标准（_disasm）地址**全覆盖无臆造** | — |
+| **W1 进度** | ✅ **已完成**（2026-08-22） | 07 state_machine 18 case / 08 modbus_dispatch 51 分支真实 C 还原（迁入 src/07、src/08_modbus_dispatch）；UART3 接收与频率调节已完成模块归位；07/08 对金标准（_disasm）地址**全覆盖无臆造** | — |
 | **W7 进度** | ✅ 当前离线范围完成（2026-08-23） | 数据层、A/B 叶函数、输出级和状态机矩阵均通过；`output_stage` 144/144、`state_machine` 115/115、测试套件 11/11。不能替代 W8 实机验证 | W1/W2 |
 | W2 | 数据段全量导出 | **清单已导出**（`DATA_SEGMENT_2026-08-21.md`：字符串/查表/指针表/SRAM 全局）；剩余：RAM 初始镜像、位域定义、全部 DAT 落地 | — |
 | W3 | 全局变量符号化 | 120+ 个 DAT_ 重命名 + 类型 + 初始值 | W2 |

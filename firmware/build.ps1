@@ -29,7 +29,7 @@ $cflags = $cpu + @('-Os', '-ffreestanding', '-fno-builtin', '-Wall', '-I.', '-Ii
     '-Wno-unused-but-set-variable', '-Wno-unused-variable', '-Wno-pointer-sign',
     '-Wno-parentheses')
 
-$generated = @('startup.o', 'data_image.o', 'stub.o', 'firmware.elf',
+$generated = @('startup.o', 'data_image.o', 'firmware.elf',
     'firmware.hex', 'firmware.bin', 'firmware.map', 'firmware.lst')
 $generated += Get-ChildItem -LiteralPath src -Filter '*.o' -File -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }
 foreach ($path in $generated) {
@@ -51,14 +51,13 @@ function Invoke-Tool {
 
 Invoke-Tool '编译 startup.s' $gcc ($cflags + @('-c', '-o', 'startup.o', 'startup.s'))
 Invoke-Tool '编译 data_image.s' $gcc ($cflags + @('-c', '-o', 'data_image.o', 'data_image.s'))
-Invoke-Tool '编译 stub.c' $gcc ($cflags + @('-c', '-o', 'stub.o', 'stub.c'))
 foreach ($source in (Get-ChildItem -LiteralPath src -Filter '*.c' -File | Sort-Object Name)) {
     Write-Host $source.Name
     Invoke-Tool "编译 $($source.Name)" $gcc ($cflags + @('-c', '-o', (Join-Path src ($source.BaseName + '.o')), $source.FullName))
 }
 
 Write-Host '== 链接 ==' -ForegroundColor Cyan
-$objects = @('startup.o', 'data_image.o', 'stub.o')
+$objects = @('startup.o', 'data_image.o')
 $objects += Get-ChildItem -LiteralPath src -Filter '*.o' -File | Sort-Object Name | ForEach-Object { $_.FullName }
 Invoke-Tool '链接 firmware.elf' $gcc ($cpu + @('-T', 'lpc1765.ld', '-nostdlib', '-o', 'firmware.elf') + $objects + @('-lgcc', '-Wl,--gc-sections', '-Wl,-Map,firmware.map'))
 Invoke-Tool '生成 firmware.hex' $objcopy @('-O', 'ihex', 'firmware.elf', 'firmware.hex')

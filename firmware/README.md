@@ -27,7 +27,8 @@ bash build.sh          # 产出 firmware.elf / firmware.hex / firmware.bin / fir
 | `inc/firmware_parameters.h` | 配置、实时参数和 EEPROM 镜像的语义化地址映射 |
 | `inc/firmware_types.h` | 按键事件和固件领域类型 |
 | `src/strpool.c` | **W7a 字符串表**（`tools/generation/generate_string_pool.py` 生成） |
-| `stub.c` | 收尾子例程：`freq_adjust_sync(0xAB48)` + 已按原指令恢复的 UART3 RX 组帧 `func_0x0000aed0` |
+| `src/06_frequency_adjust.c` | 联锁页频率微调与 EEPROM 同步 |
+| `src/08_uart3_receive.c` | UART3 接收字节组帧 |
 | `src/` | 13 个可编译模块 + `strpool.c`（01_startup 移除 IAR runtime；07_state_machine.c / 08_modbus_dispatch.c 已 W1a/W1b 完整还原） |
 | `inc/reg.h` | LPC1765 外设寄存器宏（FIO/TIMER/UART3/ADC/SCB/PINSEL/NVIC/WDT） |
 | `inc/types.h` | 固定宽度基础类型统一入口（不再定义反编译兼容别名） |

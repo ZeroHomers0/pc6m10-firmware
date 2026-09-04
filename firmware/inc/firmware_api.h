@@ -122,9 +122,8 @@ uint32_t modbus_read_reg(uint32_t *out_value, uint32_t register_address);
 uint32_t modbus_write_multi(uint32_t *source_value, uint32_t register_address);
 void modbus_dispatch(int argument);
 void uart3_receive_frame(void);
-void func_0x0000aed0(void); /* 旧符号兼容别名，供历史 A/B 测试与反汇编索引使用 */
 
 /* 联锁页上的频率调节 */
-void freq_adjust_sync(int key_code);
+void freq_adjust_sync(KeyCode key_code);
 
 #endif /* FIRMWARE_API_H */

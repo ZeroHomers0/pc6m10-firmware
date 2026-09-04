@@ -19,7 +19,7 @@ LDFLAGS := -T lpc1765.ld -nostdlib
 LDLIBS  := -lgcc
 
 TARGET  := firmware
-OBJS    := startup.o data_image.o stub.o \
+OBJS    := startup.o data_image.o \
            $(patsubst src/%.c,src/%.o,$(wildcard src/*.c))
 
 all: $(TARGET).elf $(TARGET).hex $(TARGET).bin
@@ -33,10 +33,6 @@ $(TARGET).elf: $(OBJS) lpc1765.ld
 
 # src/ 下 C 模块
 src/%.o: src/%.c inc/reg.h inc/types.h inc/firmware_types.h inc/firmware_api.h inc/firmware_state.h inc/firmware_parameters.h inc/consts.h
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-# 根目录 C（stub.c）
-%.o: %.c inc/reg.h inc/types.h inc/firmware_types.h inc/firmware_api.h inc/firmware_state.h inc/firmware_parameters.h inc/consts.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 %.hex: %.elf

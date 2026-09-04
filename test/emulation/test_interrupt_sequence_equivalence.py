@@ -21,7 +21,7 @@ OLD = {"T0": 0x29A, "T1": 0xFF6C, "T2": 0xFF48,
 NEW = {"T0": SYMS["TIMER0_IRQHandler"], "T1": SYMS["TIMER1_IRQHandler"],
        "T2": SYMS["TIMER2_IRQHandler"], "E1": SYMS["EINT1_IRQHandler"],
        "E2": SYMS["EINT2_IRQHandler"], "E3": SYMS["EINT3_IRQHandler"],
-       "RX": SYMS["func_0x0000aed0"]}
+       "RX": SYMS["uart3_receive_frame"]}
 RANGES = ((0x2009C000, 0x2009CFFF), (0x40008000, 0x40008FFF),
           (0x40004000, 0x40004FFF),
           (0x40090000, 0x40090FFF), (0x400FC000, 0x400FDFFF),

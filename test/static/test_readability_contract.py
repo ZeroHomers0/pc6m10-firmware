@@ -12,7 +12,6 @@ ROOT = Path(__file__).resolve().parents[2]
 
 SOURCE_FILES = (
     sorted((ROOT / "firmware" / "src").glob("*.c"))
-    + [ROOT / "firmware" / "stub.c"]
     + sorted((ROOT / "firmware" / "inc").glob("*.h"))
 )
 BUILD_FILES = (
@@ -28,9 +27,7 @@ FORBIDDEN_PATTERNS = (
     (re.compile(r"\b(?:iVar|uVar|puVar|cVar|bVar|local_|param_[0-9]+)\b"), "反编译局部名"),
 )
 
-ALLOWED_COMPATIBILITY_SYMBOLS = {
-    "func_0x0000aed0",
-}
+ALLOWED_COMPATIBILITY_SYMBOLS = set()
 
 
 def check_source_names():

@@ -44,7 +44,6 @@ rm -f *.o src/*.o firmware.elf firmware.hex firmware.bin firmware.map
 echo "== 编译 =="
 "$CC" $CFLAGS -c -o startup.o startup.s
 "$CC" $CFLAGS -c -o data_image.o data_image.s
-"$CC" $CFLAGS -c -o stub.o stub.c
 for f in src/*.c; do
   echo "  $f"
   "$CC" $CFLAGS -c -o "${f%.c}.o" "$f"
