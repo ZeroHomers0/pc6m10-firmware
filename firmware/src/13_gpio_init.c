@@ -24,7 +24,7 @@
  *   ISER 基址 0xE000E100，index=irq_num>>5，bit=irq_num&0x1f。 */
 void nvic_enable_irq(uint32_t irq_num)
 {
-  REG32(0xE000E100UL + ((irq_num >> 5) * 4)) = 1u << (irq_num & 0x1f);
+  NVIC->ISER[irq_num >> 5] = 1u << (irq_num & 0x1f);
 }
 
 /* 0x0001064C —— GPIO2（1-Wire 认证总线）引脚方向/初值初始化。
@@ -32,14 +32,11 @@ void nvic_enable_irq(uint32_t irq_num)
  *   FIO2SET(+0x58)：P2.4/P2.3/P2.1 初值拉高。 */
 void gpio2_init(void)
 {
-  int gpio_base;
-
-  gpio_base = auth_gpio_base;                          /* FIO 池基址 0x2009C000 */
-  *(volatile uint32_t *)(auth_gpio_base + 0x40) = *(volatile uint32_t *)(auth_gpio_base + 0x40) | 0x10;  /* FIO2DIR P2.4=输出 */
-  *(volatile uint32_t *)(gpio_base + 0x40) = *(volatile uint32_t *)(gpio_base + 0x40) | 8;                   /* FIO2DIR P2.3=输出 */
-  *(volatile uint32_t *)(gpio_base + 0x40) = *(volatile uint32_t *)(gpio_base + 0x40) | 2;                   /* FIO2DIR P2.1=输出 */
-  *(volatile uint32_t *)(gpio_base + 0x40) = *(volatile uint32_t *)(gpio_base + 0x40) & 0xfffffffb;          /* FIO2DIR P2.2=改输入（双向） */
-  *(volatile uint32_t *)(gpio_base + 0x58) = *(volatile uint32_t *)(gpio_base + 0x58) | 0x10;                /* FIO2SET P2.4=高 */
-  *(volatile uint32_t *)(gpio_base + 0x58) = *(volatile uint32_t *)(gpio_base + 0x58) | 8;                   /* FIO2SET P2.3=高 */
-  *(volatile uint32_t *)(gpio_base + 0x58) = *(volatile uint32_t *)(gpio_base + 0x58) | 2;                   /* FIO2SET P2.1=高 */
+  fio_set_direction(FIO2, 0x10);   /* P2.4=输出 */
+  fio_set_direction(FIO2, 0x08);   /* P2.3=输出 */
+  fio_set_direction(FIO2, 0x02);   /* P2.1=输出 */
+  fio_clear_direction(FIO2, 0x04);  /* P2.2=输入（双向） */
+  fio_set(FIO2, 0x10);              /* P2.4=高 */
+  fio_set(FIO2, 0x08);              /* P2.3=高 */
+  fio_set(FIO2, 0x02);              /* P2.1=高 */
 }

@@ -28,6 +28,7 @@
  *   0x1025/0x1026 无 param_sync 特殊命令、0x102F 从站地址、0x103D 远程使能。
  * ========================================================================== */
 #include "inc/types.h"
+#include "inc/reg.h"
 #include "inc/firmware_api.h"
 #include "inc/firmware_state.h"
 #include "inc/firmware_parameters.h"
@@ -72,9 +73,9 @@ void modbus_dispatch(int arg)
 
   /* 2) 从站地址匹配 */
   if (rx_frame[0] != *slave_address) {
-    modbus_error_indicator_clear_register |= 0x20000000;
+    fio_clear(FIO1, 0x20000000);
     *frame_state = 0;
-    uart3_interrupt_enable_register |= 1;
+    UART3->IER = UART3->IER | 1;
     return;
   }
 
@@ -465,8 +466,8 @@ void modbus_dispatch(int arg)
   }
 
                                   /* 8) 兜底帧尾：结构不符（帧[2]!=0x10 等） */
-  modbus_error_indicator_clear_register |= 0x20000000;
+  fio_clear(FIO1, 0x20000000);
   *frame_state = 0;
-  uart3_interrupt_enable_register |= 1;
+  UART3->IER = UART3->IER | 1;
   return;
 }

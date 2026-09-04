@@ -55,7 +55,6 @@ void auth_set_timeout(void)
  * 注意：期望值是高字节在前读回（response_bits>>8），与 bit0/bit8 两组计算对应。 */
 void auth_challenge(void)
 {
-  int gpio_base;
   uint32_t challenge_byte;
   uint32_t bit_index;
   volatile uint32_t delay_counter;
@@ -67,8 +66,8 @@ void auth_challenge(void)
   exp_resp_lo = 0;
   challenge_byte = 0;
   response_bits = 0;
-  *(volatile uint32_t *)(auth_gpio_base + 0x5c) = *(volatile uint32_t *)(auth_gpio_base + 0x5c) | 0x10;  /* FIO2CLR P2.4=复位线拉低 */
-  for (bit_index = 0; gpio_base = auth_gpio_base, bit_index < 0x18; bit_index = bit_index + 1) {  /* 24 bit */
+  FIO2->CLR = FIO2->CLR | 0x10;  /* FIO2CLR P2.4=复位线拉低 */
+  for (bit_index = 0; bit_index < 0x18; bit_index = bit_index + 1) {  /* 24 bit */
     if (bit_index == 0) {
       /* 挑战组 A（bit0-7）：4 个板上参数求和 +0x31；期望应答高位 exp_resp_hi */
       challenge_byte = *parameter_current_range_ptr + (uint32_t)*parameter_soft_start_time_ptr + (uint32_t)*parameter_soft_stop_time_ptr + (uint32_t)*parameter_master_slave_offset_ptr + 0x31
@@ -83,24 +82,24 @@ void auth_challenge(void)
     if (bit_index == 0x10) {
       challenge_byte = 0x55;                                 /* 挑战组 C（bit16-23）：固定 0x55 */
     }
-    *(volatile uint32_t *)(auth_gpio_base + 0x5c) = *(volatile uint32_t *)(auth_gpio_base + 0x5c) | 2;  /* FIO2CLR P2.1=数据线拉低 */
+    FIO2->CLR = FIO2->CLR | 2;  /* FIO2CLR P2.1=数据线拉低 */
     if ((challenge_byte & 0x80) != 0) {
-      *(volatile uint32_t *)(gpio_base + 0x58) = *(volatile uint32_t *)(gpio_base + 0x58) | 2;              /* 挑战位=1 → FIO2SET P2.1 */
+      FIO2->SET = FIO2->SET | 2;              /* 挑战位=1 → FIO2SET P2.1 */
     }
     challenge_byte = challenge_byte << 1;
     for (delay_counter = 0; delay_counter < 2000; delay_counter++) {             /* 位建立延时 */
     }
-    *(volatile uint32_t *)(auth_gpio_base + 0x5c) = *(volatile uint32_t *)(auth_gpio_base + 0x5c) | 8;  /* FIO2CLR P2.3=时钟拉低 */
+    FIO2->CLR = FIO2->CLR | 8;  /* FIO2CLR P2.3=时钟拉低 */
     for (delay_counter = 0; delay_counter < 1000; delay_counter++) {             /* 时钟低延时 */
     }
-    if ((7 < bit_index) && (response_bits = response_bits * 2, (*(volatile uint32_t *)(auth_gpio_base + 0x54) & 4) != 0)) {
+    if ((7 < bit_index) && (response_bits = response_bits * 2, (FIO2->PIN & 4) != 0)) {
       response_bits = response_bits + 1;                                                  /* bit8 起读 FIO2PIN P2.2 */
     }
     for (delay_counter = 0; delay_counter < 1000; delay_counter++) {             /* 时钟高延时 */
     }
-    *(volatile uint32_t *)(auth_gpio_base + 0x58) = *(volatile uint32_t *)(auth_gpio_base + 0x58) | 8;  /* FIO2SET P2.3=时钟拉高 */
+    FIO2->SET = FIO2->SET | 8;  /* FIO2SET P2.3=时钟拉高 */
   }
-  *(volatile uint32_t *)(auth_gpio_base + 0x58) = *(volatile uint32_t *)(auth_gpio_base + 0x58) | 0x10; /* FIO2SET P2.4=复位线释放 */
+  FIO2->SET = FIO2->SET | 0x10; /* FIO2SET P2.4=复位线释放 */
   if ((exp_resp_hi == response_bits >> 8) && ((response_bits & 0xff) == exp_resp_lo)) {
     *auth_response_byte_ptr = 0;                                                    /* 应答匹配 → 认证通过 */
     *auth_response_status_ptr = 0;

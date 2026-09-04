@@ -22,32 +22,26 @@
  *   adc_scb_base=SCB 0x400FC000（+0xC4 PCONP 上电 bit12 ADC）、AD0CR 初值 0x00201820 */
 void adc_init(void)
 {
-  int clock_base;
-
-  clock_base = adc_clock_base;
-  *(volatile uint32_t *)(adc_clock_base + 4) = *(volatile uint32_t *)(adc_clock_base + 4) & 0xffc03fff;
-  *(volatile uint32_t *)(clock_base + 4) = *(volatile uint32_t *)(clock_base + 4) | 0x154000;      /* PCLK ADC=CCLK */
-  *(volatile uint32_t *)(clock_base + 0xc) = *(volatile uint32_t *)(clock_base + 0xc) & 0xcfffffff;
-  *(volatile uint32_t *)(clock_base + 0xc) = *(volatile uint32_t *)(clock_base + 0xc) | 0x30000000;
-  *(volatile uint32_t *)(clock_base + 0xc) = *(volatile uint32_t *)(clock_base + 0xc) & 0xcfffffff;
-  *(volatile uint32_t *)(clock_base + 0xc) = *(volatile uint32_t *)(clock_base + 0xc) | 0x30000000;
-  *(volatile uint32_t *)(clock_base + 0xc) = *(volatile uint32_t *)(clock_base + 0xc) & 0x3fffffff;
-  *(volatile uint32_t *)(clock_base + 0xc) = *(volatile uint32_t *)(clock_base + 0xc) | 0xc0000000;
-  *(volatile uint32_t *)(clock_base + 0xc) = *(volatile uint32_t *)(clock_base + 0xc) & 0x3fffffff;
-  *(volatile uint32_t *)(clock_base + 0xc) = *(volatile uint32_t *)(clock_base + 0xc) | 0xc0000000;
-  *(volatile uint32_t *)(adc_scb_base + 0xc4) = *system_pconp | 0x1000;      /* PCONP ADC 上电 */
-  *adc_control_base = adc_control_default;                     /* AD0CR 初值 */
+  PIN_SELECT->PINSEL[1] = PIN_SELECT->PINSEL[1] & 0xffc03fff;
+  PIN_SELECT->PINSEL[1] = PIN_SELECT->PINSEL[1] | 0x154000;      /* PCLK ADC=CCLK */
+  PIN_SELECT->PINSEL[3] = PIN_SELECT->PINSEL[3] & 0xcfffffff;
+  PIN_SELECT->PINSEL[3] = PIN_SELECT->PINSEL[3] | 0x30000000;
+  PIN_SELECT->PINSEL[3] = PIN_SELECT->PINSEL[3] & 0xcfffffff;
+  PIN_SELECT->PINSEL[3] = PIN_SELECT->PINSEL[3] | 0x30000000;
+  PIN_SELECT->PINSEL[3] = PIN_SELECT->PINSEL[3] & 0x3fffffff;
+  PIN_SELECT->PINSEL[3] = PIN_SELECT->PINSEL[3] | 0xc0000000;
+  PIN_SELECT->PINSEL[3] = PIN_SELECT->PINSEL[3] & 0x3fffffff;
+  PIN_SELECT->PINSEL[3] = PIN_SELECT->PINSEL[3] | 0xc0000000;
+  SYSTEM_CONTROL->power_control = *system_pconp | 0x1000;      /* PCONP ADC 上电 */
+  ADC0->CR = adc_control_default;                     /* AD0CR 初值 */
   return;
 }
 
 /* 0x00001F80 —— ADC0 启动转换（CR bit27=START） */
 void adc0_start(void)
 {
-  volatile uint32_t *adc_control_reg;
-
-  adc_control_reg = adc_control_base;
-  *adc_control_base = *adc_control_base & 0xf8ffffff;
-  *adc_control_reg = *adc_control_reg | 0x1000000;
+  ADC0->CR = ADC0->CR & 0xf8ffffff;
+  ADC0->CR = ADC0->CR | 0x1000000;
   return;
 }
 
@@ -57,8 +51,8 @@ void adc0_start(void)
 uint32_t adc0_wait_done(void)
 {
   do {
-  } while ((*(volatile uint32_t *)((uint32_t)adc_control_base + 4) & 0x80000000) == 0);
-  return (*(volatile uint32_t *)((uint32_t)adc_control_base + 4) & 0xffff) >> 4;
+  } while ((ADC0->GDR & 0x80000000) == 0);
+  return (ADC0->GDR & 0xffff) >> 4;
 }
 
 /* 0x00001FBC —— 逐通道扫描：每通道 5 点循环采样存原始数组，

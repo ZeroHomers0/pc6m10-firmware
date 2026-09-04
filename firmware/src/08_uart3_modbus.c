@@ -44,84 +44,90 @@
 extern const uint8_t crc16_hi_tbl[256];
 extern const uint8_t crc16_lo_tbl[256];
 
+static uint32_t uart3_baud_factor(uint32_t baud_index)
+{
+  switch (baud_index) {
+  case 0:
+  case 1:
+  case 2:
+    return BAUD_FAC_0;
+  case 3:
+    return BAUD_FAC_3;
+  case 4:
+    return BAUD_FAC_4;
+  case 5:
+    return BAUD_FAC_5;
+  case 6:
+    return BAUD_FAC_6;
+  case 7:
+    return BAUD_FAC_7;
+  default:
+    return 0;
+  }
+}
+
+/* 仅计算分频值；非法索引时保留调用者传入的默认值。 */
+static uint32_t uart3_select_baud_divisor(uint32_t fallback_divisor)
+{
+  uint32_t baud_index = *communication_baud_index_ptr;
+  uint32_t baud_factor = uart3_baud_factor(baud_index);
+  int baud_rate;
+
+  if (baud_factor == 0) {
+    return fallback_divisor;
+  }
+  baud_rate = *(volatile int *)(uart3_baud_rate_table_base + baud_index * 4);
+  return (uint32_t)(uint16_t)((uint64_t)uart3_peripheral_clock /
+                              ((uint64_t)(uint32_t)(baud_rate * baud_factor) / 1000));
+}
+
+/* DLAB 已由调用者置位；写入顺序保持为高字节 DLM、低字节 DLL。 */
+static void uart3_write_baud_divisor(uint32_t divisor)
+{
+  UART3->DLM = (uint8_t)(divisor + ((uint32_t)((int)divisor >> 0x1f) >> 0x18) >> 8);
+  UART3->DLL = (uint8_t)divisor;
+}
+
 /* 0x0000AC24 —— UART3 初始化：波特率重算 + 8N1 + 使能 TX/RX
  *   0x1000B01C=数据位(0/1/2/3→LCR 0x87/8B/9B/83 含 DLAB)；
  *   0x1000B024=波特率索引(0..7)→查表 0x1000B028 得系数，分频=PCLK/(波特率×系数/1000) */
 void uart3_init(uint32_t divisor)
 {
-  volatile uint8_t *gpio_base;
-  volatile uint32_t *pinsel;
-  volatile uint8_t *uart3;
-
-  gpio_base = uart3_gpio_base;
-  *(volatile uint32_t *)(uart3_gpio_base + 0x20) = *(volatile uint32_t *)(uart3_gpio_base + 0x20) | 0x20000000;
-  *(volatile uint32_t *)(gpio_base + 0x3c) = *(volatile uint32_t *)(gpio_base + 0x3c) | 0x20000000;
-  *(volatile uint32_t *)(uart3_scb_base + 0xc4) = *system_pconp | 0x2000000;   /* PCONP UART3 上电 */
-  pinsel = uart3_pin_select_registers;
-  *uart3_pin_select_registers = *uart3_pin_select_registers | 2;                            /* PINSEL UART3 引脚 */
-  *pinsel = *pinsel | 8;
+  fio_set_direction(FIO1, 0x20000000);
+  fio_clear(FIO1, 0x20000000);
+  SYSTEM_CONTROL->power_control = *system_pconp | 0x2000000;   /* PCONP UART3 上电 */
+  PIN_SELECT->PINSEL[0] = PIN_SELECT->PINSEL[0] | 2;   /* PINSEL UART3 引脚 */
+  PIN_SELECT->PINSEL[0] = PIN_SELECT->PINSEL[0] | 8;
   if (*communication_frame_mode_ptr == '\0') {
-    uart3_peripheral_base[0xc] = 0x87;                                   /* LCR：8 位+DLAB */
+    UART3->LCR = 0x87;                                   /* LCR：8 位+DLAB */
   }
   if (*communication_frame_mode_ptr == '\x01') {
-    uart3_peripheral_base[0xc] = 0x8b;
+    UART3->LCR = 0x8b;
   }
   if (*communication_frame_mode_ptr == '\x02') {
-    uart3_peripheral_base[0xc] = 0x9b;
+    UART3->LCR = 0x9b;
   }
   if (*communication_frame_mode_ptr == '\x03') {
-    uart3_peripheral_base[0xc] = 0x83;
+    UART3->LCR = 0x83;
   }
-  uart3 = uart3_peripheral_base;
-  if (*communication_baud_index_ptr < 3) {
-    divisor = (uint32_t)(uint16_t)((uint64_t)uart3_peripheral_clock /
-                            ((uint64_t)(uint32_t)(*(volatile int *)(uart3_baud_rate_table_base + *communication_baud_index_ptr * 4) * BAUD_FAC_0) /
-                            1000));
-  }
-  if (*communication_baud_index_ptr == 3) {
-    divisor = (uint32_t)(uint16_t)((uint64_t)uart3_peripheral_clock /
-                            ((uint64_t)(uint32_t)(*(volatile int *)(uart3_baud_rate_table_base + *communication_baud_index_ptr * 4) * BAUD_FAC_3) /
-                            1000));
-  }
-  if (*communication_baud_index_ptr == 4) {
-    divisor = (uint32_t)(uint16_t)((uint64_t)uart3_peripheral_clock /
-                            ((uint64_t)(uint32_t)(*(volatile int *)(uart3_baud_rate_table_base + *communication_baud_index_ptr * 4) * BAUD_FAC_4) /
-                            1000));
-  }
-  if (*communication_baud_index_ptr == 5) {
-    divisor = (uint32_t)(uint16_t)((uint64_t)uart3_peripheral_clock /
-                            ((uint64_t)(uint32_t)(*(volatile int *)(uart3_baud_rate_table_base + *communication_baud_index_ptr * 4) * BAUD_FAC_5) /
-                            1000));
-  }
-  if (*communication_baud_index_ptr == 6) {
-    divisor = (uint32_t)(uint16_t)((uint64_t)uart3_peripheral_clock /
-                            ((uint64_t)(uint32_t)(*(volatile int *)(uart3_baud_rate_table_base + *communication_baud_index_ptr * 4) * BAUD_FAC_6) /
-                            1000));
-  }
-  if (*communication_baud_index_ptr == 7) {
-    divisor = (uint32_t)(uint16_t)((uint64_t)uart3_peripheral_clock /
-                            ((uint64_t)(uint32_t)(*(volatile int *)(uart3_baud_rate_table_base + *communication_baud_index_ptr * 4) * BAUD_FAC_7) /
-                            1000));
-  }
-  uart3_peripheral_base[4] = (char)(divisor + ((uint32_t)((int)divisor >> 0x1f) >> 0x18) >> 8);  /* DLM=高字节 */
-  *uart3 = (char)divisor;                                         /* DLL=低字节 */
+  divisor = uart3_select_baud_divisor(divisor);
+  uart3_write_baud_divisor(divisor);
   if (*communication_frame_mode_ptr == '\0') {
-    uart3[0xc] = 7;                                             /* LCR：8N1，清 DLAB */
+    UART3->LCR = 7;                                             /* LCR：8N1，清 DLAB */
   }
   if (*communication_frame_mode_ptr == '\x01') {
-    uart3_peripheral_base[0xc] = 0xb;
+    UART3->LCR = 0xb;
   }
   if (*communication_frame_mode_ptr == '\x02') {
-    uart3_peripheral_base[0xc] = 0x1b;
+    UART3->LCR = 0x1b;
   }
   if (*communication_frame_mode_ptr == '\x03') {
-    uart3_peripheral_base[0xc] = 3;
+    UART3->LCR = 3;
   }
-  uart3_peripheral_base[8] = 7;                                           /* FCR：使能 FIFO+清 */
-  uart3 = uart3_peripheral_base;
+  UART3->FCR = 7;                                               /* FCR：使能 FIFO+清 */
   NVIC_ISER0 = 0x100;
-  *(volatile uint32_t *)(uart3_peripheral_base + 4) = *(volatile uint32_t *)(uart3_peripheral_base + 4) | 1;  /* IER RBR 中断 */
-  *(volatile uint32_t *)(uart3 + 4) = *(volatile uint32_t *)(uart3 + 4) | 2;              /* IER THRE 中断 */
+  UART3->IER = UART3->IER | 1;  /* IER RBR 中断 */
+  UART3->IER = UART3->IER | 2;  /* IER THRE 中断 */
   return;
 }
 
@@ -129,13 +135,13 @@ void uart3_init(uint32_t divisor)
  *   0x1000B030=发送状态、0x1000B038=发送长度、0x1000B03C=发送缓冲 */
 void uart3_tx_byte(uint8_t tx_byte)
 {
-  *(volatile uint32_t *)(uart3_gpio_base + 0x38) = *(volatile uint32_t *)(uart3_gpio_base + 0x38) | 0x20000000;
+  fio_set(FIO1, 0x20000000);
   *uart3_tx_state_ptr = 6;
   *uart3_tx_index_ptr = 0;
   *uart3_tx_length_ptr = tx_byte;
   do {
-  } while ((uart3_peripheral_base[0x14] & 0x20) == 0);                    /* 等 THRE */
-  *uart3_peripheral_base = *uart3_tx_buffer_ptr;
+  } while ((UART3->LSR & 0x20) == 0);                    /* 等 THRE */
+  UART3->THR = *uart3_tx_buffer_ptr;
   return;
 }
 
@@ -167,7 +173,7 @@ void uart3_rx_timeout_monitor(void)
     if (10 < *tx_tick) {
       *tx_tick = 0;
       *uart3_tx_state_ptr = '\x05';
-      *(volatile uint32_t *)(uart3_peripheral_base + 4) = *(volatile uint32_t *)(uart3_peripheral_base + 4) & 0xfffffffe;
+      UART3->IER = UART3->IER & 0xfffffffe;
     }
   }
   return;
@@ -182,7 +188,7 @@ void UART3_IRQHandler(void)
   volatile uint8_t *tx_idx;
   uint32_t iir_cause;
 
-  iir_cause = *(volatile uint32_t *)(uart3_peripheral_base + 8) & 0xe;                 /* IIR 中断原因 */
+  iir_cause = uart3_read_iir_word() & 0xe;                 /* IIR 中断原因 */
   if (iir_cause == 4) {
     uart3_receive_frame();   /* RX 组帧子例程（IIR 原因保持原值） */
   }
@@ -190,12 +196,12 @@ void UART3_IRQHandler(void)
   if (iir_cause == 2) {
     *uart3_tx_index_ptr = *uart3_tx_index_ptr + 1;                           /* 发送索引++ */
     if (*tx_idx < *uart3_tx_length_ptr) {                               /* 未发完 */
-      *uart3_peripheral_base = *(volatile uint8_t *)(uart3_tx_buffer_ptr + (uint32_t)*uart3_tx_index_ptr);
+      UART3->THR = *(volatile uint8_t *)(uart3_tx_buffer_ptr + (uint32_t)*uart3_tx_index_ptr);
     }
     else {                                                        /* 发完 */
-      *(volatile uint32_t *)(uart3_gpio_base + 0x3c) = *(volatile uint32_t *)(uart3_gpio_base + 0x3c) | 0x20000000;
+      fio_clear(FIO1, 0x20000000);
       *uart3_tx_state_ptr = 0;
-      *(volatile uint32_t *)(uart3_peripheral_base + 4) = *(volatile uint32_t *)(uart3_peripheral_base + 4) | 1;
+      UART3->IER = UART3->IER | 1;
     }
   }
   return;

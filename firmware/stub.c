@@ -13,6 +13,7 @@
  * ========================================================================== */
 #include <stdint.h>
 #include "inc/types.h"
+#include "inc/reg.h"
 
 #include "inc/firmware_api.h"
 #include "inc/firmware_state.h"
@@ -31,7 +32,7 @@ void uart3_receive_frame(void)
   }
   if (*state == 1) {
     *gap = 0;
-    rx_buf[*rx_idx] = *uart3_peripheral_base;
+    rx_buf[*rx_idx] = UART3->RBR;
     *rx_idx = (uint8_t)(*rx_idx + 1);
   }
 }

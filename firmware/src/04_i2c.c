@@ -19,13 +19,10 @@
 /* 0x00001C40 —— I2C GPIO 初始化：P0.10(SDA)/P0.11(SCL) 置输出（FIODIR） */
 void i2c_gpio_init(void)
 {
-  volatile uint32_t *fio;
-
-  fio = i2c_fio_base;
-  *i2c_fio_base = *i2c_fio_base | 0x800;    /* P0.11 SCL 输出 */
-  *fio = *fio | 0x400;                /* P0.10 SDA 输出 */
-  fio[6] = fio[6] | 0x800;            /* SCL 初始高 */
-  fio[6] = fio[6] | 0x400;            /* SDA 初始高 */
+  FIO0->DIR = FIO0->DIR | 0x800;    /* P0.11 SCL 输出 */
+  FIO0->DIR = FIO0->DIR | 0x400;     /* P0.10 SDA 输出 */
+  FIO0->SET = FIO0->SET | 0x800;            /* SCL 初始高 */
+  FIO0->SET = FIO0->SET | 0x400;            /* SDA 初始高 */
   return;
 }
 /* 0x00001C6C —— 短延时（5 空循环） */
@@ -53,17 +50,14 @@ void i2c_delay(uint32_t units)
 /* 0x00001CAE —— START 条件：SDA=1 → SCL=1 → SDA=0 → SCL=0 */
 uint32_t i2c_start(void)
 {
-  volatile uint32_t *fio;
-
-  *i2c_fio_base = *i2c_fio_base | 0x400;    /* SDA=1 */
+  FIO0->DIR = FIO0->DIR | 0x400;    /* SDA=1 */
   i2c_delay_short();
-  fio = i2c_fio_base;
-  i2c_fio_base[6] = i2c_fio_base[6] | 0x400;
-  fio[6] = fio[6] | 0x800;            /* SCL=1 */
+  FIO0->SET = FIO0->SET | 0x400;
+  FIO0->SET = FIO0->SET | 0x800;            /* SCL=1 */
   i2c_delay_short();
-  i2c_fio_base[7] = i2c_fio_base[7] | 0x400;  /* SDA=0 */
+  FIO0->CLR = FIO0->CLR | 0x400;  /* SDA=0 */
   i2c_delay_short();
-  i2c_fio_base[7] = i2c_fio_base[7] | 0x800;  /* SCL=0 */
+  FIO0->CLR = FIO0->CLR | 0x800;  /* SCL=0 */
   i2c_delay_short();
   return 1;
 }
@@ -71,15 +65,12 @@ uint32_t i2c_start(void)
 /* 0x00001CFE —— STOP 条件：SCL=1 → SDA=1 */
 void i2c_stop(void)
 {
-  volatile uint32_t *fio;
-
-  *i2c_fio_base = *i2c_fio_base | 0x400;    /* SDA=1 */
+  FIO0->DIR = FIO0->DIR | 0x400;    /* SDA=1 */
   i2c_delay_short();
-  fio = i2c_fio_base;
-  i2c_fio_base[7] = i2c_fio_base[7] | 0x400;  /* SDA=0 */
-  fio[6] = fio[6] | 0x800;            /* SCL=1 */
+  FIO0->CLR = FIO0->CLR | 0x400;  /* SDA=0 */
+  FIO0->SET = FIO0->SET | 0x800;            /* SCL=1 */
   i2c_delay_short();
-  i2c_fio_base[6] = i2c_fio_base[6] | 0x400;  /* SDA=1 */
+  FIO0->SET = FIO0->SET | 0x400;  /* SDA=1 */
   i2c_delay_short();
   return;
 }
@@ -94,30 +85,30 @@ uint32_t i2c_write_byte(uint32_t byte_val)
   uint32_t ack;
 
   data = byte_val;
-  *i2c_fio_base = *i2c_fio_base | 0x400;    /* SDA=1 */
+  FIO0->DIR = FIO0->DIR | 0x400;    /* SDA=1 */
   i2c_delay_short();
   for (i = 0; i < 8; i = i + 1) {
     if ((data & 0x80) != 0) {
-      i2c_fio_base[6] = i2c_fio_base[6] | 0x400;   /* 位=1 → SDA=1 */
+      FIO0->SET = FIO0->SET | 0x400;   /* 位=1 → SDA=1 */
     }
     else {
-      i2c_fio_base[7] = i2c_fio_base[7] | 0x400;   /* 位=0 → SDA=0 */
+      FIO0->CLR = FIO0->CLR | 0x400;   /* 位=0 → SDA=0 */
     }
-    i2c_fio_base[6] = i2c_fio_base[6] | 0x800;     /* SCL=1 */
+    FIO0->SET = FIO0->SET | 0x800;     /* SCL=1 */
     i2c_delay_short();
-    i2c_fio_base[7] = i2c_fio_base[7] | 0x800;     /* SCL=0 */
+    FIO0->CLR = FIO0->CLR | 0x800;     /* SCL=0 */
     i2c_delay_short();
     data = (data << 1) & 0xFF;                     /* 下一位（=lsls/lsrs） */
   }
-  *i2c_fio_base = *i2c_fio_base & 0xfffffbff;   /* SDA 方向输入（读 ACK） */
-  i2c_fio_base[6] = i2c_fio_base[6] | 0x400;    /* 释放 SDA */
+  FIO0->DIR = FIO0->DIR & 0xfffffbff;   /* SDA 方向输入（读 ACK） */
+  FIO0->SET = FIO0->SET | 0x400;    /* 释放 SDA */
   i2c_delay_short();
-  i2c_fio_base[6] = i2c_fio_base[6] | 0x800;    /* SCL=1 */
+  FIO0->SET = FIO0->SET | 0x800;    /* SCL=1 */
   i2c_delay_short();
-  ack = (i2c_fio_base[5] & 0x400) != 0;         /* 读 FIO0PIN bit10 */
-  i2c_fio_base[7] = i2c_fio_base[7] | 0x800;    /* SCL=0 */
+  ack = (FIO0->PIN & 0x400) != 0;         /* 读 FIO0PIN bit10 */
+  FIO0->CLR = FIO0->CLR | 0x800;    /* SCL=0 */
   i2c_delay_short();
-  *i2c_fio_base = *i2c_fio_base | 0x400;        /* SDA 方向输出 */
+  FIO0->DIR = FIO0->DIR | 0x400;        /* SDA 方向输出 */
   return ack;
 }
 
@@ -128,26 +119,26 @@ uint32_t i2c_read_byte(void)
   uint32_t data;
   uint32_t i;
 
-  *i2c_fio_base = *i2c_fio_base & 0xfffffbff;   /* SDA 输入 */
-  i2c_fio_base[6] = i2c_fio_base[6] | 0x400;    /* 释放 SDA */
+  FIO0->DIR = FIO0->DIR & 0xfffffbff;   /* SDA 输入 */
+  FIO0->SET = FIO0->SET | 0x400;    /* 释放 SDA */
   i2c_delay_short();
   data = 0;
   for (i = 0; i < 8; i = i + 1) {
     i2c_delay_short();
-    i2c_fio_base[7] = i2c_fio_base[7] | 0x800;  /* SCL=0 */
+    FIO0->CLR = FIO0->CLR | 0x800;  /* SCL=0 */
     i2c_delay_short();
-    i2c_fio_base[6] = i2c_fio_base[6] | 0x800;  /* SCL=1 */
+    FIO0->SET = FIO0->SET | 0x800;  /* SCL=1 */
     i2c_delay_short();
     data = (data << 1) & 0xFF;                  /* 移位累加 */
-    if ((i2c_fio_base[5] & 0x400) != 0) {       /* 读 SDA 引脚 */
+    if ((FIO0->PIN & 0x400) != 0) {       /* 读 SDA 引脚 */
       data = data + 1;                          /* 位=1 */
     }
     i2c_delay_short();
   }
   i2c_delay_short();
-  i2c_fio_base[7] = i2c_fio_base[7] | 0x800;    /* SCL=0 */
+  FIO0->CLR = FIO0->CLR | 0x800;    /* SCL=0 */
   i2c_delay_short();
-  *i2c_fio_base = *i2c_fio_base | 0x400;        /* SDA 输出（NACK） */
+  FIO0->DIR = FIO0->DIR | 0x400;        /* SDA 输出（NACK） */
   i2c_delay_short();
   return data;
 }

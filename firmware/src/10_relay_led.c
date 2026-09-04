@@ -12,6 +12,7 @@
  * 导出：2026-08-21（L0 语义化：各函数入参统一命名 level）
  * ========================================================================== */
 #include "inc/types.h"
+#include "inc/reg.h"
 
 #include "inc/firmware_api.h"
 #include "inc/firmware_state.h"
@@ -21,20 +22,20 @@
 void out_relay_p020(int level)
 {
   if (level < 1) {
-    *(volatile uint32_t *)(relay_gpio_base + 0x1c) = *(volatile uint32_t *)(relay_gpio_base + 0x1c) | 0x100000;
+    fio_clear(FIO0, 0x100000);
   }
   else {
-    *(volatile uint32_t *)(relay_gpio_base + 0x18) = *(volatile uint32_t *)(relay_gpio_base + 0x18) | 0x100000;
+    fio_set(FIO0, 0x100000);
   }
 }
 /* 0x000105A8 —— P0.21 继电器输出（RLY2 报警） */
 void out_relay_p021(int level)
 {
   if (level < 1) {
-    *(volatile uint32_t *)(relay_gpio_base + 0x1c) = *(volatile uint32_t *)(relay_gpio_base + 0x1c) | 0x200000;
+    fio_clear(FIO0, 0x200000);
   }
   else {
-    *(volatile uint32_t *)(relay_gpio_base + 0x18) = *(volatile uint32_t *)(relay_gpio_base + 0x18) | 0x200000;
+    fio_set(FIO0, 0x200000);
   }
 }
 
@@ -42,10 +43,10 @@ void out_relay_p021(int level)
 void fio1_pin20_ctrl(int level)
 {
   if (level < 1) {
-    *(volatile uint32_t *)(relay_gpio_base + 0x3c) = *(volatile uint32_t *)(relay_gpio_base + 0x3c) | 0x100000;
+    fio_clear(FIO1, 0x100000);
   }
   else {
-    *(volatile uint32_t *)(relay_gpio_base + 0x38) = *(volatile uint32_t *)(relay_gpio_base + 0x38) | 0x100000;
+    fio_set(FIO1, 0x100000);
   }
 }
 
@@ -53,10 +54,10 @@ void fio1_pin20_ctrl(int level)
 void fio1_pin21_ctrl(int level)
 {
   if (level < 1) {
-    *(volatile uint32_t *)(relay_gpio_base + 0x3c) = *(volatile uint32_t *)(relay_gpio_base + 0x3c) | 0x200000;
+    fio_clear(FIO1, 0x200000);
   }
   else {
-    *(volatile uint32_t *)(relay_gpio_base + 0x38) = *(volatile uint32_t *)(relay_gpio_base + 0x38) | 0x200000;
+    fio_set(FIO1, 0x200000);
   }
 }
 
@@ -64,9 +65,9 @@ void fio1_pin21_ctrl(int level)
 void fio1_pin23_ctrl(int level)
 {
   if (level < 1) {
-    *(volatile uint32_t *)(relay_gpio_base + 0x3c) = *(volatile uint32_t *)(relay_gpio_base + 0x3c) | 0x800000;
+    fio_clear(FIO1, 0x800000);
   }
   else {
-    *(volatile uint32_t *)(relay_gpio_base + 0x38) = *(volatile uint32_t *)(relay_gpio_base + 0x38) | 0x800000;
+    fio_set(FIO1, 0x800000);
   }
 }

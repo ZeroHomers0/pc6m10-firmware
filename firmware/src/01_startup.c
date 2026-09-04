@@ -70,7 +70,7 @@ void wd_feed(void)
 /* 0x00000248 —— TIMER0 初始化：MR0=1999（节拍周期），匹配中断 IRQ0 */
 void timer0_init(void)
 {
-  *(volatile uint32_t *)(system_scb_base + 0xc4) = *system_pconp | 2;  /* PCONP |= 2：TIMER0 上电 */
+  SYSTEM_CONTROL->power_control = *system_pconp | 2;  /* PCONP |= 2：TIMER0 上电 */
   TIMER0->TCR = 2;            /* 复位 TC/PC（先复位再配置） */
   TIMER0->PR = 0x18;          /* 预分频 24 */
   TIMER0->MR0 = 1999;         /* MR0 = 1999（节拍周期） */
@@ -111,45 +111,42 @@ void TIMER0_IRQHandler(void)
  *   do{}while 轮询 PLLxSTAT 位直到锁相完成。pll_feed 即 PLL0FEED 寄存器指针。 */
 void SystemInit(void)
 {
-  volatile uint32_t *pll0_feed_ptr;
-
-  *pll1_lock_control = 0x20;
+  CLOCK_CONTROL->PLL1_LOCK_CONTROL = 0x20;
   do {
-  } while ((*pll1_lock_control & 0x40) == 0);
-  *pll_clock_config = 3;
-  system_clock_base[0x43] = 1;
-  *pll0_config = system_pll0_config_value;
-  pll0_feed_ptr = pll0_feed;
-  *pll0_feed = 0xaa;
-  *pll0_feed_ptr = 0x55;
-  *pll0_control = 1;
-  *pll0_feed = 0xaa;
-  system_clock_base[0x23] = 0x55;
+  } while ((CLOCK_CONTROL->PLL1_LOCK_CONTROL & 0x40) == 0);
+  CLOCK_CONTROL->CLOCK_CONFIGURATION = 3;
+  CLOCK_CONTROL->CLOCK_SOURCE_SELECT = 1;
+  CLOCK_CONTROL->PLL0_CONFIG = system_pll0_config_value;
+  CLOCK_CONTROL->PLL0_FEED = 0xaa;
+  CLOCK_CONTROL->PLL0_FEED = 0x55;
+  CLOCK_CONTROL->PLL0_CONTROL = 1;
+  CLOCK_CONTROL->PLL0_FEED = 0xaa;
+  CLOCK_CONTROL->PLL0_FEED = 0x55;
   do {
-  } while ((*pll0_status & 0x4000000) == 0);
-  *pll0_control = 3;
-  system_clock_base[0x23] = 0xaa;
-  *pll0_feed = 0x55;
+  } while ((CLOCK_CONTROL->PLL0_STATUS & 0x4000000) == 0);
+  CLOCK_CONTROL->PLL0_CONTROL = 3;
+  CLOCK_CONTROL->PLL0_FEED = 0xaa;
+  CLOCK_CONTROL->PLL0_FEED = 0x55;
   do {
-  } while ((*pll0_status & 0x3000000) == 0);
-  *pll1_config = 0x23;
-  system_clock_base[0x2b] = 0xaa;
-  *pll1_feed = 0x55;
-  *pll1_control = 1;
-  *pll1_feed = 0xaa;
-  system_clock_base[0x2b] = 0x55;
+  } while ((CLOCK_CONTROL->PLL0_STATUS & 0x3000000) == 0);
+  CLOCK_CONTROL->PLL1_CONFIG = 0x23;
+  CLOCK_CONTROL->PLL1_FEED = 0xaa;
+  CLOCK_CONTROL->PLL1_FEED = 0x55;
+  CLOCK_CONTROL->PLL1_CONTROL = 1;
+  CLOCK_CONTROL->PLL1_FEED = 0xaa;
+  CLOCK_CONTROL->PLL1_FEED = 0x55;
   do {
-  } while ((*pll1_status & 0x400) == 0);
-  *pll1_control = 3;
-  system_clock_base[0x2b] = 0xaa;
-  *pll1_feed = 0x55;
+  } while ((CLOCK_CONTROL->PLL1_STATUS & 0x400) == 0);
+  CLOCK_CONTROL->PLL1_CONTROL = 3;
+  CLOCK_CONTROL->PLL1_FEED = 0xaa;
+  CLOCK_CONTROL->PLL1_FEED = 0x55;
   do {
-  } while ((*pll1_status & 0x300) == 0);
-  *system_pclk_sel0 = 0;
-  system_clock_base[0x6b] = 0;
-  *system_pconp = system_pconp_default;
-  *system_pclk_sel1 = 0;
-  *system_clock_base = 0x303a;
+  } while ((CLOCK_CONTROL->PLL1_STATUS & 0x300) == 0);
+  CLOCK_CONTROL->PERIPHERAL_CLOCK_SELECT0 = 0;
+  CLOCK_CONTROL->PERIPHERAL_CLOCK_SELECT1 = 0;
+  SYSTEM_CONTROL->power_control = system_pconp_default;
+  CLOCK_CONTROL->PERIPHERAL_CLOCK_SELECT1_ALIAS = 0;
+  CLOCK_CONTROL->SYSTEM_CONTROL_REGISTER = 0x303a;
   return;
 }
 

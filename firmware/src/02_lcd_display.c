@@ -22,10 +22,10 @@
 void lcd_ctrl_line(int on)
 {
   if (on < 1) {
-    *(volatile uint32_t *)(lcd_fio_base + 0x3c) = *(volatile uint32_t *)(lcd_fio_base + 0x3c) | 0x1000000;
+    FIO1->CLR = FIO1->CLR | 0x1000000;
   }
   else {
-    *(volatile uint32_t *)(lcd_fio_base + 0x38) = *(volatile uint32_t *)(lcd_fio_base + 0x38) | 0x1000000;
+    FIO1->SET = FIO1->SET | 0x1000000;
   }
   return;
 }
@@ -34,52 +34,52 @@ void lcd_ctrl_line(int on)
 void lcd_data_byte(uint32_t byte_val)
 {
   if ((byte_val & 0x80) == 0) {
-    *(volatile uint32_t *)(lcd_fio_base + 0x3c) = *(volatile uint32_t *)(lcd_fio_base + 0x3c) | 0x8000;
+    FIO1->CLR = FIO1->CLR | 0x8000;
   }
   else {
-    *(volatile uint32_t *)(lcd_fio_base + 0x38) = *(volatile uint32_t *)(lcd_fio_base + 0x38) | 0x8000;
+    FIO1->SET = FIO1->SET | 0x8000;
   }
   if ((byte_val & 0x40) == 0) {
-    *(volatile uint32_t *)(lcd_fio_base + 0x3c) = *(volatile uint32_t *)(lcd_fio_base + 0x3c) | 0x4000;
+    FIO1->CLR = FIO1->CLR | 0x4000;
   }
   else {
-    *(volatile uint32_t *)(lcd_fio_base + 0x38) = *(volatile uint32_t *)(lcd_fio_base + 0x38) | 0x4000;
+    FIO1->SET = FIO1->SET | 0x4000;
   }
   if ((byte_val & 0x20) == 0) {
-    *(volatile uint32_t *)(lcd_fio_base + 0x3c) = *(volatile uint32_t *)(lcd_fio_base + 0x3c) | 0x400;
+    FIO1->CLR = FIO1->CLR | 0x400;
   }
   else {
-    *(volatile uint32_t *)(lcd_fio_base + 0x38) = *(volatile uint32_t *)(lcd_fio_base + 0x38) | 0x400;
+    FIO1->SET = FIO1->SET | 0x400;
   }
   if ((byte_val & 0x10) == 0) {
-    *(volatile uint32_t *)(lcd_fio_base + 0x3c) = *(volatile uint32_t *)(lcd_fio_base + 0x3c) | 0x200;
+    FIO1->CLR = FIO1->CLR | 0x200;
   }
   else {
-    *(volatile uint32_t *)(lcd_fio_base + 0x38) = *(volatile uint32_t *)(lcd_fio_base + 0x38) | 0x200;
+    FIO1->SET = FIO1->SET | 0x200;
   }
   if ((byte_val & 8) == 0) {
-    *(volatile uint32_t *)(lcd_fio_base + 0x3c) = *(volatile uint32_t *)(lcd_fio_base + 0x3c) | 0x100;
+    FIO1->CLR = FIO1->CLR | 0x100;
   }
   else {
-    *(volatile uint32_t *)(lcd_fio_base + 0x38) = *(volatile uint32_t *)(lcd_fio_base + 0x38) | 0x100;
+    FIO1->SET = FIO1->SET | 0x100;
   }
   if ((byte_val & 4) == 0) {
-    *(volatile uint32_t *)(lcd_fio_base + 0x3c) = *(volatile uint32_t *)(lcd_fio_base + 0x3c) | 0x10;
+    FIO1->CLR = FIO1->CLR | 0x10;
   }
   else {
-    *(volatile uint32_t *)(lcd_fio_base + 0x38) = *(volatile uint32_t *)(lcd_fio_base + 0x38) | 0x10;
+    FIO1->SET = FIO1->SET | 0x10;
   }
   if ((byte_val & 2) == 0) {
-    *(volatile uint32_t *)(lcd_fio_base + 0x3c) = *(volatile uint32_t *)(lcd_fio_base + 0x3c) | 2;
+    FIO1->CLR = FIO1->CLR | 2;
   }
   else {
-    *(volatile uint32_t *)(lcd_fio_base + 0x38) = *(volatile uint32_t *)(lcd_fio_base + 0x38) | 2;
+    FIO1->SET = FIO1->SET | 2;
   }
   if ((byte_val & 1) == 0) {
-    *(volatile uint32_t *)(lcd_fio_base + 0x3c) = *(volatile uint32_t *)(lcd_fio_base + 0x3c) | 1;
+    FIO1->CLR = FIO1->CLR | 1;
   }
   else {
-    *(volatile uint32_t *)(lcd_fio_base + 0x38) = *(volatile uint32_t *)(lcd_fio_base + 0x38) | 1;
+    FIO1->SET = FIO1->SET | 1;
   }
   return;
 }
@@ -89,7 +89,7 @@ void lcd_data_byte(uint32_t byte_val)
  *   → Delay(1) → E=1 → Delay(1) → E=0 → Delay(1)。原反编译器生成的多余参数为伪影。 */
 void disp_data(uint32_t byte_val,int invert)
 {
-  *(volatile uint32_t *)(lcd_fio_base + 0x38) = *(volatile uint32_t *)(lcd_fio_base + 0x38) | 0x8000000;  /* P1.27 RS=1（数据模式） */
+  FIO1->SET = FIO1->SET | 0x8000000;  /* P1.27 RS=1（数据模式） */
   Delay(1);
   if (invert == 0) {
     lcd_data_byte(byte_val);
@@ -98,9 +98,9 @@ void disp_data(uint32_t byte_val,int invert)
     lcd_data_byte(byte_val ^ 0xff);
   }
   Delay(1);
-  *(volatile uint32_t *)(lcd_fio_base + 0x38) = *(volatile uint32_t *)(lcd_fio_base + 0x38) | 0x10000000;  /* P1.28 E=1 */
+  FIO1->SET = FIO1->SET | 0x10000000;  /* P1.28 E=1 */
   Delay(1);
-  *(volatile uint32_t *)(lcd_fio_base + 0x3c) = *(volatile uint32_t *)(lcd_fio_base + 0x3c) | 0x10000000;  /* P1.28 E=0 */
+  FIO1->CLR = FIO1->CLR | 0x10000000;  /* P1.28 E=0 */
   Delay(1);
   return;
 }
@@ -108,13 +108,13 @@ void disp_data(uint32_t byte_val,int invert)
 /* 0x0000094A —— 写命令（RS=0，P1.27）—— 反汇编核实 1 实参 */
 void disp_cmd(uint32_t cmd)
 {
-  *(volatile uint32_t *)(lcd_fio_base + 0x3c) = *(volatile uint32_t *)(lcd_fio_base + 0x3c) | 0x8000000;  /* P1.27 RS=0（命令模式） */
+  FIO1->CLR = FIO1->CLR | 0x8000000;  /* P1.27 RS=0（命令模式） */
   Delay(1);
   lcd_data_byte(cmd);
   Delay(1);
-  *(volatile uint32_t *)(lcd_fio_base + 0x38) = *(volatile uint32_t *)(lcd_fio_base + 0x38) | 0x10000000;  /* E=1 */
+  FIO1->SET = FIO1->SET | 0x10000000;  /* E=1 */
   Delay(1);
-  *(volatile uint32_t *)(lcd_fio_base + 0x3c) = *(volatile uint32_t *)(lcd_fio_base + 0x3c) | 0x10000000;  /* E=0 */
+  FIO1->CLR = FIO1->CLR | 0x10000000;  /* E=0 */
   Delay(1);
   return;
 }
@@ -122,23 +122,21 @@ void disp_cmd(uint32_t cmd)
 /* 0x00000992 —— 清屏：上下两半各 8 页（0xB8..0xBF），每页 64 字节写 0 */
 void disp_clear(void)
 {
-  uint32_t gpio_base;
   uint8_t col;
   uint8_t page;
 
-  gpio_base = lcd_fio_base;
-  *(volatile uint32_t *)(lcd_fio_base + 0x38) = *(volatile uint32_t *)(lcd_fio_base + 0x38) | 0x4000000;   /* CS1=1（上半屏） */
-  *(volatile uint32_t *)(gpio_base + 0x3c) = *(volatile uint32_t *)(gpio_base + 0x3c) | 0x2000000;                 /* CS2=0 */
+  FIO1->SET = FIO1->SET | 0x4000000;   /* CS1=1（上半屏） */
+  FIO1->CLR = FIO1->CLR | 0x2000000;                 /* CS2=0 */
   Delay(10);
   disp_cmd(0xc0);                          /* 起始行=0 */
-  for (page = 0; gpio_base = lcd_fio_base, page < 8; page = page + 1) {
+  for (page = 0; page < 8; page = page + 1) {
     disp_cmd(page + 0xb8);                /* 页 0..7 */
     for (col = 0; col < 0x40; col = col + 1) {
       disp_data(0,0);
     }
   }
-  *(volatile uint32_t *)(lcd_fio_base + 0x3c) = *(volatile uint32_t *)(lcd_fio_base + 0x3c) | 0x4000000;
-  *(volatile uint32_t *)(gpio_base + 0x38) = *(volatile uint32_t *)(gpio_base + 0x38) | 0x2000000;
+  FIO1->CLR = FIO1->CLR | 0x4000000;
+  FIO1->SET = FIO1->SET | 0x2000000;
   Delay(10);
   disp_cmd(0xc0);
   for (page = 0; page < 8; page = page + 1) {
@@ -154,37 +152,32 @@ void disp_clear(void)
  *   P1.0-7(DB)+P1.24-28(控制) 置输出；然后 CS 切换 + disp_cmd(0xC0)+disp_cmd(0x3F) 开显示 */
 void gpio1_init(void)
 {
-  uint32_t gpio_base;
-
-  gpio_base = lcd_fio_base;
-  *(volatile uint32_t *)(lcd_fio_base + 0x20) = *(volatile uint32_t *)(lcd_fio_base + 0x20) | 0x8000000;   /* FIODIR bit27 */
-  *(volatile uint32_t *)(gpio_base + 0x20) = *(volatile uint32_t *)(gpio_base + 0x20) | 0x10000000;                /* bit28 */
-  *(volatile uint32_t *)(gpio_base + 0x20) = *(volatile uint32_t *)(gpio_base + 0x20) | 0x4000000;                 /* bit26 */
-  *(volatile uint32_t *)(gpio_base + 0x20) = *(volatile uint32_t *)(gpio_base + 0x20) | 0x2000000;                 /* bit25 */
-  *(volatile uint32_t *)(gpio_base + 0x20) = *(volatile uint32_t *)(gpio_base + 0x20) | 1;                         /* bit0 DB0 */
-  *(volatile uint32_t *)(gpio_base + 0x20) = *(volatile uint32_t *)(gpio_base + 0x20) | 2;                         /* bit1 */
-  *(volatile uint32_t *)(gpio_base + 0x20) = *(volatile uint32_t *)(gpio_base + 0x20) | 0x10;                      /* bit4 */
-  *(volatile uint32_t *)(gpio_base + 0x20) = *(volatile uint32_t *)(gpio_base + 0x20) | 0x100;                     /* bit8 */
-  *(volatile uint32_t *)(gpio_base + 0x20) = *(volatile uint32_t *)(gpio_base + 0x20) | 0x200;                     /* bit9 */
-  *(volatile uint32_t *)(gpio_base + 0x20) = *(volatile uint32_t *)(gpio_base + 0x20) | 0x400;                     /* bit10 */
-  *(volatile uint32_t *)(gpio_base + 0x20) = *(volatile uint32_t *)(gpio_base + 0x20) | 0x4000;                    /* bit14 */
-  *(volatile uint32_t *)(gpio_base + 0x20) = *(volatile uint32_t *)(gpio_base + 0x20) | 0x8000;                    /* bit15 */
-  *(volatile uint32_t *)(gpio_base + 0x20) = *(volatile uint32_t *)(gpio_base + 0x20) | 0x1000000;                 /* bit24 */
-  *(volatile uint32_t *)(gpio_base + 0x3c) = *(volatile uint32_t *)(gpio_base + 0x3c) | 0x1000000;                 /* RES=0 */
-  *(volatile uint32_t *)(gpio_base + 0x3c) = *(volatile uint32_t *)(gpio_base + 0x3c) | 0x8000000;                 /* R/W=0 */
+  FIO1->DIR = FIO1->DIR | 0x8000000;   /* FIODIR bit27 */
+  FIO1->DIR = FIO1->DIR | 0x10000000;                /* bit28 */
+  FIO1->DIR = FIO1->DIR | 0x4000000;                 /* bit26 */
+  FIO1->DIR = FIO1->DIR | 0x2000000;                 /* bit25 */
+  FIO1->DIR = FIO1->DIR | 1;                         /* bit0 DB0 */
+  FIO1->DIR = FIO1->DIR | 2;                         /* bit1 */
+  FIO1->DIR = FIO1->DIR | 0x10;                      /* bit4 */
+  FIO1->DIR = FIO1->DIR | 0x100;                     /* bit8 */
+  FIO1->DIR = FIO1->DIR | 0x200;                     /* bit9 */
+  FIO1->DIR = FIO1->DIR | 0x400;                     /* bit10 */
+  FIO1->DIR = FIO1->DIR | 0x4000;                    /* bit14 */
+  FIO1->DIR = FIO1->DIR | 0x8000;                    /* bit15 */
+  FIO1->DIR = FIO1->DIR | 0x1000000;                 /* bit24 */
+  FIO1->CLR = FIO1->CLR | 0x1000000;                 /* RES=0 */
+  FIO1->CLR = FIO1->CLR | 0x8000000;                 /* R/W=0 */
   Delay(1);
-  *(volatile uint32_t *)(gpio_base + 0x3c) = *(volatile uint32_t *)(gpio_base + 0x3c) | 0x10000000;  /* E=0 */
+  FIO1->CLR = FIO1->CLR | 0x10000000;  /* E=0 */
   Delay(1);
-  gpio_base = lcd_fio_base;
-  *(volatile uint32_t *)(gpio_base + 0x38) = *(volatile uint32_t *)(gpio_base + 0x38) | 0x4000000;
-  *(volatile uint32_t *)(gpio_base + 0x3c) = *(volatile uint32_t *)(gpio_base + 0x3c) | 0x2000000;
+  FIO1->SET = FIO1->SET | 0x4000000;
+  FIO1->CLR = FIO1->CLR | 0x2000000;
   Delay(1);
   disp_cmd(0xc0);
   disp_cmd(0x3f);                          /* DISPLAY ON */
   Delay(1);
-  gpio_base = lcd_fio_base;
-  *(volatile uint32_t *)(gpio_base + 0x3c) = *(volatile uint32_t *)(gpio_base + 0x3c) | 0x4000000;
-  *(volatile uint32_t *)(gpio_base + 0x38) = *(volatile uint32_t *)(gpio_base + 0x38) | 0x2000000;
+  FIO1->CLR = FIO1->CLR | 0x4000000;
+  FIO1->SET = FIO1->SET | 0x2000000;
   Delay(1);
   disp_cmd(0xc0);
   disp_cmd(0x3f);
@@ -218,12 +211,10 @@ static const unsigned char ext_char8_x[0x10] = {
  *   row=行，col=列×8+0x40 地址 */
 void disp_render_char8(uint32_t ch,char row,uint32_t col,uint32_t invert)
 {
-  uint32_t gpio_base;
   uint32_t bit_index;
   uint32_t glyph_index;
   uint32_t glyph_base;
 
-  gpio_base = lcd_fio_base;
   glyph_index = 0;
   if (ch == 0x4f) {                  /* 'O'：直接复用原字库索引0的数字'0' */
     glyph_index = 0;
@@ -244,12 +235,12 @@ void disp_render_char8(uint32_t ch,char row,uint32_t col,uint32_t invert)
     glyph_base = lcd_ascii_font;
   }
   if ((int)col < 8) {
-    *(volatile uint32_t *)(lcd_fio_base + 0x3c) = *(volatile uint32_t *)(lcd_fio_base + 0x3c) | 0x4000000;
-    *(volatile uint32_t *)(gpio_base + 0x38) = *(volatile uint32_t *)(gpio_base + 0x38) | 0x2000000;
+    FIO1->CLR = FIO1->CLR | 0x4000000;
+    FIO1->SET = FIO1->SET | 0x2000000;
   }
   else {
-    *(volatile uint32_t *)(lcd_fio_base + 0x38) = *(volatile uint32_t *)(lcd_fio_base + 0x38) | 0x4000000;
-    *(volatile uint32_t *)(gpio_base + 0x3c) = *(volatile uint32_t *)(gpio_base + 0x3c) | 0x2000000;
+    FIO1->SET = FIO1->SET | 0x4000000;
+    FIO1->CLR = FIO1->CLR | 0x2000000;
     col = col - 8 & 0xff;
   }
   Delay(10);
@@ -289,12 +280,12 @@ void disp_render_char16(uint32_t gb_hi,uint32_t gb_lo,char row,int col,uint32_t 
     glyph_index = glyph_index + 1 & 0xff;
   }
   if (col2 < 4) {
-    *(volatile uint32_t *)(lcd_gbk_base + 0x3c) = *(volatile uint32_t *)(lcd_gbk_base + 0x3c) | 0x4000000;
-    *(volatile uint32_t *)(glyph_base + 0x38) = *(volatile uint32_t *)(glyph_base + 0x38) | 0x2000000;
+    FIO1->CLR = FIO1->CLR | 0x4000000;
+    FIO1->SET = FIO1->SET | 0x2000000;
   }
   else {
-    *(volatile uint32_t *)(lcd_gbk_base + 0x38) = *(volatile uint32_t *)(lcd_gbk_base + 0x38) | 0x4000000;
-    *(volatile uint32_t *)(glyph_base + 0x3c) = *(volatile uint32_t *)(glyph_base + 0x3c) | 0x2000000;
+    FIO1->SET = FIO1->SET | 0x4000000;
+    FIO1->CLR = FIO1->CLR | 0x2000000;
     col2 = col2 - 4 & 0xff;
   }
   Delay(10);
