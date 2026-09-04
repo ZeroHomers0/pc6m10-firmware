@@ -4,6 +4,7 @@
  * ========================================================================== */
 #include "inc/types.h"
 #include "inc/reg.h"
+#include "inc/firmware_types.h"
 #include "inc/firmware_api.h"
 #include "inc/firmware_state.h"
 
@@ -124,7 +125,7 @@ uint8_t input_scan_state(void)
           *counter_ptr = 0xb;
         }
         if (*input_encoder_counter_ptr == 10) {
-          return 0xb;          /* 0x0B = 慢加事件（计数 10） */
+          return KEY_SLOW_UP;   /* 0x0B = 慢加事件（计数 10） */
         }
       }
       counter_ptr = input_encoder_counter_ptr;
@@ -134,7 +135,7 @@ uint8_t input_scan_state(void)
            (((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x20000000) != 0 &&
             ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x2000000) != 0)))) &&
           ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x4000000) != 0)))) {
-        return 0x16;           /* 0x16 = 快加（A=1,B=0） */
+        return KEY_FAST_UP;    /* 0x16 = 快加（A=1,B=0） */
       }
       if (((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x80000) != 0) &&
            ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x40000) != 0)) &&
@@ -142,7 +143,7 @@ uint8_t input_scan_state(void)
          ((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x14) & 0x20000000) != 0 &&
            ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x2000000) != 0)) &&
           ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x74) & 0x4000000) != 0)))) {
-        return 0x21;           /* 0x21 = 快减（P0.28=1,P0.27=1,P1.16=0） */
+        return KEY_FAST_DOWN;  /* 0x21 = 快减（P0.28=1,P0.27=1,P1.16=0） */
       }
       if ((((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x80000) != 0) &&
           ((*(volatile uint32_t *)((uint32_t)input_fio_base_ptr + 0x34) & 0x40000) == 0)) &&
@@ -155,7 +156,7 @@ uint8_t input_scan_state(void)
           *counter_ptr = 0x1f;
         }
         if (*input_encoder_counter_ptr == 0x1e) {
-          return 0x17;         /* 0x17 = 慢减事件（计数 0x1E=30） */
+          return KEY_SLOW_DOWN; /* 0x17 = 慢减事件（计数 0x1E=30） */
         }
       }
       counter_ptr = input_encoder_counter_ptr;
@@ -170,7 +171,7 @@ uint8_t input_scan_state(void)
           *counter_ptr = 0x1f;
         }
         if (*input_encoder_counter_ptr == 0x1e) {
-          return 0xe;          /* 0x0E = 组合键事件（计数 0x1E） */
+          return KEY_COMBINED_SLOW_DOWN; /* 0x0E = 组合键事件（计数 0x1E） */
         }
       }
     }

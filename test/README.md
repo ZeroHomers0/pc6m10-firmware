@@ -9,7 +9,7 @@ python test/run_tests.py crc16
 
 `run_tests.py` 递归发现测试，并保持按名称过滤能力。
 
-## 测试模块清单（25 个，必须全部通过）
+## 测试模块清单（26 个，必须全部通过）
 
 ### static/ — host 静态/结构检查（不执行机器码）
 
@@ -18,6 +18,7 @@ python test/run_tests.py crc16
 | `test_crc16_tables_and_semantics.py` | CRC 表逐字节 vs 原 BIN flash 表；`crc16` 长度语义（处理全部 len 字节） |
 | `test_modbus_register_map.py` | Modbus 读写映射对称：read/write 同 SRAM 地址、同位宽、保留区落 g_scratch |
 | `test_parameter_sync_structure.py` | 参数 live→EEPROM 同步结构（shadow 复制 + i2c_write 模式） |
+| `test_readability_contract.py` | 活动源码命名、构建入口和旧 globals 文件删除契约 |
 
 ### emulation/ — Unicorn 执行级验证（A/B 差分 或 真执行编译产物）
 
@@ -53,5 +54,5 @@ python test/run_tests.py crc16
 ## 规则
 
 - 修改源码后必须运行对应回归测试；A/B 差分测试是「原始 vs 编译」执行级等价护栏。
-- 当前完整入口结果为 `25/25`；新增或删除测试文件时必须同步更新本清单与模块总数。
+- 当前完整入口结果为 `26/26`；新增或删除测试文件时必须同步更新本清单与模块总数。
 - 独立的更大验证矩阵不在本目录重复实现，主入口为 `tools/verification/verify_firmware_equivalence.py`。

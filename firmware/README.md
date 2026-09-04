@@ -25,6 +25,7 @@ bash build.sh          # 产出 firmware.elf / firmware.hex / firmware.bin / fir
 | `data_image.s` | 原固件 SRAM .data 初始镜像（`assets/ram_data_image.bin`，8508B） |
 | `inc/firmware_state.h` | 系统、外设、输入、显示和运行时状态的语义化地址映射 |
 | `inc/firmware_parameters.h` | 配置、实时参数和 EEPROM 镜像的语义化地址映射 |
+| `inc/firmware_types.h` | 按键事件和固件领域类型 |
 | `src/strpool.c` | **W7a 字符串表**（`tools/generation/generate_string_pool.py` 生成） |
 | `stub.c` | 收尾子例程：`freq_adjust_sync(0xAB48)` + 已按原指令恢复的 UART3 RX 组帧 `func_0x0000aed0` |
 | `src/` | 13 个可编译模块 + `strpool.c`（01_startup 移除 IAR runtime；07_state_machine.c / 08_modbus_dispatch.c 已 W1a/W1b 完整还原） |

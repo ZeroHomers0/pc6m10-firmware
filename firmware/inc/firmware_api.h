@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include "types.h"
+#include "firmware_types.h"
 
 /* 系统启动、节拍与看门狗 */
 void SystemInit(void);

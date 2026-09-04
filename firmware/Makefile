@@ -32,11 +32,11 @@ $(TARGET).elf: $(OBJS) lpc1765.ld
 	$(AS) $(ASFLAGS) -c -o $@ $<
 
 # src/ 下 C 模块
-src/%.o: src/%.c inc/reg.h inc/types.h inc/firmware_api.h inc/firmware_state.h inc/firmware_parameters.h inc/consts.h
+src/%.o: src/%.c inc/reg.h inc/types.h inc/firmware_types.h inc/firmware_api.h inc/firmware_state.h inc/firmware_parameters.h inc/consts.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 # 根目录 C（stub.c）
-%.o: %.c inc/reg.h inc/types.h inc/firmware_api.h inc/firmware_state.h inc/firmware_parameters.h inc/consts.h
+%.o: %.c inc/reg.h inc/types.h inc/firmware_types.h inc/firmware_api.h inc/firmware_state.h inc/firmware_parameters.h inc/consts.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 %.hex: %.elf
