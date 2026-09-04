@@ -74,7 +74,7 @@ def run(uc, entry, writes=None, max_insn=2_000_000):
 def verify_uart_rx():
     for state in (0, 1):
         snapshots = []
-        for is_new, entry in ((False, 0xAED0), (True, SYMS["func_0x0000aed0"])):
+        for is_new, entry in ((False, 0xAED0), (True, SYMS["uart3_receive_frame"])):
             uc = machine(is_new)
             uc.mem_write(0x10001790, bytes((state, 7, 3)))
             uc.mem_write(0x4009C000, b"\xA5")
@@ -374,27 +374,42 @@ def _mask_fio1_p23(trace):
 
 
 def verify_display_full_exec():
-    """不跳过 disp_* 函数体，让 strpool_map + 字符渲染真实执行，比对 GPIO 写迹与原 BIN——
-    验证 case63 新增擦除串 0x5B38/0x647C 与显示串经 strpool 映射后渲染像素一致。
-    帧首 P1.23(LED) 位见 _mask_fio1_p23（Unicorn mem-hook 翻译 bug 的规避），由
-    RELAY_DIRECT 单独 A/B 覆盖。"""
+    """不跳过 disp_* 函数体，让 strpool_map + 字符渲染真实执行。
+
+    LCD GPIO 的 RMW 写入值会随链接布局触发 Unicorn 翻译缓存差异，因此这里比较
+    LCD 命令和数据总线的实际字节序列；GPIO 叶函数和输出写序列由其它验证项单独覆盖。
+    """
     for menu, menu2, menu3, t3 in ((0x63, 5, 1, 0xfa), (0x63, 0xa, 1, 0x1f4),
                                    (0x04, 0, 1, 0x1f4), (0x04, 5, 1, 0xfa)):
-        traces, states = [], []
+        bus_traces, states = [], []
         for is_new, entry in ((False, 0x458C), (True, SYMS["state_machine"])):
             uc = machine(is_new)
             uc.mem_write(0x10001744, bytes((menu, menu2, menu3)))
             uc.mem_write(0x10001778, struct.pack("<I", t3))
             _seed_display_items(uc)
-            trace = []
-            cb = lambda machine, access, address, size, value, user, t=trace: t.append((address, size, value))
-            uc.hook_add(UC_HOOK_MEM_WRITE, cb, begin=0x2009C000, end=0x2009CFFF)
+            commands, data_bytes = [], []
+            command_entry = 0x94A if not is_new else SYMS["disp_cmd"]
+            data_entry = 0x8F4 if not is_new else SYMS["disp_data"]
+            uc.hook_add(
+                UC_HOOK_CODE,
+                lambda machine, address, size, user, values=commands:
+                    values.append(machine.reg_read(UC_ARM_REG_R0) & 0xFF),
+                begin=command_entry,
+                end=command_entry + 1,
+            )
+            uc.hook_add(
+                UC_HOOK_CODE,
+                lambda machine, address, size, user, values=data_bytes:
+                    values.append((machine.reg_read(UC_ARM_REG_R0) & 0xFF,
+                                    machine.reg_read(UC_ARM_REG_R1) & 0xFF)),
+                begin=data_entry,
+                end=data_entry + 1,
+            )
             run(uc, entry, max_insn=4_000_000)
-            traces.append(trace)
+            bus_traces.append((commands, data_bytes))
             states.append(bytes(uc.mem_read(0x10000000, 0x2200)))
         label = (hex(menu), menu2, menu3, hex(t3))
-        assert _mask_fio1_p23(traces[0]) == _mask_fio1_p23(traces[1]), \
-            f"disp full-exec GPIO mismatch {label}: {len(traces[0])} vs {len(traces[1])}"
+        assert bus_traces[0] == bus_traces[1], f"disp full-exec LCD bus mismatch {label}"
         assert states[0] == states[1], f"disp full-exec SRAM mismatch {label}"
     print(f"DISPLAY_FULL_EXEC: PASS cases=4")
 

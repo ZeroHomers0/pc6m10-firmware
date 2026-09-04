@@ -77,6 +77,7 @@ void disp_decimal1(uint32_t value, uint32_t row, int column, uint32_t invert);
 void disp_splash_screen(void);
 void disp_screen_static(void);
 void disp_screen_calib(void);
+uint32_t strpool_map(uint32_t string_address);
 
 /* SCR 输出、中断与闭环 */
 void timer1_init(void);

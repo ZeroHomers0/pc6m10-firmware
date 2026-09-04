@@ -101,8 +101,59 @@ def check_display_and_input_names():
     return issues
 
 
+def check_style_and_warning_profile():
+    issues = []
+    style_files = (ROOT / ".editorconfig", ROOT / ".clang-format")
+    for path in style_files:
+        if not path.exists():
+            issues.append(f"{path.relative_to(ROOT).as_posix()}: 风格配置不存在")
+
+    compiler_flags = ROOT / "firmware" / "compiler_flags.txt"
+    required_flags = (
+        "-Wall",
+        "-Wextra",
+        "-Wshadow",
+        "-Wstrict-prototypes",
+        "-Wmissing-prototypes",
+        "-Wundef",
+    )
+    if not compiler_flags.exists():
+        issues.append("firmware/compiler_flags.txt: 共用编译选项不存在")
+    else:
+        flags = compiler_flags.read_text(encoding="utf-8", errors="ignore").split()
+        for flag in required_flags:
+            if flag not in flags:
+                issues.append(f"firmware/compiler_flags.txt: 缺少 {flag}")
+
+    for path in (ROOT / "firmware" / "Makefile", ROOT / "firmware" / "build.sh", ROOT / "firmware" / "build.ps1"):
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        relative_path = path.relative_to(ROOT).as_posix()
+        if "compiler_flags.txt" not in text:
+            issues.append(f"{relative_path}: 未使用共用编译选项")
+        for legacy_flag in ("-Wno-unused-variable", "-Wno-unused-but-set-variable", "-Wno-pointer-sign"):
+            if legacy_flag in text:
+                issues.append(f"{relative_path}: 仍抑制已清理的警告 {legacy_flag}")
+
+    for path in SOURCE_FILES:
+        data = path.read_bytes()
+        text = data.decode("utf-8", errors="ignore")
+        relative_path = path.relative_to(ROOT).as_posix()
+        for line_number, line in enumerate(text.splitlines(), start=1):
+            if line.endswith((" ", "\t")):
+                issues.append(f"{relative_path}:{line_number}: 行尾空白")
+        if data and not data.endswith(b"\n"):
+            issues.append(f"{relative_path}: 缺少文件末尾换行")
+    return issues
+
+
 def main():
-    issues = check_source_names() + check_build_inputs() + check_removed_files() + check_display_and_input_names()
+    issues = (
+        check_source_names()
+        + check_build_inputs()
+        + check_removed_files()
+        + check_display_and_input_names()
+        + check_style_and_warning_profile()
+    )
     if issues:
         print("=== 可读性契约失败 ===")
         for issue in issues:
@@ -113,6 +164,7 @@ def main():
     print("  [PASS] 构建入口不依赖 globals.c / globals.h / globals.o")
     print("  [PASS] 旧集中式全局文件和对象不存在")
     print("  [PASS] 显示文本地址、输入 GPIO 掩码和页面辅助函数已语义化")
+    print("  [PASS] 共用编译警告配置和活动源码格式检查通过")
     return 0
 
 

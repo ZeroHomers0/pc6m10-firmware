@@ -24,10 +24,12 @@ if (-not $toolchain) {
 $gcc = Join-Path $toolchain 'arm-none-eabi-gcc.exe'
 $objcopy = Join-Path $toolchain 'arm-none-eabi-objcopy.exe'
 $size = Join-Path $toolchain 'arm-none-eabi-size.exe'
-$cpu = @('-mcpu=cortex-m3', '-mthumb', '-mfloat-abi=soft')
-$cflags = $cpu + @('-Os', '-ffreestanding', '-fno-builtin', '-Wall', '-I.', '-Iinc',
-    '-Wno-unused-but-set-variable', '-Wno-unused-variable', '-Wno-pointer-sign',
-    '-Wno-parentheses')
+$commonFlags = ([IO.File]::ReadAllText((Join-Path $firmwareRoot 'compiler_flags.txt')) -split '\s+' |
+    Where-Object { $_ })
+$cpu = @($commonFlags | Where-Object {
+    $_ -like '-mcpu=*' -or $_ -eq '-mthumb' -or $_ -like '-mfloat-abi=*'
+})
+$cflags = $commonFlags
 
 $generated = @('startup.o', 'data_image.o', 'firmware.elf',
     'firmware.hex', 'firmware.bin', 'firmware.map', 'firmware.lst')

@@ -15,6 +15,7 @@
  * ========================================================================== */
 #include "inc/types.h"
 #include "inc/reg.h"
+#include "inc/firmware_api.h"
 #include "inc/firmware_state.h"
 
 /* 0x00001F04 —— ADC0 初始化：CLKDIV、PCLKSEL（ADC 时钟分频）、使能 ADC 电源

@@ -29,7 +29,7 @@
 #     注释笔误），实际为 0x1000172C=SYNC_2C（旧地址证据槽 0x750）。修正后重跑
 #     depth 仍 116B、余量 324B 不变 → 1-11 结论不受影响（state_machine 397 行
 #     SYNC_2C=1 放行不吸合继电器，本脚本 preset 已对齐真实上电态）。
-#   · 已知局限：UART3 ISR 的 func_0x0000aed0 为 stub 替代(真实为 RX 组帧，估浅)；
+#   · 已知局限：UART3 ISR 的 uart3_receive_frame 为接收组帧路径，外设模型只覆盖默认分支；
 #     外设空间读 0 使部分外设依赖分支走默认路径；多步状态转移未逐组合覆盖。
 #     全部上浮(ISR+50B, 主循环+50B)仍 ≤ 288B < 512-128=384B，结论稳健。
 # =============================================================================
@@ -77,10 +77,10 @@ PRESET_CLEAN = [
     (0x1000177f, 0, 1),   # STOP_PEND = 0
     (0x10001780, 0, 1),   # DB_116 = 0
     (0x1000177c, 0, 1),   # DB_117 = 0
-    (0x10002076, 0, 1),   # input_state = 0（g_input_state→0x10002076）
-    (0x10002000, 0, 4),   # input_locked = 0（PTR_input_locked→0x10002000）
-    (0x10002075, 0, 1),   # mode_byte = 0（g_mode_byte→0x10002075）
-    (0x10001ffa, 0, 1),   # debounce_count = 0（PTR_debounce_count→0x10001FFA）
+    (0x10002076, 0, 1),   # input_state = 0（输入状态，0x10002076）
+    (0x10002000, 0, 4),   # input_locked = 0（输入锁定标志，0x10002000）
+    (0x10002075, 0, 1),   # mode_byte = 0（输入模式字节，0x10002075）
+    (0x10001ffa, 0, 1),   # debounce_count = 0（消抖计数，0x10001FFA）
 ]
 # 外设位（避免 ADC/UART 等待死循环）
 PRESET_PERIPH = [
@@ -90,7 +90,8 @@ PRESET_PERIPH = [
 
 # ── 被测符号（firmware.map 解析）──────────────────────────────────────────────
 MAIN_LOOP = [
-    'stub_ret', 'adc0_scan_channels', 'input_scan_state',
+    # startup_idle_hook 为空操作且会被编译器内联/消除，不作为独立测量目标。
+    'adc0_scan_channels', 'input_scan_state',
     'state_machine', 'output_stage', 'wd_feed',
     'uart3_rx_timeout_monitor', 'modbus_dispatch',
 ]

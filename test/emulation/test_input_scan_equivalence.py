@@ -6,10 +6,11 @@
 # 编码器/RUN/STOP 输入扫描：读 FIO1PIN(0x2009C034)/FIO0PIN(0x2009C014)/FIO3PIN(0x2009C074)
 # 各相引脚状态，按 A/B 相组合锁存方向（0x10001570）并产生按键事件码 0x0B/0x16/0x21/0x17/0x0E。
 #
-# 2026-08-27 W8：编译版曾把 `DAT_00001974 + 0xNN`（DAT_00001974 是 uint32_t*）按元素
-# 偏移编译成 +4 倍字节 → 读 0x2009C0D0/0x2009C050/0x2009C1D0 而非 0x2009C034/0x014/0x074。
+# 2026-08-27 W8：编译版曾把编码器输入池基址（0x2009C000）按 uint32_t 元素偏移
+# 处理 0xNN，实际变成 +4 倍字节 → 读 0x2009C0D0/0x2009C050/0x2009C1D0 而非
+# 0x2009C034/0x014/0x074。
 # 后果：引脚全部读到 0（未就绪）→ 扫描计数永不触发 → key 恒 0 → 背光不亮 + 按键无效。
-# 修复：`(uint32_t)DAT_00001974 + 0xNN`（同 ADC 修复模式）。本测试是回归护栏：
+# 修复：使用字节偏移计算输入池地址（同 ADC 修复模式）。本测试是回归护栏：
 # 全 6 位引脚组合 × 计数初值差分，任一读址错位必露馅。
 #
 # 测试要点：FIO 块按正确地址播不同引脚状态；若编译版错读高地址（0x1D0/0xD0/0x50），
@@ -31,9 +32,9 @@ FIO1PIN    = FIO_BASE + 0x34 # P1.19(0x80000)/P1.18(0x40000)
 FIO0PIN    = FIO_BASE + 0x14 # P0.30(0x40000000)/P0.29(0x20000000)
 FIO3PIN    = FIO_BASE + 0x74 # P3.25(0x2000000)/P3.26(0x4000000)
 
-CNT  = 0x10001588            # DAT_00001978 扫描计数（word）
-LATCH = 0x10001570           # DAT_0000197c 方向锁存（byte）
-SLOW  = 0x10001571           # DAT_00001980/DAT_00001c10 慢/组合计数（byte）
+SCAN_COUNTER = 0x10001588    # 扫描计数（word）
+DIRECTION_LATCH = 0x10001570 # 方向锁存（byte）
+COMBINATION_COUNTER = 0x10001571  # 慢/组合计数（byte）
 
 P1 = 0x80000 | 0x40000       # FIO1PIN 相关位
 P0 = 0x40000000 | 0x20000000 # FIO0PIN 相关位
@@ -43,9 +44,9 @@ def make_seed(p1, p0, p3, counter, latch, slow):
     def seed(e):
         # 差异区清零（两 loader 基态一致，避免 .fw_image 镜像差异干扰）
         e.mem_write(0x10001000, b'\x00' * (0x10003F00 - 0x10001000))
-        e.mem_write(CNT, struct.pack('<I', counter))
-        e.mem_write(LATCH, bytes([latch]))
-        e.mem_write(SLOW, bytes([slow]))
+        e.mem_write(SCAN_COUNTER, struct.pack('<I', counter))
+        e.mem_write(DIRECTION_LATCH, bytes([latch]))
+        e.mem_write(COMBINATION_COUNTER, bytes([slow]))
         e.mem_map(FIO_BASE, 0x1000, UC_PROT_ALL)
         e.mem_write(FIO_BASE, b'\x00' * 0x1000)
         e.mem_write(FIO1PIN, struct.pack('<I', p1))

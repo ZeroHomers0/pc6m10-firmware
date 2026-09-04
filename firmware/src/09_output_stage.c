@@ -1024,8 +1024,6 @@ void TIMER2_IRQHandler(void)
  * 局部：gpio_base1/gpio_base2 = FIO 池各区域基址（output_fio_base/00010454/00010640，字节偏移） */
 static void lcd_scan_update_rows(void)
 {
-  volatile uint8_t *scan_counter_ptr;
-  scan_counter_ptr = output_scan_counter_ptr;
   if ((*output_scan_counter_ptr != '\0') && ((uint8_t)*output_scan_counter_ptr < 0x29)) {
     /* —— 区域 0（行 1..0x28）—— */
     if (*output_mode_ptr == '\x01') {

@@ -6,6 +6,7 @@
  * 产品信息定制（2026-09-01 用户要求）：case9 版本屏 4 行文本覆写为定制内容
  * （型号/版本/厂商/电话），地址不变，strpool_map 前置查表；见 PRODUCT_INFO_OVERRIDES。 */
 #include <stdint.h>
+#include "inc/firmware_api.h"
 
 typedef struct { uint32_t base; uint32_t len; const uint8_t *blob; } strpool_cluster_t;
 

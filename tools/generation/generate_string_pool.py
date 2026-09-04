@@ -23,7 +23,7 @@ ROOT = str(Path(__file__).resolve().parents[2])
 BIN = open(ROOT + r"\LPC1765.bin", "rb").read()
 FLASH_LEN = len(BIN)          # 0x40000 = 262144
 
-SCAN_FILES = glob.glob(ROOT + r"\firmware\src\*.c") + [ROOT + r"\firmware\stub.c"]
+SCAN_FILES = glob.glob(ROOT + r"\firmware\src\*.c")
 # 生成产物 strpool.c 除外（避免重复扫描自身输出，尽管它不含 disp_string 调用）
 SCAN_FILES = [f for f in SCAN_FILES if not f.endswith("strpool.c") and not f.endswith("08_modbus_dispatch.c")]
 # 08_modbus_dispatch.c（W1a 还原）纯 Modbus 数值路径，Agent1 已确认无 disp_string —— 排除减噪。
@@ -54,6 +54,15 @@ def addrs_from_src():
                 found.add(base)
     return found
 
+def addrs_from_display_header():
+    """读取显示地址表，支持业务代码通过语义宏引用字符串。"""
+    header = ROOT + r"\firmware\inc\firmware_display_strings.h"
+    src = open(header, "rb").read().decode("utf-8", errors="replace")
+    return {
+        int(match.group(1), 16)
+        for match in re.finditer(r"^#define\s+DISPLAY_[A-Z0-9_]+\s+0x([0-9a-fA-F]+)u\s*$", src, re.MULTILINE)
+    }
+
 # W7b 修正后的真实单位字符地址（修正前 src 为误译 ASCII 值 0x56/0x41/0x25，扫描不到）
 EXTRA = {0x7974, 0x7980, 0x86e0}   # 'V' 过压/欠压 · 'A' IF/CT 过载 · '%' 三相平衡
 
@@ -69,7 +78,7 @@ PRODUCT_INFO_OVERRIDES = {
 }
 
 def addrs_final():
-    raw = addrs_from_src() | EXTRA
+    raw = addrs_from_src() | addrs_from_display_header() | EXTRA
     # 过滤：仅保留 flash 字符串区（>=0x400，排除 0x25/0x41/0x56 误译残渣；<FLASH_LEN）
     out = {a for a in raw if 0x400 <= a < FLASH_LEN}
     return raw, out
@@ -132,6 +141,7 @@ csrc.append(" * 未命中（RAM/外设地址）原样返回。")
 csrc.append(" * 产品信息定制（2026-09-01 用户要求）：case9 版本屏 4 行文本覆写为定制内容")
 csrc.append(" * （型号/版本/厂商/电话），地址不变，strpool_map 前置查表；见 PRODUCT_INFO_OVERRIDES。 */")
 csrc.append("#include <stdint.h>")
+csrc.append("#include \"inc/firmware_api.h\"")
 csrc.append("")
 csrc.append("typedef struct { uint32_t base; uint32_t len; const uint8_t *blob; } strpool_cluster_t;")
 csrc.append("")

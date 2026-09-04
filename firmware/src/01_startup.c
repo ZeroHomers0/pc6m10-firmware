@@ -166,8 +166,8 @@ void long_delay(void)
 }
 
 
-/* 0x000005CA —— 空函数（bx lr） */
-void stub_ret(void)
+/* 主循环中的保留节拍钩子；原固件此处为空操作。 */
+static void startup_idle_hook(void)
 {
   return;
 }
@@ -262,7 +262,7 @@ void main(void)
       do {
       } while (system_tick_ready != '\x01');   /* 等系统节拍就绪 */
       system_tick_ready = '\0';
-      stub_ret();
+      startup_idle_hook();
       adc0_scan_channels();
       input_key = input_scan_state();
       system_input_code = input_key;

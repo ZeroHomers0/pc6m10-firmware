@@ -32,25 +32,26 @@ fi
 CC="$TC/arm-none-eabi-gcc"
 OBJCOPY="$TC/arm-none-eabi-objcopy"
 
-CPU="-mcpu=cortex-m3 -mthumb -mfloat-abi=soft"
-CFLAGS="$CPU -Os -ffreestanding -fno-builtin -Wall -I. -Iinc"
-CFLAGS="$CFLAGS -Wno-unused-but-set-variable -Wno-unused-variable -Wno-pointer-sign"
-CFLAGS="$CFLAGS -Wno-parentheses"
-# -Wno-parentheses：反编译 Ghidra 风格 `a + b & 0xff`（& 优先级已低于 +，语义即
-#   (a+b)&0xff）遍布各模块，括号仅为样式建议，不隐含真实错误 → 全局抑制。
+read -r -a COMMON_FLAGS < compiler_flags.txt
+CPU_FLAGS=()
+for flag in "${COMMON_FLAGS[@]}"; do
+  case "$flag" in
+    -mcpu=*|-mthumb|-mfloat-abi=*) CPU_FLAGS+=("$flag") ;;
+  esac
+done
 
 rm -f *.o src/*.o firmware.elf firmware.hex firmware.bin firmware.map
 
 echo "== 编译 =="
-"$CC" $CFLAGS -c -o startup.o startup.s
-"$CC" $CFLAGS -c -o data_image.o data_image.s
+"$CC" "${COMMON_FLAGS[@]}" -c -o startup.o startup.s
+"$CC" "${COMMON_FLAGS[@]}" -c -o data_image.o data_image.s
 for f in src/*.c; do
   echo "  $f"
-  "$CC" $CFLAGS -c -o "${f%.c}.o" "$f"
+  "$CC" "${COMMON_FLAGS[@]}" -c -o "${f%.c}.o" "$f"
 done
 
 echo "== 链接 =="
-"$CC" $CPU -T lpc1765.ld -nostdlib -o firmware.elf *.o src/*.o \
+"$CC" "${CPU_FLAGS[@]}" -T lpc1765.ld -nostdlib -o firmware.elf *.o src/*.o \
     -lgcc -Wl,--gc-sections -Wl,-Map,firmware.map
 
 echo "== 产物 =="

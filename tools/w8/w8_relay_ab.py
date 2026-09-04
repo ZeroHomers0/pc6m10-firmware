@@ -39,7 +39,7 @@ from unicorn_harness import (parse_sections, lookup, FW, ROOT, FLASH_BASE,
 # ── 地址与符号 ────────────────────────────────────────────────────────────────
 SM_ORIG = 0x458C                 # 原 BIN state_machine（反汇编 0000458c）
 SM_NEW  = lookup('state_machine')  # 编译固件（map 解析）
-SYNC_2C = 0x1000172C             # 锁机标志（= DAT_00000750 / DAT_000108a4）
+SYNC_2C = 0x1000172C             # 锁机标志（旧地址证据槽 0x750 / 0x108A4）
 FIO0_SET = 0x2009C018            # FIO0 SET
 FIO0_CLR = 0x2009C01C            # FIO0 CLR
 RELAY_BITS = [(0x100000, 'RLY3/P0.20'), (0x200000, 'RLY2/P0.21'), (0x400000, 'RLY1/P0.22')]

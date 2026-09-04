@@ -1,0 +1,1 @@
+-mcpu=cortex-m3 -mthumb -mfloat-abi=soft -Os -ffreestanding -fno-builtin -Wall -Wextra -Wshadow -Wstrict-prototypes -Wmissing-prototypes -Wundef -Wno-parentheses -I. -Iinc

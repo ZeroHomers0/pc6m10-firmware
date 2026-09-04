@@ -264,12 +264,10 @@ void disp_render_char8(uint32_t ch,char row,uint32_t col,uint32_t invert)
  *   行占 2 页（上半字 + 下半字） */
 void disp_render_char16(uint32_t gb_hi,uint32_t gb_lo,char row,int col,uint32_t invert)
 {
-  uint32_t glyph_base;
   uint32_t col2;
   uint32_t bit_index;
   uint32_t glyph_index;
 
-  glyph_base = lcd_gbk_base;
   glyph_index = 0;
   col2 = (col - (col >> 0x1f) & 0x1ffU) >> 1;
   while( true ) {
@@ -308,14 +306,11 @@ void disp_render_char16(uint32_t gb_hi,uint32_t gb_lo,char row,int col,uint32_t 
  * W7a：反编译把 str_addr 直传**原固件 flash 字符串地址**（如 0x47dc），GCC 重链接后该
  *   地址是指令字节。此处经 strpool_map 把 flash 地址映射到内嵌 GBK blob 偏移；未命中
  *   （RAM/外设地址）原样返回。见 src/strpool.c。 */
-extern uint32_t strpool_map(uint32_t addr);
 void disp_string(int str_addr,uint32_t row,uint32_t col,uint32_t invert)
 {
   uint32_t i;
-  uint32_t invert_tmp;   /* Ghidra 死存储伪影：仅赋值未读，保留（invert 实参直接下发） */
 
   str_addr = (int)strpool_map((uint32_t)str_addr);
-  invert_tmp = invert;     /* 死存储，无逻辑影响 */
   for (i = 0; (i < 0x10 && (*(volatile char *)(str_addr + i) != '\0')); i = i + 1 & 0xff)
   {
     if (*(volatile uint8_t *)(str_addr + i) < 0xa1) {
@@ -323,7 +318,6 @@ void disp_string(int str_addr,uint32_t row,uint32_t col,uint32_t invert)
       col = col + 1;
     }
     else {
-      invert_tmp = invert;
       disp_render_char16(*(volatile uint8_t *)(str_addr + i),*(volatile uint8_t *)(str_addr + i + 1),
                          row,col,invert);
       col = col + 2;
