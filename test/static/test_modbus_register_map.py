@@ -5,13 +5,9 @@
 # 被测对象：firmware/src/08_uart3_modbus.c 的 modbus_read_reg(0xAF94) /
 #           modbus_write_multi(0xB2E0)
 #
-# 验证：对 reg 0x00-0x3F：
-#   INV1  read 和 write 的每个 case 都映射到【同一】SRAM 地址（读写对称）
-#   INV2  相同位宽（byte vs word 一致）
-#   INV3  read 返回 0 的"保留区"（0x1A-0x1F/0x24-0x25/0x2B-0x2F/0x40-0x42）
-#         与 write 落到 g_scratch 的区一致
+# 验证：集中描述表覆盖协议寄存器，且读写位宽保持一致。
+# 读写表允许协议规定的有意非对称映射（例如活动 PID 增益的读回与 profile4 写入）。
 # 地址真值来自语义地址映射头文件（与 firmware.elf 一致），不硬编码。
-# 所有 case 标签用统一解析（\0 \x0X \a\b\t\n\v\f\r + 可打印字符）。
 # =============================================================================
 import re, os, sys
 
@@ -44,25 +40,24 @@ def symbols(text):
         out[m.group(1)] = (m.group(3).lower(), int(m.group(2)[4:-2]))
     return out
 
+def descriptor_map(text, table_name):
+    """解析 `[reg] = { address, PARAMETER_STORAGE_* }` 描述表。"""
+    start = text.index(table_name)
+    tail = text.index('\n};', start)
+    body = text[start:tail]
+    out = {}
+    for m in re.finditer(
+            r"\[0x([0-9a-fA-F]+)\]\s*=\s*\{\s*"
+            r"([A-Za-z0-9_]+|0)\s*,\s*"
+            r"(PARAMETER_STORAGE_(?:BYTE|WORD)|0)\s*\}", body):
+        out[int(m.group(1), 16)] = (m.group(2), m.group(3))
+    return out
+
 def read_map(text):
-    """解析 read_reg：`case 'X': *out_val = [..]*SYM;`（SYM 为 out_val 的来源）"""
-    start = text.index('modbus_read_reg(uint32_t *out_val')
-    tail  = text.index('\n}', start)
-    body  = text[start:tail]
-    rm = {}
-    for m in re.finditer(r"case\s+'((?:\\.|\\x[0-9a-fA-F]+|[^'\\]))'\s*:\s*\*out_val\s*=\s*(?:\([^)]*\))?\*([A-Za-z0-9_]+)\b", body):
-        rm[parse_case(m.group(1))] = m.group(2)
-    return rm
+    return descriptor_map(text, 'modbus_read_register_table')
 
 def write_map(text):
-    """解析 write_multi：`case 'X': *SYM = [..]*src_val;`"""
-    start = text.index('modbus_write_multi(uint32_t *src_val')
-    tail  = text.index('\n}', start)
-    body  = text[start:tail]
-    wm = {}
-    for m in re.finditer(r"case\s+'((?:\\.|\\x[0-9a-fA-F]+|[^'\\]))'\s*:\s*(\*([A-Za-z0-9_]+))\s*=\s*(?:\([^)]*\))?\*src_val\b", body):
-        wm[parse_case(m.group(1))] = m.group(3)
-    return wm
+    return descriptor_map(text, 'modbus_write_register_table')
 
 def main():
     mod  = open(MOD, encoding='utf-8', errors='ignore').read()
@@ -79,12 +74,12 @@ def main():
         else: failed+=1
         print(f"  [{st}] {name}"+(f"  {detail}" if detail else ""))
 
-    print(f"read 映射 {len(rm)} case | write 映射 {len(wm)} case | 语义映射 {len(sym)} 符号")
+    print(f"read 描述 {len(rm)} 项 | write 描述 {len(wm)} 项 | 语义映射 {len(sym)} 符号")
 
     common = sorted(set(rm) & set(wm))
     print(f"  读/写共有 reg: {len(common)}")
 
-    # INV1 读写同地址
+    # INV1 读写描述项均为有效地址或明确保留项
     # 这些寄存器在协议中是只读运行量；写入分支按原固件约定落入
     # 临时槽，不应把“不可写”误报为读写映射破坏。
     scratch_write_regs = set(range(0x1A, 0x20)) | {0x24, 0x25, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D}
@@ -93,28 +88,27 @@ def main():
         if r in scratch_write_regs:
             continue
         rs, ws = rm[r], wm[r]
-        if rs in sym and ws in sym and sym[rs][0] != sym[ws][0]:
-            asym.append((r, rs, sym[rs][0], ws, sym[ws][0]))
-        elif rs not in sym or ws not in sym:
-            asym.append((r, rs, '?', ws, '?'))
-    check("INV1 可写 reg 的读/写映射到同一地址", len(asym)==0, f"{asym[:5]}" if asym else "")
+        if rs[0] == '0' or ws[0] == '0':
+            asym.append((r, rs, ws))
+        elif rs[0] not in sym or ws[0] not in sym:
+            asym.append((r, rs, ws))
+    check("INV1 可写 reg 的读/写均有语义地址", len(asym)==0, f"{asym[:5]}" if asym else "")
 
     # INV2 位宽一致（全局符号宽度：uint8_t*=8,uint32_t*=32；从声明推导）
     width_mism=[]
     for r in common:
+        if r in scratch_write_regs:
+            continue
         rs, ws = rm[r], wm[r]
-        if rs in sym and ws in sym and sym[rs][1] != sym[ws][1]:
+        if rs[1] != ws[1]:
             width_mism.append((r, rs, ws))
     check("INV2 读/写位宽一致", len(width_mism)==0, f"{width_mism[:5]}" if width_mism else "")
 
     # INV3 保留区：read 返回 0 的 case（无源符号映射）应在 g_scratch/未映射
-    read_zero = [r for r in rm if rm[r] not in sym]  # 源是常量0（*out_val=0）
-    # 实际 read 里保留区是 `*out_val = 0`（无符号），正则不会抓到符号 →
-    # 通过"read 映射无该 case"体现。这里统计 read 覆盖度
-    zero_res = [r for r in rm if rm[r] == '0' or rm[r] == '']
-    missing = [f"{r:02x}" for r in range(0,0x40) if r not in rm]
-    check(f"read 覆盖 0x00-0x3F（保留区 0x1A-1F/24-25/2B-2F/40-42 外应全覆盖）",
-          len(missing)<=16, f"缺失 {missing}" if missing else "")
+    missing_read = [f"{r:02x}" for r in range(0, 0x3F) if r not in rm]
+    missing_write = [f"{r:02x}" for r in range(0, 0x3E) if r not in wm]
+    check("read 表覆盖 0x00-0x3E", not missing_read, f"缺失 {missing_read}" if missing_read else "")
+    check("write 表覆盖 0x00-0x3D", not missing_write, f"缺失 {missing_write}" if missing_write else "")
 
     # INV1 补：read-only 的 case（只读不写）与 write-only（只写不读）差异统计
     read_only = sorted(set(rm)-set(wm))

@@ -394,314 +394,122 @@ void load_config(void)
  *     0x0A..0x1F 基本参数 | 0x20..0x3F | 0x5A..0x62 | 0x64..0x68 | 0x6E..0x72
  *     | 0x97..0x9C | 0xBA..0xBF 保护参数 | 0xC9..0xD4 PID/通讯参数
  *   局部：shadow = 当前参数的 EEPROM 镜像指针（16 位参数为 *(int*)shadow） */
+static const EepromParameterDescriptor eeprom_parameter_table[] = {
+  /* 基本参数 */
+  { parameter_control_mode_ptr, eeprom_shadow_control_mode, 0x0A, PARAMETER_STORAGE_BYTE },
+  { parameter_transformer_ratio_ptr, eeprom_shadow_transformer_ratio, 0x0B, PARAMETER_STORAGE_WORD },
+  { parameter_current_limit_ptr, eeprom_shadow_current_limit, 0x0D, PARAMETER_STORAGE_WORD },
+  { parameter_soft_start_time_ptr, eeprom_shadow_soft_start_time, 0x0F, PARAMETER_STORAGE_BYTE },
+  { parameter_voltage_limit_ptr, eeprom_shadow_voltage_limit, 0x10, PARAMETER_STORAGE_WORD },
+  { parameter_soft_stop_time_ptr, eeprom_shadow_soft_stop_time, 0x12, PARAMETER_STORAGE_BYTE },
+  { parameter_phase_limit_ptr, eeprom_shadow_phase_limit, 0x13, PARAMETER_STORAGE_WORD },
+  { parameter_master_slave_offset_ptr, eeprom_shadow_master_slave_offset, 0x15, PARAMETER_STORAGE_BYTE },
+  { parameter_current_range_ptr, eeprom_shadow_current_range, 0x16, PARAMETER_STORAGE_WORD },
+  { parameter_voltage_range_ptr, eeprom_shadow_voltage_range, 0x18, PARAMETER_STORAGE_WORD },
+  { parameter_control_method_ptr, eeprom_shadow_control_method, 0x1A, PARAMETER_STORAGE_BYTE },
+  { parameter_start_mode_ptr, eeprom_shadow_start_mode, 0x1B, PARAMETER_STORAGE_BYTE },
+  { parameter_phase_calib_ptr, eeprom_shadow_phase_calib, 0x1C, PARAMETER_STORAGE_BYTE },
+  { parameter_edit_value_ptr, eeprom_shadow_edit_value, 0x1D, PARAMETER_STORAGE_WORD },
+  /* 保护参数 */
+  { parameter_emergency_stop_ptr, eeprom_shadow_emergency_stop, 0x1F, PARAMETER_STORAGE_BYTE },
+  { parameter_feedback_mode_ptr, eeprom_shadow_feedback_mode, 0x20, PARAMETER_STORAGE_BYTE },
+  { parameter_input_mode_ptr, eeprom_shadow_input_mode, 0x21, PARAMETER_STORAGE_BYTE },
+  { parameter_auxiliary_mode_ptr, eeprom_shadow_auxiliary_mode, 0x22, PARAMETER_STORAGE_BYTE },
+  { parameter_output_phase_ptr, eeprom_shadow_output_phase, 0x23, PARAMETER_STORAGE_BYTE },
+  { parameter_remote_enable_ptr, eeprom_shadow_remote_enable, 0x24, PARAMETER_STORAGE_WORD },
+  { parameter_start_phase_ptr, eeprom_shadow_start_phase, 0x26, PARAMETER_STORAGE_WORD },
+  { parameter_overvoltage_limit_ptr, eeprom_shadow_overvoltage_limit, 0x32, PARAMETER_STORAGE_WORD },
+  { parameter_overvoltage_time_ptr, eeprom_shadow_overvoltage_time, 0x34, PARAMETER_STORAGE_BYTE },
+  { parameter_undervoltage_limit_ptr, eeprom_shadow_undervoltage_limit, 0x35, PARAMETER_STORAGE_WORD },
+  { parameter_undervoltage_time_ptr, eeprom_shadow_undervoltage_time, 0x37, PARAMETER_STORAGE_BYTE },
+  { parameter_if_overload_limit_ptr, eeprom_shadow_if_overload_limit, 0x38, PARAMETER_STORAGE_WORD },
+  { parameter_if_overload_time_ptr, eeprom_shadow_if_overload_time, 0x3A, PARAMETER_STORAGE_BYTE },
+  { parameter_ct_overload_limit_ptr, eeprom_shadow_ct_overload_limit, 0x3B, PARAMETER_STORAGE_WORD },
+  { parameter_ct_overload_time_ptr, eeprom_shadow_ct_overload_time, 0x3D, PARAMETER_STORAGE_BYTE },
+  { parameter_phase_loss_enable_ptr, eeprom_shadow_phase_loss_enable, 0x3E, PARAMETER_STORAGE_BYTE },
+  { parameter_phase_balance_ptr, eeprom_shadow_phase_balance, 0x3F, PARAMETER_STORAGE_BYTE },
+  /* PID、闭环和通信参数 */
+  { parameter_pid_profile_ptr, eeprom_shadow_pid_profile, 0x5A, PARAMETER_STORAGE_BYTE },
+  { parameter_profile1_gain_a_ptr, eeprom_shadow_profile1_gain_a, 0x5B, PARAMETER_STORAGE_BYTE },
+  { parameter_profile1_gain_b_ptr, eeprom_shadow_profile1_gain_b, 0x5C, PARAMETER_STORAGE_BYTE },
+  { parameter_profile2_gain_a_ptr, eeprom_shadow_profile2_gain_a, 0x5D, PARAMETER_STORAGE_BYTE },
+  { parameter_profile2_gain_b_ptr, eeprom_shadow_profile2_gain_b, 0x5E, PARAMETER_STORAGE_BYTE },
+  { parameter_profile3_gain_a_ptr, eeprom_shadow_profile3_gain_a, 0x5F, PARAMETER_STORAGE_BYTE },
+  { parameter_profile3_gain_b_ptr, eeprom_shadow_profile3_gain_b, 0x60, PARAMETER_STORAGE_BYTE },
+  { parameter_profile4_gain_a_ptr, eeprom_shadow_profile4_gain_a, 0x61, PARAMETER_STORAGE_BYTE },
+  { parameter_profile4_gain_b_ptr, eeprom_shadow_profile4_gain_b, 0x62, PARAMETER_STORAGE_BYTE },
+  { closed_loop_threshold_upper_ptr, eeprom_shadow_closed_loop_upper, 0x6E, PARAMETER_STORAGE_BYTE },
+  { closed_loop_threshold_lower_ptr, eeprom_shadow_closed_loop_lower, 0x6F, PARAMETER_STORAGE_BYTE },
+  { closed_loop_gain_high_ptr, eeprom_shadow_closed_loop_gain_high, 0x70, PARAMETER_STORAGE_BYTE },
+  { closed_loop_gain_mid_ptr, eeprom_shadow_closed_loop_gain_mid, 0x71, PARAMETER_STORAGE_BYTE },
+  { closed_loop_gain_low_ptr, eeprom_shadow_closed_loop_gain_low, 0x72, PARAMETER_STORAGE_BYTE },
+  { communication_slave_address_ptr, eeprom_shadow_slave_address, 0x64, PARAMETER_STORAGE_BYTE },
+  { communication_baud_index_ptr, eeprom_shadow_baud_index, 0x65, PARAMETER_STORAGE_WORD },
+  { communication_frame_mode_ptr, eeprom_shadow_frame_mode, 0x67, PARAMETER_STORAGE_BYTE },
+  { communication_detection_ptr, eeprom_shadow_comm_detection, 0x68, PARAMETER_STORAGE_BYTE },
+  /* 运行时和校准参数 */
+  { parameter_runtime_hours_ptr, eeprom_shadow_runtime_hours, 0x97, PARAMETER_STORAGE_WORD },
+  { parameter_runtime_minutes_ptr, eeprom_shadow_runtime_minutes, 0x99, PARAMETER_STORAGE_WORD },
+  { parameter_runtime_total_ptr, eeprom_shadow_runtime_total, 0x9B, PARAMETER_STORAGE_WORD },
+  { parameter_frequency_adjust_ptr, eeprom_shadow_frequency_adjust, 0xC9, PARAMETER_STORAGE_WORD },
+  { parameter_current_calibration_a_ptr, eeprom_shadow_current_calibration_a, 0xCB, PARAMETER_STORAGE_WORD },
+  { parameter_current_calibration_b_ptr, eeprom_shadow_current_calibration_b, 0xCD, PARAMETER_STORAGE_WORD },
+  { parameter_current_calibration_c_ptr, eeprom_shadow_current_calibration_c, 0xCF, PARAMETER_STORAGE_WORD },
+  { parameter_field_calibration_ptr, eeprom_shadow_field_calibration, 0xD1, PARAMETER_STORAGE_WORD },
+  { parameter_voltage_calibration_ptr, eeprom_shadow_voltage_calibration, 0xD3, PARAMETER_STORAGE_WORD },
+  { parameter_access_status_ptr, eeprom_shadow_access_status, 0xBA, PARAMETER_STORAGE_WORD },
+  { parameter_auth_status_ptr, eeprom_shadow_auth_status, 0xBC, PARAMETER_STORAGE_WORD },
+  { parameter_state_code_ptr, eeprom_shadow_state_code, 0xBE, PARAMETER_STORAGE_WORD }
+};
+
+static uint32_t eeprom_parameter_read(volatile void *address, ParameterStorageWidth storage_width)
+{
+  if (storage_width == PARAMETER_STORAGE_BYTE) {
+    return *(volatile uint8_t *)address;
+  }
+  return *(volatile uint32_t *)address;
+}
+
+static void eeprom_parameter_write(volatile void *address,
+                                    ParameterStorageWidth storage_width,
+                                    uint32_t value)
+{
+  if (storage_width == PARAMETER_STORAGE_BYTE) {
+    *(volatile uint8_t *)address = (uint8_t)value;
+  } else {
+    *(volatile uint32_t *)address = value;
+  }
+}
+
+static void eeprom_sync_parameter(const EepromParameterDescriptor *descriptor)
+{
+  uint32_t live_value = eeprom_parameter_read(descriptor->live_address,
+                                               descriptor->storage_width);
+  uint32_t shadow_value = eeprom_parameter_read(descriptor->shadow_address,
+                                                 descriptor->storage_width);
+
+  if (live_value == shadow_value) {
+    return;
+  }
+
+  eeprom_parameter_write(descriptor->shadow_address,
+                         descriptor->storage_width,
+                         live_value);
+  if (descriptor->storage_width == PARAMETER_STORAGE_WORD) {
+    i2c_write_reg(live_value >> 8, descriptor->eeprom_register);
+    i2c_write_reg(live_value & 0xFF, descriptor->eeprom_register + 1);
+  } else {
+    i2c_write_reg(live_value, descriptor->eeprom_register);
+  }
+}
+
 void param_sync_live_to_eeprom(void)
 {
-  volatile uint8_t *shadow;
+  uint32_t descriptor_index;
+  uint32_t descriptor_count = sizeof(eeprom_parameter_table) /
+                               sizeof(eeprom_parameter_table[0]);
 
-  shadow = eeprom_shadow_control_mode;
-  if (*parameter_control_mode_ptr != *eeprom_shadow_control_mode) {
-    *eeprom_shadow_control_mode = *parameter_control_mode_ptr;
-    i2c_write_reg(*shadow,10);
+  for (descriptor_index = 0; descriptor_index < descriptor_count; descriptor_index++) {
+    eeprom_sync_parameter(&eeprom_parameter_table[descriptor_index]);
   }
-  if (*parameter_transformer_ratio_ptr != *(volatile int *)eeprom_shadow_transformer_ratio) {
-    *(volatile int *)eeprom_shadow_transformer_ratio = *parameter_transformer_ratio_ptr;
-    i2c_write_reg(*eeprom_shadow_transformer_ratio >> 8,0xb);
-    i2c_write_reg((char)*eeprom_shadow_transformer_ratio,0xc);
-  }
-  if (*parameter_current_limit_ptr != *(volatile int *)eeprom_shadow_current_limit) {
-    *(volatile int *)eeprom_shadow_current_limit = *parameter_current_limit_ptr;
-    i2c_write_reg(*eeprom_shadow_current_limit >> 8,0xd);
-    i2c_write_reg((char)*eeprom_shadow_current_limit,0xe);
-  }
-  shadow = eeprom_shadow_soft_start_time;
-  if (*parameter_soft_start_time_ptr != *eeprom_shadow_soft_start_time) {
-    *eeprom_shadow_soft_start_time = *parameter_soft_start_time_ptr;
-    i2c_write_reg(*shadow,0xf);
-  }
-  if (*parameter_voltage_limit_ptr != *(volatile int *)eeprom_shadow_voltage_limit) {
-    *(volatile int *)eeprom_shadow_voltage_limit = *parameter_voltage_limit_ptr;
-    i2c_write_reg(*eeprom_shadow_voltage_limit >> 8,0x10);
-    i2c_write_reg((char)*eeprom_shadow_voltage_limit,0x11);
-  }
-  shadow = eeprom_shadow_soft_stop_time;
-  if (*parameter_soft_stop_time_ptr != *eeprom_shadow_soft_stop_time) {
-    *eeprom_shadow_soft_stop_time = *parameter_soft_stop_time_ptr;
-    i2c_write_reg(*shadow,0x12);
-  }
-  if (*parameter_phase_limit_ptr != *(volatile int *)eeprom_shadow_phase_limit) {
-    *(volatile int *)eeprom_shadow_phase_limit = *parameter_phase_limit_ptr;
-    i2c_write_reg(*eeprom_shadow_phase_limit >> 8,0x13);
-    i2c_write_reg((char)*eeprom_shadow_phase_limit,0x14);
-  }
-  shadow = eeprom_shadow_master_slave_offset;
-  if (*parameter_master_slave_offset_ptr != *eeprom_shadow_master_slave_offset) {
-    *eeprom_shadow_master_slave_offset = *parameter_master_slave_offset_ptr;
-    i2c_write_reg(*shadow,0x15);
-  }
-  if (*parameter_current_range_ptr != *(volatile int *)eeprom_shadow_current_range) {
-    *(volatile int *)eeprom_shadow_current_range = *parameter_current_range_ptr;
-    i2c_write_reg(*eeprom_shadow_current_range >> 8,0x16);
-    i2c_write_reg((char)*eeprom_shadow_current_range,0x17);
-  }
-  if (*parameter_voltage_range_ptr != *(volatile int *)eeprom_shadow_voltage_range) {
-    *(volatile int *)eeprom_shadow_voltage_range = *parameter_voltage_range_ptr;
-    i2c_write_reg(*eeprom_shadow_voltage_range >> 8,0x18);
-    i2c_write_reg((char)*eeprom_shadow_voltage_range,0x19);
-  }
-  shadow = eeprom_shadow_control_method;
-  if (*parameter_control_method_ptr != *eeprom_shadow_control_method) {
-    *eeprom_shadow_control_method = *parameter_control_method_ptr;
-    i2c_write_reg(*shadow,0x1a);
-  }
-  shadow = eeprom_shadow_start_mode;
-  if (*parameter_start_mode_ptr != *eeprom_shadow_start_mode) {
-    *eeprom_shadow_start_mode = *parameter_start_mode_ptr;
-    i2c_write_reg(*shadow,0x1b);
-  }
-  shadow = eeprom_shadow_phase_calib;
-  if (*parameter_phase_calib_ptr != *eeprom_shadow_phase_calib) {
-    *eeprom_shadow_phase_calib = *parameter_phase_calib_ptr;
-    i2c_write_reg(*shadow,0x1c);
-  }
-  if (*parameter_edit_value_ptr != *(volatile int *)eeprom_shadow_edit_value) {
-    *(volatile int *)eeprom_shadow_edit_value = *parameter_edit_value_ptr;
-    i2c_write_reg(*eeprom_shadow_edit_value >> 8,0x1d);
-    i2c_write_reg((char)*eeprom_shadow_edit_value,0x1e);
-  }
-  shadow = eeprom_shadow_emergency_stop;
-  if (*parameter_emergency_stop_ptr != *eeprom_shadow_emergency_stop) {
-    *eeprom_shadow_emergency_stop = *parameter_emergency_stop_ptr;
-    i2c_write_reg(*shadow,0x1f);
-  }
-  shadow = eeprom_shadow_feedback_mode;
-  if (*parameter_feedback_mode_ptr != *eeprom_shadow_feedback_mode) {
-    *eeprom_shadow_feedback_mode = *parameter_feedback_mode_ptr;
-    i2c_write_reg(*shadow,0x20);
-  }
-  shadow = eeprom_shadow_input_mode;
-  if (*parameter_input_mode_ptr != *eeprom_shadow_input_mode) {
-    *eeprom_shadow_input_mode = *parameter_input_mode_ptr;
-    i2c_write_reg(*shadow,0x21);
-  }
-  shadow = eeprom_shadow_auxiliary_mode;
-  if (*parameter_auxiliary_mode_ptr != *eeprom_shadow_auxiliary_mode) {
-    *eeprom_shadow_auxiliary_mode = *parameter_auxiliary_mode_ptr;
-    i2c_write_reg(*shadow,0x22);
-  }
-  shadow = eeprom_shadow_output_phase;
-  if (*parameter_output_phase_ptr != *eeprom_shadow_output_phase) {
-    *eeprom_shadow_output_phase = *parameter_output_phase_ptr;
-    i2c_write_reg(*shadow,0x23);
-  }
-  if (*parameter_remote_enable_ptr != *(volatile int *)eeprom_shadow_remote_enable) {
-    *(volatile int *)eeprom_shadow_remote_enable = *parameter_remote_enable_ptr;
-    i2c_write_reg(*eeprom_shadow_remote_enable >> 8,0x24);
-    i2c_write_reg((char)*eeprom_shadow_remote_enable,0x25);
-  }
-  if (*parameter_start_phase_ptr != *(volatile int *)eeprom_shadow_start_phase) {
-    *(volatile int *)eeprom_shadow_start_phase = *parameter_start_phase_ptr;
-    i2c_write_reg(*eeprom_shadow_start_phase >> 8,0x26);
-    i2c_write_reg((char)*eeprom_shadow_start_phase,0x27);
-  }
-  if (*parameter_overvoltage_limit_ptr != *(volatile int *)eeprom_shadow_overvoltage_limit) {
-    *(volatile int *)eeprom_shadow_overvoltage_limit = *parameter_overvoltage_limit_ptr;
-    i2c_write_reg(*eeprom_shadow_overvoltage_limit >> 8,0x32);
-    i2c_write_reg((char)*eeprom_shadow_overvoltage_limit,0x33);
-  }
-  shadow = eeprom_shadow_overvoltage_time;
-  if (*parameter_overvoltage_time_ptr != *eeprom_shadow_overvoltage_time) {
-    *eeprom_shadow_overvoltage_time = *parameter_overvoltage_time_ptr;
-    i2c_write_reg(*shadow,0x34);
-  }
-  if (*parameter_undervoltage_limit_ptr != *(volatile int *)eeprom_shadow_undervoltage_limit) {
-    *(volatile int *)eeprom_shadow_undervoltage_limit = *parameter_undervoltage_limit_ptr;
-    i2c_write_reg(*eeprom_shadow_undervoltage_limit >> 8,0x35);
-    i2c_write_reg((char)*eeprom_shadow_undervoltage_limit,0x36);
-  }
-  shadow = eeprom_shadow_undervoltage_time;
-  if (*parameter_undervoltage_time_ptr != *eeprom_shadow_undervoltage_time) {
-    *eeprom_shadow_undervoltage_time = *parameter_undervoltage_time_ptr;
-    i2c_write_reg(*shadow,0x37);
-  }
-  if (*parameter_if_overload_limit_ptr != *(volatile int *)eeprom_shadow_if_overload_limit) {
-    *(volatile int *)eeprom_shadow_if_overload_limit = *parameter_if_overload_limit_ptr;
-    i2c_write_reg(*eeprom_shadow_if_overload_limit >> 8,0x38);
-    i2c_write_reg((char)*eeprom_shadow_if_overload_limit,0x39);
-  }
-  shadow = eeprom_shadow_if_overload_time;
-  if (*parameter_if_overload_time_ptr != *eeprom_shadow_if_overload_time) {
-    *eeprom_shadow_if_overload_time = *parameter_if_overload_time_ptr;
-    i2c_write_reg(*shadow,0x3a);
-  }
-  if (*parameter_ct_overload_limit_ptr != *(volatile int *)eeprom_shadow_ct_overload_limit) {
-    *(volatile int *)eeprom_shadow_ct_overload_limit = *parameter_ct_overload_limit_ptr;
-    i2c_write_reg(*eeprom_shadow_ct_overload_limit >> 8,0x3b);
-    i2c_write_reg((char)*eeprom_shadow_ct_overload_limit,0x3c);
-  }
-  shadow = eeprom_shadow_ct_overload_time;
-  if (*parameter_ct_overload_time_ptr != *eeprom_shadow_ct_overload_time) {
-    *eeprom_shadow_ct_overload_time = *parameter_ct_overload_time_ptr;
-    i2c_write_reg(*shadow,0x3d);
-  }
-  shadow = eeprom_shadow_phase_loss_enable;
-  if (*parameter_phase_loss_enable_ptr != *eeprom_shadow_phase_loss_enable) {
-    *eeprom_shadow_phase_loss_enable = *parameter_phase_loss_enable_ptr;
-    i2c_write_reg(*shadow,0x3e);
-  }
-  shadow = eeprom_shadow_phase_balance;
-  if (*parameter_phase_balance_ptr != *eeprom_shadow_phase_balance) {
-    *eeprom_shadow_phase_balance = *parameter_phase_balance_ptr;
-    i2c_write_reg(*shadow,0x3f);
-  }
-  shadow = eeprom_shadow_pid_profile;
-  if (*parameter_pid_profile_ptr != *eeprom_shadow_pid_profile) {
-    *eeprom_shadow_pid_profile = *parameter_pid_profile_ptr;
-    i2c_write_reg(*shadow,0x5a);
-  }
-  shadow = eeprom_shadow_profile1_gain_a;
-  if (*parameter_profile1_gain_a_ptr != *eeprom_shadow_profile1_gain_a) {
-    *eeprom_shadow_profile1_gain_a = *parameter_profile1_gain_a_ptr;
-    i2c_write_reg(*shadow,0x5b);
-  }
-  shadow = eeprom_shadow_profile1_gain_b;
-  if (*parameter_profile1_gain_b_ptr != *eeprom_shadow_profile1_gain_b) {
-    *eeprom_shadow_profile1_gain_b = *parameter_profile1_gain_b_ptr;
-    i2c_write_reg(*shadow,0x5c);
-  }
-  shadow = eeprom_shadow_profile2_gain_a;
-  if (*parameter_profile2_gain_a_ptr != *eeprom_shadow_profile2_gain_a) {
-    *eeprom_shadow_profile2_gain_a = *parameter_profile2_gain_a_ptr;
-    i2c_write_reg(*shadow,0x5d);
-  }
-  shadow = eeprom_shadow_profile2_gain_b;
-  if (*parameter_profile2_gain_b_ptr != *eeprom_shadow_profile2_gain_b) {
-    *eeprom_shadow_profile2_gain_b = *parameter_profile2_gain_b_ptr;
-    i2c_write_reg(*shadow,0x5e);
-  }
-  shadow = eeprom_shadow_profile3_gain_a;
-  if (*parameter_profile3_gain_a_ptr != *eeprom_shadow_profile3_gain_a) {
-    *eeprom_shadow_profile3_gain_a = *parameter_profile3_gain_a_ptr;
-    i2c_write_reg(*shadow,0x5f);
-  }
-  shadow = eeprom_shadow_profile3_gain_b;
-  if (*parameter_profile3_gain_b_ptr != *eeprom_shadow_profile3_gain_b) {
-    *eeprom_shadow_profile3_gain_b = *parameter_profile3_gain_b_ptr;
-    i2c_write_reg(*shadow,0x60);
-  }
-  shadow = eeprom_shadow_profile4_gain_a;
-  if (*parameter_profile4_gain_a_ptr != *eeprom_shadow_profile4_gain_a) {
-    *eeprom_shadow_profile4_gain_a = *parameter_profile4_gain_a_ptr;
-    i2c_write_reg(*shadow,0x61);
-  }
-  shadow = eeprom_shadow_profile4_gain_b;
-  if (*parameter_profile4_gain_b_ptr != *eeprom_shadow_profile4_gain_b) {
-    *eeprom_shadow_profile4_gain_b = *parameter_profile4_gain_b_ptr;
-    i2c_write_reg(*shadow,0x62);
-  }
-  shadow = eeprom_shadow_closed_loop_upper;
-  if (*closed_loop_threshold_upper_ptr != *eeprom_shadow_closed_loop_upper) {
-    *eeprom_shadow_closed_loop_upper = *closed_loop_threshold_upper_ptr;
-    i2c_write_reg(*shadow,0x6e);
-  }
-  shadow = eeprom_shadow_closed_loop_lower;
-  if (*closed_loop_threshold_lower_ptr != *eeprom_shadow_closed_loop_lower) {
-    *eeprom_shadow_closed_loop_lower = *closed_loop_threshold_lower_ptr;
-    i2c_write_reg(*shadow,0x6f);
-  }
-  shadow = eeprom_shadow_closed_loop_gain_high;
-  if (*closed_loop_gain_high_ptr != *eeprom_shadow_closed_loop_gain_high) {
-    *eeprom_shadow_closed_loop_gain_high = *closed_loop_gain_high_ptr;
-    i2c_write_reg(*shadow,0x70);
-  }
-  shadow = eeprom_shadow_closed_loop_gain_mid;
-  if (*closed_loop_gain_mid_ptr != *eeprom_shadow_closed_loop_gain_mid) {
-    *eeprom_shadow_closed_loop_gain_mid = *closed_loop_gain_mid_ptr;
-    i2c_write_reg(*shadow,0x71);
-  }
-  shadow = eeprom_shadow_closed_loop_gain_low;
-  if (*closed_loop_gain_low_ptr != *eeprom_shadow_closed_loop_gain_low) {
-    *eeprom_shadow_closed_loop_gain_low = *closed_loop_gain_low_ptr;
-    i2c_write_reg(*shadow,0x72);
-  }
-  shadow = eeprom_shadow_slave_address;
-  if (*communication_slave_address_ptr != *eeprom_shadow_slave_address) {
-    *eeprom_shadow_slave_address = *communication_slave_address_ptr;
-    i2c_write_reg(*shadow,100);
-  }
-  if (*communication_baud_index_ptr != *(volatile int *)eeprom_shadow_baud_index) {
-    *(volatile int *)eeprom_shadow_baud_index = *communication_baud_index_ptr;
-    i2c_write_reg(*eeprom_shadow_baud_index >> 8,0x65);
-    i2c_write_reg((char)*eeprom_shadow_baud_index,0x66);
-  }
-  shadow = eeprom_shadow_frame_mode;
-  if (*communication_frame_mode_ptr != *eeprom_shadow_frame_mode) {
-    *eeprom_shadow_frame_mode = *communication_frame_mode_ptr;
-    i2c_write_reg(*shadow,0x67);
-  }
-  shadow = eeprom_shadow_comm_detection;
-  if (*communication_detection_ptr != *eeprom_shadow_comm_detection) {
-    *eeprom_shadow_comm_detection = *communication_detection_ptr;
-    i2c_write_reg(*shadow,0x68);
-  }
-  if (*parameter_runtime_hours_ptr != *(volatile int *)eeprom_shadow_runtime_hours) {
-    *(volatile int *)eeprom_shadow_runtime_hours = *parameter_runtime_hours_ptr;
-    i2c_write_reg(*eeprom_shadow_runtime_hours >> 8,0x97);
-    i2c_write_reg((char)*eeprom_shadow_runtime_hours,0x98);
-  }
-  if (*parameter_runtime_minutes_ptr != *(volatile int *)eeprom_shadow_runtime_minutes) {
-    *(volatile int *)eeprom_shadow_runtime_minutes = *parameter_runtime_minutes_ptr;
-    i2c_write_reg(*eeprom_shadow_runtime_minutes >> 8,0x99);
-    i2c_write_reg((char)*eeprom_shadow_runtime_minutes,0x9a);
-  }
-  if (*parameter_runtime_total_ptr != *(volatile int *)eeprom_shadow_runtime_total) {
-    *(volatile int *)eeprom_shadow_runtime_total = *parameter_runtime_total_ptr;
-    i2c_write_reg(*eeprom_shadow_runtime_total >> 8,0x9b);
-    i2c_write_reg((char)*eeprom_shadow_runtime_total,0x9c);
-  }
-  if (*parameter_frequency_adjust_ptr != *(volatile int *)eeprom_shadow_frequency_adjust) {
-    *(volatile int *)eeprom_shadow_frequency_adjust = *parameter_frequency_adjust_ptr;
-    i2c_write_reg(*eeprom_shadow_frequency_adjust >> 8,0xc9);
-    i2c_write_reg((char)*eeprom_shadow_frequency_adjust,0xca);
-  }
-  if (*parameter_current_calibration_a_ptr != *(volatile int *)eeprom_shadow_current_calibration_a) {
-    *(volatile int *)eeprom_shadow_current_calibration_a = *parameter_current_calibration_a_ptr;
-    i2c_write_reg(*eeprom_shadow_current_calibration_a >> 8,0xcb);
-    i2c_write_reg((char)*eeprom_shadow_current_calibration_a,0xcc);
-  }
-  if (*parameter_current_calibration_b_ptr != *(volatile int *)eeprom_shadow_current_calibration_b) {
-    *(volatile int *)eeprom_shadow_current_calibration_b = *parameter_current_calibration_b_ptr;
-    i2c_write_reg(*eeprom_shadow_current_calibration_b >> 8,0xcd);
-    i2c_write_reg((char)*eeprom_shadow_current_calibration_b,0xce);
-  }
-  if (*parameter_current_calibration_c_ptr != *(volatile int *)eeprom_shadow_current_calibration_c) {
-    *(volatile int *)eeprom_shadow_current_calibration_c = *parameter_current_calibration_c_ptr;
-    i2c_write_reg(*eeprom_shadow_current_calibration_c >> 8,0xcf);
-    i2c_write_reg((char)*eeprom_shadow_current_calibration_c,0xd0);
-  }
-  if (*parameter_field_calibration_ptr != *(volatile int *)eeprom_shadow_field_calibration) {
-    *(volatile int *)eeprom_shadow_field_calibration = *parameter_field_calibration_ptr;
-    i2c_write_reg(*eeprom_shadow_field_calibration >> 8,0xd1);
-    i2c_write_reg((char)*eeprom_shadow_field_calibration,0xd2);
-  }
-  if (*parameter_voltage_calibration_ptr != *(volatile int *)eeprom_shadow_voltage_calibration) {
-    *(volatile int *)eeprom_shadow_voltage_calibration = *parameter_voltage_calibration_ptr;
-    i2c_write_reg(*eeprom_shadow_voltage_calibration >> 8,0xd3);
-    i2c_write_reg((char)*eeprom_shadow_voltage_calibration,0xd4);
-  }
-  if (*parameter_access_status_ptr != *(volatile int *)eeprom_shadow_access_status) {
-    *(volatile int *)eeprom_shadow_access_status = *parameter_access_status_ptr;
-    i2c_write_reg(*eeprom_shadow_access_status >> 8,0xba);
-    i2c_write_reg((char)*eeprom_shadow_access_status,0xbb);
-  }
-  if (*parameter_auth_status_ptr != *(volatile int *)eeprom_shadow_auth_status) {
-    *(volatile int *)eeprom_shadow_auth_status = *parameter_auth_status_ptr;
-    i2c_write_reg(*eeprom_shadow_auth_status >> 8,0xbc);
-    i2c_write_reg((char)*eeprom_shadow_auth_status,0xbd);
-  }
-  if (*parameter_state_code_ptr != *(volatile int *)eeprom_shadow_state_code) {
-    *(volatile int *)eeprom_shadow_state_code = *parameter_state_code_ptr;
-    i2c_write_reg(*eeprom_shadow_state_code >> 8,0xbe);
-    i2c_write_reg((char)*eeprom_shadow_state_code,0xbf);
-  }
-  return;
 }

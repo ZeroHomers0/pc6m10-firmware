@@ -238,214 +238,116 @@ uint16_t crc16(uint8_t *data,uint16_t len)
  *   组基址表：组1→0x1000B06C/0x1000B074、组2→0x1000B07C/0x1000B080、
  *   组3→0x1000B084/0x1000B088、组4→0x1000B08C/0x1000B090；
  *   reg 0x00-0x3F 映射 0x1000B4B8..0x1000B590（0x1A-0x1F/0x24-0x25 等保留返回 0） */
+enum {
+  MODBUS_READ_REGISTER_COUNT = 0x3F,
+  MODBUS_WRITE_REGISTER_COUNT = 0x3E
+};
+
+typedef struct {
+  uint8_t profile;
+  volatile uint8_t *gain_a;
+  volatile uint8_t *gain_b;
+} ModbusPidProfileDescriptor;
+
+static const ModbusPidProfileDescriptor modbus_pid_profiles[] = {
+  { 1, parameter_profile1_gain_a_ptr, parameter_profile1_gain_b_ptr },
+  { 2, parameter_profile2_gain_a_ptr, parameter_profile2_gain_b_ptr },
+  { 3, parameter_profile3_gain_a_ptr, parameter_profile3_gain_b_ptr },
+  { 4, parameter_profile4_gain_a_ptr, parameter_profile4_gain_b_ptr }
+};
+
+static const ModbusRegisterDescriptor modbus_read_register_table[MODBUS_READ_REGISTER_COUNT] = {
+  /* 参数区 0x00-0x19 */
+  [0x00] = { parameter_control_mode_ptr, PARAMETER_STORAGE_BYTE },
+  [0x01] = { parameter_voltage_range_ptr, PARAMETER_STORAGE_WORD },
+  [0x02] = { parameter_current_range_ptr, PARAMETER_STORAGE_WORD },
+  [0x03] = { parameter_transformer_ratio_ptr, PARAMETER_STORAGE_WORD },
+  [0x04] = { parameter_voltage_limit_ptr, PARAMETER_STORAGE_WORD },
+  [0x05] = { parameter_current_limit_ptr, PARAMETER_STORAGE_WORD },
+  [0x06] = { parameter_soft_start_time_ptr, PARAMETER_STORAGE_BYTE },
+  [0x07] = { parameter_soft_stop_time_ptr, PARAMETER_STORAGE_BYTE },
+  [0x08] = { parameter_phase_limit_ptr, PARAMETER_STORAGE_WORD },
+  [0x09] = { parameter_master_slave_offset_ptr, PARAMETER_STORAGE_BYTE },
+  [0x0A] = { parameter_control_method_ptr, PARAMETER_STORAGE_BYTE },
+  [0x0B] = { parameter_start_mode_ptr, PARAMETER_STORAGE_BYTE },
+  [0x0C] = { parameter_overvoltage_limit_ptr, PARAMETER_STORAGE_WORD },
+  [0x0D] = { parameter_overvoltage_time_ptr, PARAMETER_STORAGE_BYTE },
+  [0x0E] = { parameter_undervoltage_limit_ptr, PARAMETER_STORAGE_WORD },
+  [0x0F] = { parameter_undervoltage_time_ptr, PARAMETER_STORAGE_BYTE },
+  [0x10] = { parameter_if_overload_limit_ptr, PARAMETER_STORAGE_WORD },
+  [0x11] = { parameter_if_overload_time_ptr, PARAMETER_STORAGE_BYTE },
+  [0x12] = { parameter_ct_overload_limit_ptr, PARAMETER_STORAGE_WORD },
+  [0x13] = { parameter_ct_overload_time_ptr, PARAMETER_STORAGE_BYTE },
+  [0x14] = { parameter_phase_loss_enable_ptr, PARAMETER_STORAGE_BYTE },
+  [0x15] = { parameter_phase_balance_ptr, PARAMETER_STORAGE_BYTE },
+  [0x16] = { modbus_pid_selection_ptr, PARAMETER_STORAGE_BYTE },
+  [0x17] = { parameter_active_gain_a_ptr, PARAMETER_STORAGE_BYTE },
+  [0x18] = { parameter_active_gain_b_ptr, PARAMETER_STORAGE_BYTE },
+  [0x19] = { parameter_phase_calib_ptr, PARAMETER_STORAGE_BYTE },
+  /* 保留区和运行状态 0x1A-0x2D */
+  [0x1A] = { 0, 0 }, [0x1B] = { 0, 0 }, [0x1C] = { 0, 0 },
+  [0x1D] = { 0, 0 }, [0x1E] = { 0, 0 }, [0x1F] = { 0, 0 },
+  [0x20] = { modbus_runtime_value_a_ptr, PARAMETER_STORAGE_WORD },
+  [0x21] = { modbus_runtime_value_b_ptr, PARAMETER_STORAGE_WORD },
+  [0x22] = { modbus_runtime_minutes_ptr, PARAMETER_STORAGE_WORD },
+  [0x23] = { modbus_runtime_hours_ptr, PARAMETER_STORAGE_WORD },
+  [0x24] = { 0, 0 }, [0x25] = { 0, 0 },
+  [0x26] = { modbus_run_flag_ptr, PARAMETER_STORAGE_BYTE },
+  [0x27] = { adc_output_reference_ptr, PARAMETER_STORAGE_WORD },
+  [0x28] = { adc_output_current_a_ptr, PARAMETER_STORAGE_WORD },
+  [0x29] = { adc_output_current_b_ptr, PARAMETER_STORAGE_WORD },
+  [0x2A] = { adc_output_current_c_ptr, PARAMETER_STORAGE_WORD },
+  [0x2B] = { adc_field_output_ptr, PARAMETER_STORAGE_WORD },
+  [0x2C] = { adc_voltage_output_ptr, PARAMETER_STORAGE_WORD },
+  [0x2D] = { modbus_auxiliary_value_ptr, PARAMETER_STORAGE_WORD },
+  /* 通信和校准区 0x2E-0x3E */
+  [0x2E] = { communication_slave_address_ptr, PARAMETER_STORAGE_BYTE },
+  [0x2F] = { communication_baud_index_ptr, PARAMETER_STORAGE_WORD },
+  [0x30] = { communication_frame_mode_ptr, PARAMETER_STORAGE_BYTE },
+  [0x31] = { communication_detection_ptr, PARAMETER_STORAGE_BYTE },
+  [0x32] = { parameter_current_calibration_a_ptr, PARAMETER_STORAGE_WORD },
+  [0x33] = { parameter_current_calibration_b_ptr, PARAMETER_STORAGE_WORD },
+  [0x34] = { parameter_current_calibration_c_ptr, PARAMETER_STORAGE_WORD },
+  [0x35] = { parameter_field_calibration_ptr, PARAMETER_STORAGE_WORD },
+  [0x36] = { parameter_voltage_calibration_ptr, PARAMETER_STORAGE_WORD },
+  [0x37] = { parameter_emergency_stop_ptr, PARAMETER_STORAGE_BYTE },
+  [0x38] = { parameter_auxiliary_mode_ptr, PARAMETER_STORAGE_BYTE },
+  [0x39] = { parameter_feedback_mode_ptr, PARAMETER_STORAGE_BYTE },
+  [0x3A] = { parameter_input_mode_ptr, PARAMETER_STORAGE_BYTE },
+  [0x3B] = { parameter_output_phase_ptr, PARAMETER_STORAGE_BYTE },
+  [0x3C] = { parameter_remote_enable_ptr, PARAMETER_STORAGE_WORD },
+  [0x3D] = { parameter_start_phase_ptr, PARAMETER_STORAGE_WORD },
+  [0x3E] = { output_divisor_ptr, PARAMETER_STORAGE_WORD }
+};
+
+static uint32_t modbus_read_descriptor_value(const ModbusRegisterDescriptor *descriptor)
+{
+  if (descriptor->storage_width == PARAMETER_STORAGE_BYTE) {
+    return *(volatile uint8_t *)descriptor->address;
+  }
+  return *(volatile uint32_t *)descriptor->address;
+}
+
 uint32_t modbus_read_reg(uint32_t *out_val,uint32_t reg_addr)
 {
-  *modbus_register_index_ptr = reg_addr & 0xfff;
-  if (*modbus_pid_selection_ptr == '\x01') {
-    *parameter_active_gain_a_ptr = *parameter_profile1_gain_a_ptr;
-    *parameter_active_gain_b_ptr = *parameter_profile1_gain_b_ptr;
+  uint32_t register_index = reg_addr & 0xFFF;
+  uint32_t profile_index;
+
+  *modbus_register_index_ptr = register_index;
+  profile_index = *modbus_pid_selection_ptr;
+  if (profile_index >= 1 && profile_index <= 4) {
+    const ModbusPidProfileDescriptor *profile = &modbus_pid_profiles[profile_index - 1];
+    *parameter_active_gain_a_ptr = *profile->gain_a;
+    *parameter_active_gain_b_ptr = *profile->gain_b;
   }
-  if (*modbus_pid_selection_ptr == '\x02') {
-    *parameter_active_gain_a_ptr = *parameter_profile2_gain_a_ptr;
-    *parameter_active_gain_b_ptr = *parameter_profile2_gain_b_ptr;
-  }
-  if (*modbus_pid_selection_ptr == '\x03') {
-    *parameter_active_gain_a_ptr = *parameter_profile3_gain_a_ptr;
-    *parameter_active_gain_b_ptr = *parameter_profile3_gain_b_ptr;
-  }
-  if (*modbus_pid_selection_ptr == '\x04') {
-    *parameter_active_gain_a_ptr = *parameter_profile4_gain_a_ptr;
-    *parameter_active_gain_b_ptr = *parameter_profile4_gain_b_ptr;
-  }
-  switch((char)*modbus_register_index_ptr) {
-  case '\0':
-    *out_val = (uint32_t)*parameter_control_mode_ptr;
-    break;
-  case '\x01':
-    *out_val = *parameter_voltage_range_ptr;
-    break;
-  case '\x02':
-    *out_val = *parameter_current_range_ptr;
-    break;
-  case '\x03':
-    *out_val = *parameter_transformer_ratio_ptr;
-    break;
-  case '\x04':
-    *out_val = *parameter_voltage_limit_ptr;
-    break;
-  case '\x05':
-    *out_val = *parameter_current_limit_ptr;
-    break;
-  case '\x06':
-    *out_val = (uint32_t)*parameter_soft_start_time_ptr;
-    break;
-  case '\a':
-    *out_val = (uint32_t)*parameter_soft_stop_time_ptr;
-    break;
-  case '\b':
-    *out_val = *parameter_phase_limit_ptr;
-    break;
-  case '\t':
-    *out_val = (uint32_t)*parameter_master_slave_offset_ptr;
-    break;
-  case '\n':
-    *out_val = (uint32_t)*parameter_control_method_ptr;
-    break;
-  case '\v':
-    *out_val = (uint32_t)*parameter_start_mode_ptr;
-    break;
-  case '\f':
-    *out_val = *parameter_overvoltage_limit_ptr;
-    break;
-  case '\r':
-    *out_val = (uint32_t)*parameter_overvoltage_time_ptr;
-    break;
-  case '\x0e':
-    *out_val = *parameter_undervoltage_limit_ptr;
-    break;
-  case '\x0f':
-    *out_val = (uint32_t)*parameter_undervoltage_time_ptr;
-    break;
-  case '\x10':
-    *out_val = *parameter_if_overload_limit_ptr;
-    break;
-  case '\x11':
-    *out_val = (uint32_t)*parameter_if_overload_time_ptr;
-    break;
-  case '\x12':
-    *out_val = *parameter_ct_overload_limit_ptr;
-    break;
-  case '\x13':
-    *out_val = (uint32_t)*parameter_ct_overload_time_ptr;
-    break;
-  case '\x14':
-    *out_val = (uint32_t)*parameter_phase_loss_enable_ptr;
-    break;
-  case '\x15':
-    *out_val = (uint32_t)*parameter_phase_balance_ptr;
-    break;
-  case '\x16':
-    *out_val = (uint32_t)*modbus_pid_selection_ptr;
-    break;
-  case '\x17':
-    *out_val = (uint32_t)*parameter_active_gain_a_ptr;
-    break;
-  case '\x18':
-    *out_val = (uint32_t)*parameter_active_gain_b_ptr;
-    break;
-  case '\x19':
-    *out_val = (uint32_t)*parameter_phase_calib_ptr;
-    break;
-  case '\x1a':
-    *out_val = 0;
-    break;
-  case '\x1b':
-    *out_val = 0;
-    break;
-  case '\x1c':
-    *out_val = 0;
-    break;
-  case '\x1d':
-    *out_val = 0;
-    break;
-  case '\x1e':
-    *out_val = 0;
-    break;
-  case '\x1f':
-    *out_val = 0;
-    break;
-  case ' ':
-    *out_val = *modbus_runtime_value_a_ptr;
-    break;
-  case '!':
-    *out_val = *modbus_runtime_value_b_ptr;
-    break;
-  case '\"':
-    *out_val = *modbus_runtime_minutes_ptr;
-    break;
-  case '#':
-    *out_val = *modbus_runtime_hours_ptr;
-    break;
-  case '$':
-    *out_val = 0;
-    break;
-  case '%':
-    *out_val = 0;
-    break;
-  case '&':
-    *out_val = (uint32_t)*modbus_run_flag_ptr;
-    break;
-  case '\'':
-    *out_val = *adc_output_reference_ptr;
-    break;
-  case '(':
-    *out_val = *adc_output_current_a_ptr;
-    break;
-  case ')':
-    *out_val = *adc_output_current_b_ptr;
-    break;
-  case '*':
-    *out_val = *adc_output_current_c_ptr;
-    break;
-  case '+':
-    *out_val = *adc_field_output_ptr;
-    break;
-  case ',':
-    *out_val = *adc_voltage_output_ptr;
-    break;
-  case '-':
-    *out_val = *modbus_auxiliary_value_ptr;
-    break;
-  case '.':
-    *out_val = (uint32_t)*communication_slave_address_ptr;
-    break;
-  case '/':
-    *out_val = *communication_baud_index_ptr;
-    break;
-  case '0':
-    *out_val = (uint32_t)*communication_frame_mode_ptr;
-    break;
-  case '1':
-    *out_val = (uint32_t)*communication_detection_ptr;
-    break;
-  case '2':
-    *out_val = *parameter_current_calibration_a_ptr;
-    break;
-  case '3':
-    *out_val = *parameter_current_calibration_b_ptr;
-    break;
-  case '4':
-    *out_val = *parameter_current_calibration_c_ptr;
-    break;
-  case '5':
-    *out_val = *parameter_field_calibration_ptr;
-    break;
-  case '6':
-    *out_val = *parameter_voltage_calibration_ptr;
-    break;
-  case '7':
-    *out_val = (uint32_t)*parameter_emergency_stop_ptr;
-    break;
-  case '8':
-    *out_val = (uint32_t)*parameter_auxiliary_mode_ptr;
-    break;
-  case '9':
-    *out_val = (uint32_t)*parameter_feedback_mode_ptr;
-    break;
-  case ':':
-    *out_val = (uint32_t)*parameter_input_mode_ptr;
-    break;
-  case ';':
-    *out_val = (uint32_t)*parameter_output_phase_ptr;
-    break;
-  case '<':
-    *out_val = *parameter_remote_enable_ptr;
-    break;
-  case '=':
-    *out_val = *parameter_start_phase_ptr;
-    break;
-  case '>':
-    *out_val = *output_divisor_ptr;
+
+  if (register_index < MODBUS_READ_REGISTER_COUNT) {
+    const ModbusRegisterDescriptor *descriptor = &modbus_read_register_table[register_index];
+    if (descriptor->address == 0) {
+      *out_val = 0;
+    } else {
+      *out_val = modbus_read_descriptor_value(descriptor);
+    }
   }
   return 0;
 }
@@ -453,198 +355,92 @@ uint32_t modbus_read_reg(uint32_t *out_val,uint32_t reg_addr)
 /* 0x0000B2E0 —— Modbus 写保持寄存器（src_val=数据指针、reg_addr=寄存器号）
  *   0x1000B594=寄存器号；0x1A-0x1F/0x24-0x25/0x2B-0x2F/0x40-0x42 等映射到
  *   0x1000B5A0（保留/汇总区），0x2B-0x3D 段写 0x1000B984..0x1000B9C4 */
+static const ModbusRegisterDescriptor modbus_write_register_table[MODBUS_WRITE_REGISTER_COUNT] = {
+  /* 参数区 0x00-0x19 */
+  [0x00] = { parameter_control_mode_ptr, PARAMETER_STORAGE_BYTE },
+  [0x01] = { parameter_voltage_range_ptr, PARAMETER_STORAGE_WORD },
+  [0x02] = { parameter_current_range_ptr, PARAMETER_STORAGE_WORD },
+  [0x03] = { parameter_transformer_ratio_ptr, PARAMETER_STORAGE_WORD },
+  [0x04] = { parameter_voltage_limit_ptr, PARAMETER_STORAGE_WORD },
+  [0x05] = { parameter_current_limit_ptr, PARAMETER_STORAGE_WORD },
+  [0x06] = { parameter_soft_start_time_ptr, PARAMETER_STORAGE_BYTE },
+  [0x07] = { parameter_soft_stop_time_ptr, PARAMETER_STORAGE_BYTE },
+  [0x08] = { parameter_phase_limit_ptr, PARAMETER_STORAGE_WORD },
+  [0x09] = { parameter_master_slave_offset_ptr, PARAMETER_STORAGE_BYTE },
+  [0x0A] = { parameter_control_method_ptr, PARAMETER_STORAGE_BYTE },
+  [0x0B] = { parameter_start_mode_ptr, PARAMETER_STORAGE_BYTE },
+  [0x0C] = { parameter_overvoltage_limit_ptr, PARAMETER_STORAGE_WORD },
+  [0x0D] = { parameter_overvoltage_time_ptr, PARAMETER_STORAGE_BYTE },
+  [0x0E] = { parameter_undervoltage_limit_ptr, PARAMETER_STORAGE_WORD },
+  [0x0F] = { parameter_undervoltage_time_ptr, PARAMETER_STORAGE_BYTE },
+  [0x10] = { parameter_if_overload_limit_ptr, PARAMETER_STORAGE_WORD },
+  [0x11] = { parameter_if_overload_time_ptr, PARAMETER_STORAGE_BYTE },
+  [0x12] = { parameter_ct_overload_limit_ptr, PARAMETER_STORAGE_WORD },
+  [0x13] = { parameter_ct_overload_time_ptr, PARAMETER_STORAGE_BYTE },
+  [0x14] = { parameter_phase_loss_enable_ptr, PARAMETER_STORAGE_BYTE },
+  [0x15] = { parameter_phase_balance_ptr, PARAMETER_STORAGE_BYTE },
+  [0x16] = { modbus_pid_selection_ptr, PARAMETER_STORAGE_BYTE },
+  [0x17] = { parameter_profile4_gain_a_ptr, PARAMETER_STORAGE_BYTE },
+  [0x18] = { parameter_profile4_gain_b_ptr, PARAMETER_STORAGE_BYTE },
+  [0x19] = { parameter_phase_calib_ptr, PARAMETER_STORAGE_BYTE },
+  /* 协议保留/运行区：保留写入目标以匹配原固件行为 */
+  [0x1A] = { modbus_write_scratch_ptr, PARAMETER_STORAGE_WORD },
+  [0x1B] = { modbus_write_scratch_ptr, PARAMETER_STORAGE_WORD },
+  [0x1C] = { modbus_write_scratch_ptr, PARAMETER_STORAGE_WORD },
+  [0x1D] = { modbus_write_scratch_ptr, PARAMETER_STORAGE_WORD },
+  [0x1E] = { modbus_write_scratch_ptr, PARAMETER_STORAGE_WORD },
+  [0x1F] = { modbus_write_scratch_ptr, PARAMETER_STORAGE_WORD },
+  [0x20] = { modbus_runtime_value_a_ptr, PARAMETER_STORAGE_WORD },
+  [0x21] = { modbus_runtime_value_b_ptr, PARAMETER_STORAGE_WORD },
+  [0x22] = { modbus_runtime_minutes_ptr, PARAMETER_STORAGE_WORD },
+  [0x23] = { modbus_runtime_hours_ptr, PARAMETER_STORAGE_WORD },
+  [0x24] = { modbus_write_scratch_ptr, PARAMETER_STORAGE_WORD },
+  [0x25] = { modbus_write_scratch_ptr, PARAMETER_STORAGE_WORD },
+  [0x26] = { modbus_run_flag_ptr, PARAMETER_STORAGE_BYTE },
+  [0x27] = { adc_output_reference_ptr, PARAMETER_STORAGE_WORD },
+  [0x28] = { modbus_write_scratch_ptr, PARAMETER_STORAGE_WORD },
+  [0x29] = { modbus_write_scratch_ptr, PARAMETER_STORAGE_WORD },
+  [0x2A] = { modbus_write_scratch_ptr, PARAMETER_STORAGE_WORD },
+  [0x2B] = { modbus_write_scratch_ptr, PARAMETER_STORAGE_WORD },
+  [0x2C] = { modbus_write_scratch_ptr, PARAMETER_STORAGE_WORD },
+  [0x2D] = { modbus_write_scratch_ptr, PARAMETER_STORAGE_WORD },
+  /* 通信和校准区 0x2E-0x3D */
+  [0x2E] = { communication_slave_address_ptr, PARAMETER_STORAGE_BYTE },
+  [0x2F] = { communication_baud_index_ptr, PARAMETER_STORAGE_WORD },
+  [0x30] = { communication_frame_mode_ptr, PARAMETER_STORAGE_BYTE },
+  [0x31] = { communication_detection_ptr, PARAMETER_STORAGE_BYTE },
+  [0x32] = { parameter_current_calibration_a_ptr, PARAMETER_STORAGE_WORD },
+  [0x33] = { parameter_current_calibration_b_ptr, PARAMETER_STORAGE_WORD },
+  [0x34] = { parameter_current_calibration_c_ptr, PARAMETER_STORAGE_WORD },
+  [0x35] = { parameter_field_calibration_ptr, PARAMETER_STORAGE_WORD },
+  [0x36] = { parameter_voltage_calibration_ptr, PARAMETER_STORAGE_WORD },
+  [0x37] = { parameter_emergency_stop_ptr, PARAMETER_STORAGE_BYTE },
+  [0x38] = { parameter_auxiliary_mode_ptr, PARAMETER_STORAGE_BYTE },
+  [0x39] = { parameter_feedback_mode_ptr, PARAMETER_STORAGE_BYTE },
+  [0x3A] = { parameter_input_mode_ptr, PARAMETER_STORAGE_BYTE },
+  [0x3B] = { parameter_output_phase_ptr, PARAMETER_STORAGE_BYTE },
+  [0x3C] = { parameter_remote_enable_ptr, PARAMETER_STORAGE_WORD },
+  [0x3D] = { parameter_start_phase_ptr, PARAMETER_STORAGE_WORD }
+};
+
+static void modbus_write_descriptor(const ModbusRegisterDescriptor *descriptor,
+                                    const uint32_t *source_value)
+{
+  if (descriptor->storage_width == PARAMETER_STORAGE_BYTE) {
+    *(volatile uint8_t *)descriptor->address = *(const volatile uint8_t *)source_value;
+  } else {
+    *(volatile uint32_t *)descriptor->address = *source_value;
+  }
+}
+
 uint32_t modbus_write_multi(uint32_t *src_val,uint32_t reg_addr)
 {
-  volatile uint32_t *reg_ofs;
+  uint32_t register_index = reg_addr & 0xFFF;
 
-  reg_ofs = modbus_register_index_ptr;
-  *modbus_register_index_ptr = reg_addr & 0xfff;
-  switch((char)*reg_ofs) {
-  case '\0':
-    *parameter_control_mode_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case '\x01':
-    *parameter_voltage_range_ptr = *src_val;
-    break;
-  case '\x02':
-    *parameter_current_range_ptr = *src_val;
-    break;
-  case '\x03':
-    *parameter_transformer_ratio_ptr = *src_val;
-    break;
-  case '\x04':
-    *parameter_voltage_limit_ptr = *src_val;
-    break;
-  case '\x05':
-    *parameter_current_limit_ptr = *src_val;
-    break;
-  case '\x06':
-    *parameter_soft_start_time_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case '\a':
-    *parameter_soft_stop_time_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case '\b':
-    *parameter_phase_limit_ptr = *src_val;
-    break;
-  case '\t':
-    *parameter_master_slave_offset_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case '\n':
-    *parameter_control_method_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case '\v':
-    *parameter_start_mode_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case '\f':
-    *parameter_overvoltage_limit_ptr = *src_val;
-    break;
-  case '\r':
-    *parameter_overvoltage_time_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case '\x0e':
-    *parameter_undervoltage_limit_ptr = *src_val;
-    break;
-  case '\x0f':
-    *parameter_undervoltage_time_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case '\x10':
-    *parameter_if_overload_limit_ptr = *src_val;
-    break;
-  case '\x11':
-    *parameter_if_overload_time_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case '\x12':
-    *parameter_ct_overload_limit_ptr = *src_val;
-    break;
-  case '\x13':
-    *parameter_ct_overload_time_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case '\x14':
-    *parameter_phase_loss_enable_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case '\x15':
-    *parameter_phase_balance_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case '\x16':
-    *modbus_pid_selection_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case '\x17':
-    *parameter_profile4_gain_a_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case '\x18':
-    *parameter_profile4_gain_b_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case '\x19':
-    *parameter_phase_calib_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case '\x1a':
-    *modbus_write_scratch_ptr = *src_val;
-    break;
-  case '\x1b':
-    *modbus_write_scratch_ptr = *src_val;
-    break;
-  case '\x1c':
-    *modbus_write_scratch_ptr = *src_val;
-    break;
-  case '\x1d':
-    *modbus_write_scratch_ptr = *src_val;
-    break;
-  case '\x1e':
-    *modbus_write_scratch_ptr = *src_val;
-    break;
-  case '\x1f':
-    *modbus_write_scratch_ptr = *src_val;
-    break;
-  case ' ':
-    *modbus_runtime_value_a_ptr = *src_val;
-    break;
-  case '!':
-    *modbus_runtime_value_b_ptr = *src_val;
-    break;
-  case '\"':
-    *modbus_runtime_minutes_ptr = *src_val;
-    break;
-  case '#':
-    *modbus_runtime_hours_ptr = *src_val;
-    break;
-  case '$':
-    *modbus_write_scratch_ptr = *src_val;
-    break;
-  case '%':
-    *modbus_write_scratch_ptr = *src_val;
-    break;
-  case '&':
-    *modbus_run_flag_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case '\'':
-    *adc_output_reference_ptr = *src_val;
-    break;
-  case '(':
-    *modbus_write_scratch_ptr = *src_val;
-    break;
-  case ')':
-    *modbus_write_scratch_ptr = *src_val;
-    break;
-  case '*':
-    *modbus_write_scratch_ptr = *src_val;
-    break;
-  case '+':
-    *modbus_write_scratch_ptr = *src_val;
-    break;
-  case ',':
-    *modbus_write_scratch_ptr = *src_val;
-    break;
-  case '-':
-    *modbus_write_scratch_ptr = *src_val;
-    break;
-  case '.':
-    *communication_slave_address_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case '/':
-    *communication_baud_index_ptr = *src_val;
-    break;
-  case '0':
-    *communication_frame_mode_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case '1':
-    *communication_detection_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case '2':
-    *parameter_current_calibration_a_ptr = *src_val;
-    break;
-  case '3':
-    *parameter_current_calibration_b_ptr = *src_val;
-    break;
-  case '4':
-    *parameter_current_calibration_c_ptr = *src_val;
-    break;
-  case '5':
-    *parameter_field_calibration_ptr = *src_val;
-    break;
-  case '6':
-    *parameter_voltage_calibration_ptr = *src_val;
-    break;
-  case '7':
-    *parameter_emergency_stop_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case '8':
-    *parameter_auxiliary_mode_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case '9':
-    *parameter_feedback_mode_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case ':':
-    *parameter_input_mode_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case ';':
-    *parameter_output_phase_ptr = *(volatile uint8_t *)src_val;
-    break;
-  case '<':
-    *parameter_remote_enable_ptr = *src_val;
-    break;
-  case '=':
-    *parameter_start_phase_ptr = *src_val;
+  *modbus_register_index_ptr = register_index;
+  if (register_index < MODBUS_WRITE_REGISTER_COUNT) {
+    const ModbusRegisterDescriptor *descriptor = &modbus_write_register_table[register_index];
+    modbus_write_descriptor(descriptor, src_val);
   }
   return 0;
 }

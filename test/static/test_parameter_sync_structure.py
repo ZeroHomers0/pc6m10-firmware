@@ -38,25 +38,17 @@ def semantic_symbols(text):
     return out
 
 def extract(src):
-    """返回 [(live_sym, shadow_sym, reg, width)]（16 位 reg 为高字节地址）"""
-    start = src.index('param_sync_live_to_eeprom(void)')
-    tail  = src.index('\n}', start)
-    body  = src[start:tail]
+    """返回 [(live_sym, shadow_sym, reg, width)]（来自集中描述表）。"""
+    start = src.index('eeprom_parameter_table[]')
+    tail = src.index('\n};', start)
+    body = src[start:tail]
     params = []
-    # 先抓 16 位块（其条件是 *LIVE != *(int*)SHADOW）
     for m in re.finditer(
-            r"if\s*\(\*\s*([A-Za-z0-9_]+)\s*!=\s*\*\(int\s*\*\)([A-Za-z0-9_]+)\)\s*\{"
-            r"[\s\S]*?i2c_write_reg\(\*([A-Za-z0-9_]+)\s*>>\s*8,0x([0-9a-fA-F]+)\)",
-            body):
-        params.append((m.group(1), m.group(2), int(m.group(4),16), 16))
-    # 8 位块（条件 *LIVE != *SHADOW，且写为单字节 i2c_write_reg(*SHADOW, reg)）
-    for m in re.finditer(
-            r"if\s*\(\*\s*([A-Za-z0-9_]+)\s*!=\s*\*([A-Za-z0-9_]+)\)\s*\{"
-            r"[\s\S]*?i2c_write_reg\(\*\s*([A-Za-z0-9_]+)\s*,0x([0-9a-fA-F]+)\)",
-            body):
-        live, shadow = m.group(1), m.group(2)
-        # 跳过已属 16 位的（16 位条件含 *(int*) 不匹配此正则，天然隔离）
-        params.append((live, shadow, int(m.group(4),16), 8))
+            r"\{\s*([A-Za-z0-9_]+)\s*,\s*([A-Za-z0-9_]+)\s*,\s*"
+            r"(0x[0-9a-fA-F]+|[0-9]+)\s*,\s*"
+            r"(PARAMETER_STORAGE_(BYTE|WORD))\s*\}", body):
+        width = 16 if m.group(5) == 'WORD' else 8
+        params.append((m.group(1), m.group(2), int(m.group(3), 0), width))
     return params
 
 def main():

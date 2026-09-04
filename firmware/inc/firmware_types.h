@@ -126,4 +126,16 @@ typedef enum {
   PARAMETER_STORAGE_WORD = 4
 } ParameterStorageWidth;
 
+typedef struct {
+  volatile void *live_address;
+  volatile void *shadow_address;
+  uint8_t eeprom_register;
+  ParameterStorageWidth storage_width;
+} EepromParameterDescriptor;
+
+typedef struct {
+  volatile void *address;
+  ParameterStorageWidth storage_width;
+} ModbusRegisterDescriptor;
+
 #endif /* FIRMWARE_TYPES_H */
