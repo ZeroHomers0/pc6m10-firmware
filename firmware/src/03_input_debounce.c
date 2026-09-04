@@ -1,34 +1,34 @@
 /* =============================================================================
- * src/03_input_debounce.c — 反编译模块 03（输入/去抖）可编译副本
- * 目标B 阶段4：原样复制，仅加 includes。
+ * src/03_input_debounce.c — 面板输入扫描与按键去抖
+ * 输入引脚掩码集中定义在 firmware_input_pins.h，保留原有采样顺序和时序。
  * ========================================================================== */
 #include "inc/types.h"
 #include "inc/reg.h"
 #include "inc/firmware_types.h"
 #include "inc/firmware_api.h"
 #include "inc/firmware_state.h"
+#include "inc/firmware_input_pins.h"
 
 /* 0x00001578 —— 输入引脚方向配置（置输入模式）
  *   input_fio_base_ptr=0x2009C000（FIO 池基址）
  *   [8]  = FIO0DIR（+0x20）；[0x18]=FIO1DIR（+0x60）
- *   配置为输入：P0.28/27（0x10000000/0x8000000）、P1.16/17（0x10000/0x20000）、
- *   P0.9（0x200）、P0.6（0x40）、P0.2/0.3（0x4/0x8） */
+ *   配置为输入：编码器六相、RUN/STOP、P1.16/P1.17、P0.9、P0.6 和 P0.2/P0.3。 */
 void gpio_inputs_dir_init(void)
 {
 
-  FIO1->DIR = FIO1->DIR & 0xfff7ffff;   /* P1.17 输入 */
-  FIO1->DIR = FIO1->DIR & 0xfffbffff;               /* P1.16 输入 */
-  FIO0->DIR = FIO0->DIR & 0xbfffffff;                   /* P0.30 输入 */
-  FIO0->DIR = FIO0->DIR & 0xdfffffff;                   /* P0.29 输入 */
-  FIO3->DIR = FIO3->DIR & 0xfdffffff;         /* P2.25 输入 */
-  FIO3->DIR = FIO3->DIR & 0xfbffffff;         /* P2.24 输入 */
-  FIO0->DIR = FIO0->DIR & 0xf7ffffff;                   /* P0.27 输入 */
-  FIO0->DIR = FIO0->DIR & 0xefffffff;                   /* P0.28 输入 */
-  FIO1->DIR = FIO1->DIR & 0xfffeffff;               /* P1.16 输入 */
-  FIO1->DIR = FIO1->DIR & 0xfffdffff;               /* P1.17 输入 */
-  FIO0->DIR = FIO0->DIR & 0xffffffbf;                   /* P0.6 输入 */
-  FIO0->DIR = FIO0->DIR & 0xfffffffb;                   /* P0.3 输入 */
-  FIO0->DIR = FIO0->DIR & 0xfffffff7;                   /* P0.2 输入 */
+  FIO1->DIR = FIO1->DIR & ~INPUT_ENCODER_A_FIO1_MASK;   /* 编码器相位 A */
+  FIO1->DIR = FIO1->DIR & ~INPUT_ENCODER_B_FIO1_MASK;   /* 编码器相位 B */
+  FIO0->DIR = FIO0->DIR & ~INPUT_ENCODER_A_FIO0_MASK;   /* 编码器相位 C */
+  FIO0->DIR = FIO0->DIR & ~INPUT_ENCODER_B_FIO0_MASK;   /* 编码器相位 D */
+  FIO3->DIR = FIO3->DIR & ~INPUT_ENCODER_A_FIO3_MASK;   /* 编码器相位 E */
+  FIO3->DIR = FIO3->DIR & ~INPUT_ENCODER_B_FIO3_MASK;   /* 编码器相位 F */
+  FIO0->DIR = FIO0->DIR & ~INPUT_STOP_FIO0_MASK;         /* STOP 输入 */
+  FIO0->DIR = FIO0->DIR & ~INPUT_RUN_FIO0_MASK;          /* RUN 输入 */
+  FIO1->DIR = FIO1->DIR & ~INPUT_P116_FIO1_MASK;         /* P1.16 输入 */
+  FIO1->DIR = FIO1->DIR & ~INPUT_P117_FIO1_MASK;         /* P1.17 输入 */
+  FIO0->DIR = FIO0->DIR & ~INPUT_P06_FIO0_MASK;          /* P0.6 输入 */
+  FIO0->DIR = FIO0->DIR & ~INPUT_P02_FIO0_MASK;          /* P0.2 输入 */
+  FIO0->DIR = FIO0->DIR & ~INPUT_P03_FIO0_MASK;          /* P0.3 输入 */
   return;
 }
 
@@ -49,62 +49,62 @@ uint8_t input_scan_state(void)
   volatile uint8_t *counter_ptr;
 
   scan_counter_ptr = input_scan_counter_ptr;
-  /* —— 任一输入未就绪（P1.16/P1.17/P0.28/P0.27/P2.9/P2.8 为 0）→ 进入扫描 —— */
-  if ((((((FIO1->PIN & 0x80000) == 0) ||
-        ((FIO1->PIN & 0x40000) == 0)) ||
-       ((FIO0->PIN & 0x40000000) == 0)) ||
-      (((FIO0->PIN & 0x20000000) == 0 ||
-       ((FIO3->PIN & 0x2000000) == 0)))) ||
-     ((FIO3->PIN & 0x4000000) == 0)) {
+  /* —— 任一编码器相位未就绪（输入为 0）→ 进入扫描 —— */
+  if ((((((FIO1->PIN & INPUT_ENCODER_A_FIO1_MASK) == 0) ||
+        ((FIO1->PIN & INPUT_ENCODER_B_FIO1_MASK) == 0)) ||
+       ((FIO0->PIN & INPUT_ENCODER_A_FIO0_MASK) == 0)) ||
+      (((FIO0->PIN & INPUT_ENCODER_B_FIO0_MASK) == 0 ||
+       ((FIO3->PIN & INPUT_ENCODER_A_FIO3_MASK) == 0)))) ||
+     ((FIO3->PIN & INPUT_ENCODER_B_FIO3_MASK) == 0)) {
     *input_scan_counter_ptr = *input_scan_counter_ptr + 1;
     if (*scan_counter_ptr == 0x19) {
       /* 连续 0x19 拍后锁存旋转方向（A/B 相组合，1..6） */
-      if ((((FIO1->PIN & 0x80000) == 0) &&
-          ((FIO1->PIN & 0x40000) != 0)) &&
-         (((FIO0->PIN & 0x40000000) != 0 &&
-          ((((FIO0->PIN & 0x20000000) != 0 &&
-            ((FIO3->PIN & 0x2000000) != 0)) &&
-           ((FIO3->PIN & 0x4000000) != 0)))))) {
+      if ((((FIO1->PIN & INPUT_ENCODER_A_FIO1_MASK) == 0) &&
+          ((FIO1->PIN & INPUT_ENCODER_B_FIO1_MASK) != 0)) &&
+         (((FIO0->PIN & INPUT_ENCODER_A_FIO0_MASK) != 0 &&
+          ((((FIO0->PIN & INPUT_ENCODER_B_FIO0_MASK) != 0 &&
+            ((FIO3->PIN & INPUT_ENCODER_A_FIO3_MASK) != 0)) &&
+           ((FIO3->PIN & INPUT_ENCODER_B_FIO3_MASK) != 0)))))) {
         *input_direction_latch_ptr = 1;
       }
-      if (((((FIO1->PIN & 0x80000) != 0) &&
-           ((FIO1->PIN & 0x40000) == 0)) &&
-          (((FIO0->PIN & 0x40000000) != 0 &&
-           (((FIO0->PIN & 0x20000000) != 0 &&
-            ((FIO3->PIN & 0x2000000) != 0)))))) &&
-         ((FIO3->PIN & 0x4000000) != 0)) {
+      if (((((FIO1->PIN & INPUT_ENCODER_A_FIO1_MASK) != 0) &&
+           ((FIO1->PIN & INPUT_ENCODER_B_FIO1_MASK) == 0)) &&
+          (((FIO0->PIN & INPUT_ENCODER_A_FIO0_MASK) != 0 &&
+           (((FIO0->PIN & INPUT_ENCODER_B_FIO0_MASK) != 0 &&
+            ((FIO3->PIN & INPUT_ENCODER_A_FIO3_MASK) != 0)))))) &&
+         ((FIO3->PIN & INPUT_ENCODER_B_FIO3_MASK) != 0)) {
         *input_direction_latch_ptr = 2;
       }
-      if (((((FIO1->PIN & 0x80000) != 0) &&
-           ((FIO1->PIN & 0x40000) != 0)) &&
-          ((FIO0->PIN & 0x40000000) == 0)) &&
-         ((((FIO0->PIN & 0x20000000) != 0 &&
-           ((FIO3->PIN & 0x2000000) != 0)) &&
-          ((FIO3->PIN & 0x4000000) != 0)))) {
+      if (((((FIO1->PIN & INPUT_ENCODER_A_FIO1_MASK) != 0) &&
+           ((FIO1->PIN & INPUT_ENCODER_B_FIO1_MASK) != 0)) &&
+          ((FIO0->PIN & INPUT_ENCODER_A_FIO0_MASK) == 0)) &&
+         ((((FIO0->PIN & INPUT_ENCODER_B_FIO0_MASK) != 0 &&
+           ((FIO3->PIN & INPUT_ENCODER_A_FIO3_MASK) != 0)) &&
+          ((FIO3->PIN & INPUT_ENCODER_B_FIO3_MASK) != 0)))) {
         *input_direction_latch_ptr = 3;
       }
-      if ((((FIO1->PIN & 0x80000) != 0) &&
-          ((FIO1->PIN & 0x40000) != 0)) &&
-         (((FIO0->PIN & 0x40000000) != 0 &&
-          ((((FIO0->PIN & 0x20000000) == 0 &&
-            ((FIO3->PIN & 0x2000000) != 0)) &&
-           ((FIO3->PIN & 0x4000000) != 0)))))) {
+      if ((((FIO1->PIN & INPUT_ENCODER_A_FIO1_MASK) != 0) &&
+          ((FIO1->PIN & INPUT_ENCODER_B_FIO1_MASK) != 0)) &&
+         (((FIO0->PIN & INPUT_ENCODER_A_FIO0_MASK) != 0 &&
+          ((((FIO0->PIN & INPUT_ENCODER_B_FIO0_MASK) == 0 &&
+            ((FIO3->PIN & INPUT_ENCODER_A_FIO3_MASK) != 0)) &&
+           ((FIO3->PIN & INPUT_ENCODER_B_FIO3_MASK) != 0)))))) {
         *input_direction_latch_ptr = 4;
       }
-      if ((((FIO1->PIN & 0x80000) != 0) &&
-          ((FIO1->PIN & 0x40000) != 0)) &&
-         ((((FIO0->PIN & 0x40000000) != 0 &&
-           (((FIO0->PIN & 0x20000000) != 0 &&
-            ((FIO3->PIN & 0x2000000) == 0)))) &&
-          ((FIO3->PIN & 0x4000000) != 0)))) {
+      if ((((FIO1->PIN & INPUT_ENCODER_A_FIO1_MASK) != 0) &&
+          ((FIO1->PIN & INPUT_ENCODER_B_FIO1_MASK) != 0)) &&
+         ((((FIO0->PIN & INPUT_ENCODER_A_FIO0_MASK) != 0 &&
+           (((FIO0->PIN & INPUT_ENCODER_B_FIO0_MASK) != 0 &&
+            ((FIO3->PIN & INPUT_ENCODER_A_FIO3_MASK) == 0)))) &&
+          ((FIO3->PIN & INPUT_ENCODER_B_FIO3_MASK) != 0)))) {
         *input_direction_latch_ptr = 5;
       }
-      if ((((((FIO1->PIN & 0x80000) != 0) &&
-            ((FIO1->PIN & 0x40000) != 0)) &&
-           ((FIO0->PIN & 0x40000000) != 0)) &&
-          (((FIO0->PIN & 0x20000000) != 0 &&
-           ((FIO3->PIN & 0x2000000) != 0)))) &&
-         ((FIO3->PIN & 0x4000000) == 0)) {
+      if ((((((FIO1->PIN & INPUT_ENCODER_A_FIO1_MASK) != 0) &&
+            ((FIO1->PIN & INPUT_ENCODER_B_FIO1_MASK) != 0)) &&
+           ((FIO0->PIN & INPUT_ENCODER_A_FIO0_MASK) != 0)) &&
+          (((FIO0->PIN & INPUT_ENCODER_B_FIO0_MASK) != 0 &&
+           ((FIO3->PIN & INPUT_ENCODER_A_FIO3_MASK) != 0)))) &&
+         ((FIO3->PIN & INPUT_ENCODER_B_FIO3_MASK) == 0)) {
         *input_direction_latch_ptr = 6;
       }
     }
@@ -112,12 +112,12 @@ uint8_t input_scan_state(void)
       *input_scan_counter_ptr = 0xf5;
       *input_direction_latch_ptr = 0;
       counter_ptr = input_encoder_counter_ptr;
-      if ((((FIO1->PIN & 0x80000) == 0) &&
-          ((FIO1->PIN & 0x40000) != 0)) &&
-         (((FIO0->PIN & 0x40000000) != 0 &&
-          ((((FIO0->PIN & 0x20000000) != 0 &&
-            ((FIO3->PIN & 0x2000000) != 0)) &&
-           ((FIO3->PIN & 0x4000000) != 0)))))) {
+      if ((((FIO1->PIN & INPUT_ENCODER_A_FIO1_MASK) == 0) &&
+          ((FIO1->PIN & INPUT_ENCODER_B_FIO1_MASK) != 0)) &&
+         (((FIO0->PIN & INPUT_ENCODER_A_FIO0_MASK) != 0 &&
+          ((((FIO0->PIN & INPUT_ENCODER_B_FIO0_MASK) != 0 &&
+            ((FIO3->PIN & INPUT_ENCODER_A_FIO3_MASK) != 0)) &&
+           ((FIO3->PIN & INPUT_ENCODER_B_FIO3_MASK) != 0)))))) {
         *input_encoder_counter_ptr = *input_encoder_counter_ptr + 1;
         if (0xb < *counter_ptr) {
           *counter_ptr = 0xb;
@@ -127,28 +127,28 @@ uint8_t input_scan_state(void)
         }
       }
       counter_ptr = input_encoder_counter_ptr;
-      if ((((FIO1->PIN & 0x80000) != 0) &&
-          ((FIO1->PIN & 0x40000) == 0)) &&
-         ((((FIO0->PIN & 0x40000000) != 0 &&
-           (((FIO0->PIN & 0x20000000) != 0 &&
-            ((FIO3->PIN & 0x2000000) != 0)))) &&
-          ((FIO3->PIN & 0x4000000) != 0)))) {
+      if ((((FIO1->PIN & INPUT_ENCODER_A_FIO1_MASK) != 0) &&
+          ((FIO1->PIN & INPUT_ENCODER_B_FIO1_MASK) == 0)) &&
+         ((((FIO0->PIN & INPUT_ENCODER_A_FIO0_MASK) != 0 &&
+           (((FIO0->PIN & INPUT_ENCODER_B_FIO0_MASK) != 0 &&
+            ((FIO3->PIN & INPUT_ENCODER_A_FIO3_MASK) != 0)))) &&
+          ((FIO3->PIN & INPUT_ENCODER_B_FIO3_MASK) != 0)))) {
         return KEY_FAST_UP;    /* 0x16 = 快加（A=1,B=0） */
       }
-      if (((((FIO1->PIN & 0x80000) != 0) &&
-           ((FIO1->PIN & 0x40000) != 0)) &&
-          ((FIO0->PIN & 0x40000000) == 0)) &&
-         ((((FIO0->PIN & 0x20000000) != 0 &&
-           ((FIO3->PIN & 0x2000000) != 0)) &&
-          ((FIO3->PIN & 0x4000000) != 0)))) {
+      if (((((FIO1->PIN & INPUT_ENCODER_A_FIO1_MASK) != 0) &&
+           ((FIO1->PIN & INPUT_ENCODER_B_FIO1_MASK) != 0)) &&
+          ((FIO0->PIN & INPUT_ENCODER_A_FIO0_MASK) == 0)) &&
+         ((((FIO0->PIN & INPUT_ENCODER_B_FIO0_MASK) != 0 &&
+           ((FIO3->PIN & INPUT_ENCODER_A_FIO3_MASK) != 0)) &&
+          ((FIO3->PIN & INPUT_ENCODER_B_FIO3_MASK) != 0)))) {
         return KEY_FAST_DOWN;  /* 0x21 = 快减（P0.28=1,P0.27=1,P1.16=0） */
       }
-      if ((((FIO1->PIN & 0x80000) != 0) &&
-          ((FIO1->PIN & 0x40000) == 0)) &&
-         (((FIO0->PIN & 0x40000000) == 0 &&
-          ((((FIO0->PIN & 0x20000000) != 0 &&
-            ((FIO3->PIN & 0x2000000) != 0)) &&
-           ((FIO3->PIN & 0x4000000) != 0)))))) {
+      if ((((FIO1->PIN & INPUT_ENCODER_A_FIO1_MASK) != 0) &&
+          ((FIO1->PIN & INPUT_ENCODER_B_FIO1_MASK) == 0)) &&
+         (((FIO0->PIN & INPUT_ENCODER_A_FIO0_MASK) == 0 &&
+          ((((FIO0->PIN & INPUT_ENCODER_B_FIO0_MASK) != 0 &&
+            ((FIO3->PIN & INPUT_ENCODER_A_FIO3_MASK) != 0)) &&
+           ((FIO3->PIN & INPUT_ENCODER_B_FIO3_MASK) != 0)))))) {
         *input_encoder_counter_ptr = *input_encoder_counter_ptr + 1;
         if (0x1f < *counter_ptr) {
           *counter_ptr = 0x1f;
@@ -158,12 +158,12 @@ uint8_t input_scan_state(void)
         }
       }
       counter_ptr = input_encoder_counter_ptr;
-      if ((((FIO1->PIN & 0x80000) == 0) &&
-          ((FIO1->PIN & 0x40000) != 0)) &&
-         ((((FIO0->PIN & 0x40000000) != 0 &&
-           (((FIO0->PIN & 0x20000000) == 0 &&
-            ((FIO3->PIN & 0x2000000) != 0)))) &&
-          ((FIO3->PIN & 0x4000000) != 0)))) {
+      if ((((FIO1->PIN & INPUT_ENCODER_A_FIO1_MASK) == 0) &&
+          ((FIO1->PIN & INPUT_ENCODER_B_FIO1_MASK) != 0)) &&
+         ((((FIO0->PIN & INPUT_ENCODER_A_FIO0_MASK) != 0 &&
+           (((FIO0->PIN & INPUT_ENCODER_B_FIO0_MASK) == 0 &&
+            ((FIO3->PIN & INPUT_ENCODER_A_FIO3_MASK) != 0)))) &&
+          ((FIO3->PIN & INPUT_ENCODER_B_FIO3_MASK) != 0)))) {
         *input_encoder_counter_ptr = *input_encoder_counter_ptr + 1;
         if (0x1f < *counter_ptr) {
           *counter_ptr = 0x1f;
@@ -199,12 +199,12 @@ uint8_t scan_run_stop(void)
   counter_ptr = input_run_counter_ptr;
   if (*input_run_stop_mode_ptr == '\0') {
     /* —— 单次触发模式 —— */
-    if (((FIO0->PIN & 0x10000000) == 0) &&
-       ((FIO0->PIN & 0x8000000) != 0)) {
+    if (((FIO0->PIN & INPUT_RUN_FIO0_MASK) == 0) &&
+       ((FIO0->PIN & INPUT_STOP_FIO0_MASK) != 0)) {
       *input_run_counter_ptr = *input_run_counter_ptr + 1;
       if (*counter_ptr == 0x32) {
         *counter_ptr = 0x32;
-        return 7;              /* RUN */
+        return KEY_START;
       }
       if (0x32 < *input_run_counter_ptr) {
         *input_run_counter_ptr = 0x32;
@@ -214,15 +214,15 @@ uint8_t scan_run_stop(void)
       *input_run_counter_ptr = 0;
     }
     counter_ptr = input_stop_counter_ptr;
-    if (((FIO0->PIN & 0x10000000) == 0) ||
-       ((FIO0->PIN & 0x8000000) != 0)) {
+    if (((FIO0->PIN & INPUT_RUN_FIO0_MASK) == 0) ||
+       ((FIO0->PIN & INPUT_STOP_FIO0_MASK) != 0)) {
       *input_stop_counter_ptr = 0;
     }
     else {
       *input_stop_counter_ptr = *input_stop_counter_ptr + 1;
       if (*counter_ptr == 0x32) {
         *counter_ptr = 0x32;
-        return 8;              /* STOP */
+        return KEY_STOP;
       }
       if (0x32 < *input_stop_counter_ptr) {
         *input_stop_counter_ptr = 0x32;
@@ -232,7 +232,7 @@ uint8_t scan_run_stop(void)
   }
   else {
     /* —— 保持模式：去抖后锁存到 0x10001C20 —— */
-    if ((FIO0->PIN & 0x10000000) == 0) {
+    if ((FIO0->PIN & INPUT_RUN_FIO0_MASK) == 0) {
       *input_run_counter_ptr = *input_run_counter_ptr + 1;
       if (0x31 < *counter_ptr) {
         *counter_ptr = 0x32;
@@ -243,7 +243,7 @@ uint8_t scan_run_stop(void)
       *input_run_counter_ptr = 0;
     }
     counter_ptr = input_stop_counter_ptr;
-    if ((FIO0->PIN & 0x10000000) == 0) {
+    if ((FIO0->PIN & INPUT_RUN_FIO0_MASK) == 0) {
       *input_stop_counter_ptr = 0;
     }
     else {
@@ -265,7 +265,7 @@ uint32_t debounce_p09(void)
   volatile uint8_t *counter_ptr;
 
   counter_ptr = input_p09_counter_ptr;
-  if ((FIO0->PIN & 0x200) == 0) {   /* P0.9 低 */
+  if ((FIO0->PIN & INPUT_P09_FIO0_MASK) == 0) {   /* P0.9 低 */
     *input_p09_counter_ptr = 0;
   }
   else {
@@ -285,7 +285,7 @@ uint32_t debounce_p116(void)
   volatile uint8_t *counter_ptr;
 
   counter_ptr = input_p116_high_counter_ptr;
-  if ((FIO1->PIN & 0x10000) == 0) {   /* P1.16 低 */
+  if ((FIO1->PIN & INPUT_P116_FIO1_MASK) == 0) {   /* P1.16 低 */
     *input_p116_high_counter_ptr = 0;
   }
   else {
@@ -296,7 +296,7 @@ uint32_t debounce_p116(void)
     }
   }
   counter_ptr = input_p116_low_counter_ptr;
-  if ((FIO1->PIN & 0x10000) == 0) {
+  if ((FIO1->PIN & INPUT_P116_FIO1_MASK) == 0) {
     *input_p116_low_counter_ptr = *input_p116_low_counter_ptr + 1;
     if (0xfa < *counter_ptr) {
       *counter_ptr = 0xfa;
@@ -315,7 +315,7 @@ uint32_t debounce_p117(void)
   volatile uint8_t *counter_ptr;
 
   counter_ptr = input_p117_high_counter_ptr;
-  if ((FIO1->PIN & 0x20000) == 0) {   /* P1.17 低 */
+  if ((FIO1->PIN & INPUT_P117_FIO1_MASK) == 0) {   /* P1.17 低 */
     *input_p117_high_counter_ptr = 0;
   }
   else {
@@ -326,7 +326,7 @@ uint32_t debounce_p117(void)
     }
   }
   counter_ptr = input_p117_low_counter_ptr;
-  if ((FIO1->PIN & 0x20000) == 0) {
+  if ((FIO1->PIN & INPUT_P117_FIO1_MASK) == 0) {
     *input_p117_low_counter_ptr = *input_p117_low_counter_ptr + 1;
     if (0x32 < *counter_ptr) {
       *counter_ptr = 0x32;
@@ -345,7 +345,7 @@ uint32_t debounce_p06(void)
   volatile uint8_t *counter_ptr;
 
   counter_ptr = input_p06_high_counter_ptr;
-  if ((FIO0->PIN & 0x40) == 0) {      /* P0.6 低 */
+  if ((FIO0->PIN & INPUT_P06_FIO0_MASK) == 0) {      /* P0.6 低 */
     *input_p06_high_counter_ptr = 0;
   }
   else {
@@ -356,7 +356,7 @@ uint32_t debounce_p06(void)
     }
   }
   counter_ptr = input_p06_low_counter_ptr;
-  if ((FIO0->PIN & 0x40) == 0) {
+  if ((FIO0->PIN & INPUT_P06_FIO0_MASK) == 0) {
     *input_p06_low_counter_ptr = *input_p06_low_counter_ptr + 1;
     if (0x32 < *counter_ptr) {
       *counter_ptr = 0x32;
@@ -387,9 +387,9 @@ uint32_t chk_p02_p03(void)
 /* 0x000010F8C —— P0 输入初始化（P0.2/3/28/27 等置输入，配合 read_input_p02） */
 void gpio0_input_init(void)
 {
-  FIO0->DIR = FIO0->DIR & 0xfffffffb;                  /* P0.3 输入 */
-  FIO0->DIR = FIO0->DIR & 0xefffffff;               /* P0.28 输入 */
-  FIO0->DIR = FIO0->DIR & 0xf7ffffff;               /* P0.27 输入 */
+  FIO0->DIR = FIO0->DIR & ~INPUT_P02_FIO0_MASK;                  /* P0.3 输入 */
+  FIO0->DIR = FIO0->DIR & ~INPUT_RUN_FIO0_MASK;               /* P0.28 输入 */
+  FIO0->DIR = FIO0->DIR & ~INPUT_STOP_FIO0_MASK;               /* P0.27 输入 */
   return;
 }
 

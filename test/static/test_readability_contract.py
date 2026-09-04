@@ -65,8 +65,44 @@ def check_removed_files():
     return issues
 
 
+def check_display_and_input_names():
+    issues = []
+    display_header = ROOT / "firmware" / "inc" / "firmware_display_strings.h"
+    input_header = ROOT / "firmware" / "inc" / "firmware_input_pins.h"
+    if not display_header.exists():
+        issues.append("firmware/inc/firmware_display_strings.h: 显示文本地址表不存在")
+    if not input_header.exists():
+        issues.append("firmware/inc/firmware_input_pins.h: 输入引脚掩码表不存在")
+
+    display_sources = (
+        ROOT / "firmware" / "src" / "01_startup.c",
+        ROOT / "firmware" / "src" / "02_lcd_display.c",
+        ROOT / "firmware" / "src" / "06_frequency_adjust.c",
+        ROOT / "firmware" / "src" / "07_state_machine.c",
+    )
+    for path in display_sources:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        relative_path = path.relative_to(ROOT).as_posix()
+        if '"inc/firmware_display_strings.h"' not in text:
+            issues.append(f"{relative_path}: 未引入显示文本地址表")
+        for match in re.finditer(r"\bdisp_string\s*\(\s*(?:\(int\)\s*)?0x[0-9A-Fa-f]+", text):
+            line_number = text.count("\n", 0, match.start()) + 1
+            issues.append(f"{relative_path}:{line_number}: disp_string 仍直接使用 flash 地址")
+
+    input_source = ROOT / "firmware" / "src" / "03_input_debounce.c"
+    input_text = input_source.read_text(encoding="utf-8", errors="ignore")
+    if '"inc/firmware_input_pins.h"' not in input_text:
+        issues.append("firmware/src/03_input_debounce.c: 未引入输入引脚掩码表")
+    for match in re.finditer(r"FIO[0-3]->PIN\s*&\s*0x[0-9A-Fa-f]+", input_text):
+        line_number = input_text.count("\n", 0, match.start()) + 1
+        issues.append(f"firmware/src/03_input_debounce.c:{line_number}: 输入扫描仍直接使用 GPIO 掩码")
+    for match in re.finditer(r"\bsm[3456]_[A-Za-z0-9_]*\b", input_text + "\n" + (ROOT / "firmware" / "src" / "07_state_machine.c").read_text(encoding="utf-8", errors="ignore")):
+        issues.append(f"状态机仍保留反编译辅助函数名 {match.group(0)}")
+    return issues
+
+
 def main():
-    issues = check_source_names() + check_build_inputs() + check_removed_files()
+    issues = check_source_names() + check_build_inputs() + check_removed_files() + check_display_and_input_names()
     if issues:
         print("=== 可读性契约失败 ===")
         for issue in issues:
@@ -76,6 +112,7 @@ def main():
     print("  [PASS] 活动源码不含反编译变量命名")
     print("  [PASS] 构建入口不依赖 globals.c / globals.h / globals.o")
     print("  [PASS] 旧集中式全局文件和对象不存在")
+    print("  [PASS] 显示文本地址、输入 GPIO 掩码和页面辅助函数已语义化")
     return 0
 
 

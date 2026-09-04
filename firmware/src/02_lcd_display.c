@@ -1,6 +1,6 @@
 /* =============================================================================
- * src/02_lcd_display.c — 反编译模块 02（12864 LCD 显示）可编译副本
- * 目标B 阶段4 修正（对照反汇编 0x7A8/0x8F4/0x94A/0xB44/0xD3C）：
+ * src/02_lcd_display.c — 12864 LCD 显示驱动
+ * 时序和字符资源地址经过原固件反汇编校验，运行期代码使用语义化名称。
  *   1) Delay(int) = 延时×50（0x7A8），定义在 01_startup.c:418 → extern。
  *   2) disp_data 真实 2 参 (uint8_t, invert)；disp_cmd 真实 1 参 —— Ghidra 多造了参数
  *      与多余寄存器参数，已按反汇编还原（RS=1/0 → Delay → lcd_data_byte → E 脉冲）。
@@ -14,6 +14,7 @@
 #include "inc/reg.h"
 #include "inc/firmware_api.h"
 #include "inc/firmware_state.h"
+#include "inc/firmware_display_strings.h"
 #include <stdbool.h>
 
 /* 0x000007B6 —— LCD 背光/控制线：on<1 → 关闭（CLR bit24），否则开启（SET bit24）
@@ -620,10 +621,10 @@ void disp_decimal1(uint32_t val,uint32_t row,int col,uint32_t invert)
  *   右上角显示增益档位值（gain_sel 对应增益，cfg_1710 组）；底部运行状态/子状态文字 */
 void disp_splash_screen(void)
 {
-  disp_string((int)0x4370,0,0,0);
-  disp_string((int)0x4384,1,0,0);
-  disp_string((int)0x4398,2,0,0);
-  disp_string((int)0x43ac,3,0,0);
+  disp_string(DISPLAY_SPLASH_LINE_1,0,0,0);
+  disp_string(DISPLAY_SPLASH_LINE_2,1,0,0);
+  disp_string(DISPLAY_SPLASH_LINE_3,2,0,0);
+  disp_string(DISPLAY_SPLASH_LINE_4,3,0,0);
   if (lcd_source_mode == '\0') {
     disp_fixed_1dec(lcd_source_value,0,9,0);   /* 反汇编 0x42B4 核：r3=0 → 4 参 */
   }
@@ -637,23 +638,23 @@ void disp_splash_screen(void)
   disp_uint4(lcd_output_value_b,2,9,0);
   if (lcd_display_selection == 0) {
     if (parameter_output_mode == '\0') {
-      disp_string((int)0x47e8,3,10,0);
+      disp_string(DISPLAY_STATUS_RUNNING,3,10,0);
     }
     if (parameter_output_mode == '\x01') {
-      disp_string((int)0x47f0,3,10,0);
+      disp_string(DISPLAY_STATUS_OUTPUT_DISABLED,3,10,0);
     }
   }
   else {
-    disp_string((int)0x47dc,3,10,0);
+    disp_string(DISPLAY_STATUS_FAULT,3,10,0);
   }
   if (parameter_control_mode == '\0') {
-    disp_string((int)0x47fc,3,0,0);
+    disp_string(DISPLAY_CONTROL_MODE_CURRENT,3,0,0);
   }
   if (parameter_control_mode == '\x01') {
-    disp_string((int)0x4804,3,0,0);
+    disp_string(DISPLAY_CONTROL_MODE_VOLTAGE,3,0,0);
   }
   if (parameter_control_mode == '\x02') {
-    disp_string((int)0x480c,3,0,0);
+    disp_string(DISPLAY_CONTROL_MODE_MANUAL,3,0,0);
   }
   return;
 }
@@ -662,10 +663,10 @@ void disp_splash_screen(void)
 void disp_screen_static(void)
 {
   disp_clear();
-  disp_string((int)0x4814,0,0,1);
-  disp_string((int)0x4824,1,0,0);
-  disp_string((int)0x4834,2,0,0);
-  disp_string((int)0x4844,3,0,0);
+  disp_string(DISPLAY_STATIC_PAGE_TITLE,0,0,1);
+  disp_string(DISPLAY_STATIC_PAGE_LINE_2,1,0,0);
+  disp_string(DISPLAY_STATIC_PAGE_LINE_3,2,0,0);
+  disp_string(DISPLAY_STATIC_PAGE_LINE_4,3,0,0);
   return;
 }
 
@@ -673,10 +674,10 @@ void disp_screen_static(void)
  *   0x100048A4=光标行；0x100048A8/AC/B0/B4=4 个标定值 */
 void disp_screen_calib(void)
 {
-  disp_string((int)0x4854,0,0,0);
-  disp_string((int)0x4868,1,0,0);
-  disp_string((int)0x487c,2,0,0);
-  disp_string((int)0x4890,3,0,0);
+  disp_string(DISPLAY_CALIBRATION_PAGE_TITLE,0,0,0);
+  disp_string(DISPLAY_CALIBRATION_PAGE_LINE_2,1,0,0);
+  disp_string(DISPLAY_CALIBRATION_PAGE_LINE_3,2,0,0);
+  disp_string(DISPLAY_CALIBRATION_PAGE_LINE_4,3,0,0);
   if (lcd_calibration_cursor == '\0') {
     disp_uint4(lcd_calibration_value_1,0,0xb,1);   /* 反汇编 0x44FA/0x4520 核：if 分支 r3=1、else r3=0 */
   }

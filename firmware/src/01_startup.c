@@ -26,6 +26,7 @@
 #include "inc/reg.h"
 #include "inc/firmware_api.h"
 #include "inc/firmware_state.h"
+#include "inc/firmware_display_strings.h"
 #include <stdbool.h>
 
 /* ==================== IAR EWARM 运行时（已移除，见文件头） ==================== */
@@ -247,8 +248,8 @@ void main(void)
   if (system_access_granted == 0) {
     /* —— 认证失败：锁机屏（认证已永久放行，正常不可达） —— */
     disp_clear();
-    disp_string(0x754,0,4,0);
-    disp_string(0x760,2,4,0);
+    disp_string(DISPLAY_AUTH_LOCK_LINE_1, 0, 4, 0);
+    disp_string(DISPLAY_AUTH_LOCK_LINE_2, 2, 4, 0);
     do {
       wd_feed();
     } while( true );
@@ -275,11 +276,11 @@ void main(void)
   }
   /* —— 安全联锁触发（P0.2/P0.3）：显示联锁错误屏 + 降频 + 停机预设 —— */
   disp_clear();
-  disp_string(0x76c,0,4,0);
-  disp_string(0x778,1,2,0);
-  disp_string(0x784,2,2,0);
+  disp_string(DISPLAY_INTERLOCK_TITLE, 0, 4, 0);
+  disp_string(DISPLAY_INTERLOCK_LINE_2, 1, 2, 0);
+  disp_string(DISPLAY_INTERLOCK_LINE_3, 2, 2, 0);
   disp_offset(system_display_offset,2,7,1);
-  disp_string(0x790,3,0,0);
+  disp_string(DISPLAY_INTERLOCK_LINE_4, 3, 0, 0);
   do {
     do {
     } while (system_tick_ready != '\x01');

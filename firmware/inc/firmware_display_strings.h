@@ -1,0 +1,193 @@
+#ifndef FIRMWARE_DISPLAY_STRINGS_H
+#define FIRMWARE_DISPLAY_STRINGS_H
+
+/*
+ * 字符串位于原固件的固定 flash 地址。地址集中保留在本表中，业务代码只
+ * 使用页面和文本语义名称；这样既保留原固件的链接契约，也避免页面逻辑
+ * 被反编译器生成的十六进制地址淹没。
+ */
+
+/* 启动认证和安全联锁提示 */
+#define DISPLAY_AUTH_LOCK_LINE_1             0x0754u
+#define DISPLAY_AUTH_LOCK_LINE_2             0x0760u
+#define DISPLAY_INTERLOCK_TITLE              0x076cu
+#define DISPLAY_INTERLOCK_LINE_2             0x0778u
+#define DISPLAY_INTERLOCK_LINE_3             0x0784u
+#define DISPLAY_INTERLOCK_LINE_4             0x0790u
+#define DISPLAY_FREQUENCY_STOPPED            0xac1cu
+
+/* 开机画面与公共状态文本 */
+#define DISPLAY_SPLASH_LINE_1                 0x4370u
+#define DISPLAY_SPLASH_LINE_2                 0x4384u
+#define DISPLAY_SPLASH_LINE_3                 0x4398u
+#define DISPLAY_SPLASH_LINE_4                 0x43acu
+#define DISPLAY_STATUS_FAULT                  0x47dcu
+#define DISPLAY_STATUS_RUNNING                0x47e8u
+#define DISPLAY_STATUS_OUTPUT_DISABLED       0x47f0u
+#define DISPLAY_CONTROL_MODE_CURRENT         0x47fcu
+#define DISPLAY_CONTROL_MODE_VOLTAGE         0x4804u
+#define DISPLAY_CONTROL_MODE_MANUAL          0x480cu
+#define DISPLAY_STATIC_PAGE_TITLE            0x4814u
+#define DISPLAY_STATIC_PAGE_LINE_2           0x4824u
+#define DISPLAY_STATIC_PAGE_LINE_3           0x4834u
+#define DISPLAY_STATIC_PAGE_LINE_4           0x4844u
+#define DISPLAY_CALIBRATION_PAGE_TITLE       0x4854u
+#define DISPLAY_CALIBRATION_PAGE_LINE_2      0x4868u
+#define DISPLAY_CALIBRATION_PAGE_LINE_3      0x487cu
+#define DISPLAY_CALIBRATION_PAGE_LINE_4      0x4890u
+
+/* 主界面运行信息、复位和认证提示 */
+#define DISPLAY_MAIN_RUNTIME_LABEL_1         0x4d58u
+#define DISPLAY_MAIN_RUNTIME_LABEL_2         0x4d6cu
+#define DISPLAY_MAIN_RUNTIME_LABEL_3         0x4d80u
+#define DISPLAY_MAIN_CALIBRATION_LABEL       0x4d9cu
+#define DISPLAY_MAIN_CALIBRATION_VALUE       0x4dacu
+#define DISPLAY_MAIN_RESET_LABEL             0x4db4u
+#define DISPLAY_MAIN_RESTART_LABEL           0x4dc8u
+#define DISPLAY_RESETTING                    0x522cu
+#define DISPLAY_RESTARTING                  0x523cu
+#define DISPLAY_PASSWORD_ERROR              0x56dcu
+
+/* 校准结果页面 */
+#define DISPLAY_CALIBRATION_RESULT_TITLE_1   0x5b18u
+#define DISPLAY_CALIBRATION_RESULT_TITLE_2   0x5b2cu
+#define DISPLAY_CALIBRATION_RESULT_TITLE_3   0x5b40u
+#define DISPLAY_CALIBRATION_RESULT_TITLE_4   0x5b54u
+#define DISPLAY_CALIBRATION_RESULT_VALUE_1   0x5b68u
+#define DISPLAY_CALIBRATION_RESULT_VALUE_2   0x5b7cu
+#define DISPLAY_CALIBRATION_RESULT_VALUE_3   0x5b90u
+#define DISPLAY_CALIBRATION_RESULT_VALUE_4   0x5ba4u
+#define DISPLAY_CALIBRATION_RESULT_SHARED    0x5b38u
+
+/* 基本参数的枚举值 */
+#define DISPLAY_OPTION_DISABLED             0x6038u
+#define DISPLAY_EMERGENCY_STOP_OFF          0x6018u
+#define DISPLAY_EMERGENCY_STOP_ON           0x6020u
+#define DISPLAY_EMERGENCY_STOP_AUTO         0x6028u
+#define DISPLAY_AUXILIARY_MODE_OFF          0x6030u
+#define DISPLAY_FEEDBACK_OFF                0x6038u
+#define DISPLAY_FEEDBACK_ON                 0x6040u
+#define DISPLAY_INPUT_MODE_ANALOG           0x6048u
+#define DISPLAY_INPUT_MODE_DIGITAL          0x6050u
+#define DISPLAY_OUTPUT_PHASE_A              0x6058u
+#define DISPLAY_OUTPUT_PHASE_B              0x6060u
+
+/* 基本参数页面的标签和结果 */
+#define DISPLAY_BASIC_LABEL_01              0x6488u
+#define DISPLAY_BASIC_LABEL_02              0x649cu
+#define DISPLAY_BASIC_LABEL_03              0x64b0u
+#define DISPLAY_BASIC_LABEL_04              0x64c4u
+#define DISPLAY_BASIC_LABEL_05              0x64d8u
+#define DISPLAY_BASIC_LABEL_06              0x64ecu
+#define DISPLAY_BASIC_LABEL_07              0x6500u
+#define DISPLAY_BASIC_LABEL_08              0x6514u
+#define DISPLAY_BASIC_LABEL_09              0x6528u
+#define DISPLAY_BASIC_LABEL_10              0x6540u
+#define DISPLAY_BASIC_LABEL_11              0x6554u
+#define DISPLAY_BASIC_LABEL_12              0x6568u
+#define DISPLAY_BASIC_LABEL_13              0x657cu
+#define DISPLAY_BASIC_RESULT_01             0x65bcu
+#define DISPLAY_BASIC_RESULT_02             0x65d0u
+#define DISPLAY_BASIC_RESULT_03             0x65e4u
+#define DISPLAY_BASIC_RESULT_04             0x65f8u
+#define DISPLAY_CONTROL_MODE_OPTION_1      0x6594u
+#define DISPLAY_CONTROL_MODE_OPTION_2      0x659cu
+#define DISPLAY_CONTROL_MODE_OPTION_3      0x65a4u
+#define DISPLAY_START_MODE_OPTION_1        0x7998u
+#define DISPLAY_START_MODE_OPTION_2        0x79a0u
+#define DISPLAY_START_MODE_OPTION_3        0x79a8u
+#define DISPLAY_START_MODE_OPTION_4        0x79b4u
+#define DISPLAY_START_MODE_OPTION_5        0x79bcu
+#define DISPLAY_BASIC_SHARED_LABEL         0x6474u
+#define DISPLAY_BASIC_SHARED_LABEL_ALT     0x647cu
+
+/* 通信参数页面 */
+#define DISPLAY_COMMUNICATION_LABEL_01      0x6a18u
+#define DISPLAY_COMMUNICATION_LABEL_02      0x6a2cu
+#define DISPLAY_COMMUNICATION_LABEL_03      0x6a40u
+#define DISPLAY_COMMUNICATION_LABEL_04      0x6a54u
+#define DISPLAY_PARITY_EVEN                 0x6a78u
+#define DISPLAY_PARITY_ODD                  0x6a80u
+#define DISPLAY_PARITY_NONE                 0x6a88u
+#define DISPLAY_PARITY_STOP                 0x8b2cu
+#define DISPLAY_OPTION_ENABLED              0x6a94u
+
+/* PID 与相位校准页面 */
+#define DISPLAY_BASIC_PID_GROUP_LABEL_01    0x6aa4u
+#define DISPLAY_BASIC_PID_GROUP_LABEL_02    0x6ab8u
+#define DISPLAY_BASIC_PID_GROUP_LABEL_03    0x6accu
+#define DISPLAY_BASIC_PID_GROUP_LABEL_04    0x6ae0u
+#define DISPLAY_PID_PROFILE_1               0x6af8u
+#define DISPLAY_PID_PROFILE_2               0x6b08u
+#define DISPLAY_PID_PROFILE_3               0x6b14u
+#define DISPLAY_PID_PROFILE_4               0x6b24u
+#define DISPLAY_PHASE_CALIBRATION_LABEL_1   0x6b34u
+#define DISPLAY_PHASE_CALIBRATION_LABEL_2   0x6b40u
+#define DISPLAY_PHASE_CALIBRATION_LABEL_3   0x6b4cu
+#define DISPLAY_PHASE_CALIBRATION_LABEL_4   0x6b58u
+#define DISPLAY_BASIC_MANUAL_BALANCE_LABEL_1 0x6b78u
+#define DISPLAY_BASIC_MANUAL_BALANCE_LABEL_2 0x6b84u
+#define DISPLAY_BASIC_MANUAL_BALANCE_LABEL_3 0x6b94u
+#define DISPLAY_BASIC_MANUAL_BALANCE_LABEL_4 0x6ba4u
+#define DISPLAY_MANUAL_BALANCE_VALUE        0x6bb8u
+#define DISPLAY_UNIT_VOLT                   0x7974u
+#define DISPLAY_UNIT_AMPERE                 0x7980u
+#define DISPLAY_UNIT_DEGREE                 0x86e0u
+
+/* 基本参数编辑页面 */
+#define DISPLAY_BASIC_EDIT_LABEL_01         0x6fe4u
+#define DISPLAY_BASIC_EDIT_LABEL_02         0x6ff8u
+#define DISPLAY_BASIC_EDIT_LABEL_03         0x700cu
+#define DISPLAY_BASIC_EDIT_LABEL_04         0x7020u
+#define DISPLAY_BASIC_EDIT_LABEL_05         0x7034u
+#define DISPLAY_BASIC_EDIT_LABEL_06         0x7048u
+#define DISPLAY_BASIC_EDIT_LABEL_07         0x705cu
+#define DISPLAY_BASIC_EDIT_LABEL_08         0x7070u
+#define DISPLAY_BASIC_EDIT_LABEL_09         0x7084u
+#define DISPLAY_BASIC_EDIT_LABEL_10         0x7098u
+#define DISPLAY_BASIC_EDIT_LABEL_11         0x70acu
+#define DISPLAY_BASIC_EDIT_LABEL_12         0x70c0u
+#define DISPLAY_BASIC_EDIT_LABEL_13         0x7068u
+
+/* 保护参数页面 */
+#define DISPLAY_PROTECTION_LABEL_01         0x7e10u
+#define DISPLAY_PROTECTION_LABEL_02         0x7e24u
+#define DISPLAY_PROTECTION_LABEL_03         0x7e38u
+#define DISPLAY_PROTECTION_LABEL_04         0x7e4cu
+#define DISPLAY_PROTECTION_LABEL_05         0x7e60u
+#define DISPLAY_PROTECTION_LABEL_06         0x7e74u
+#define DISPLAY_PROTECTION_SHARED_LABEL     0x7e6cu
+
+/* 运行时间、状态监视和故障页面 */
+#define DISPLAY_RUNTIME_HOURS_LABEL_1       0x8f6cu
+#define DISPLAY_RUNTIME_HOURS_LABEL_2       0x8f78u
+#define DISPLAY_RUNTIME_HOURS_LABEL_3       0x8f88u
+#define DISPLAY_RUNTIME_HOURS_LABEL_4       0x8f9cu
+#define DISPLAY_RUNTIME_HOURS_SHARED        0x8f44u
+#define DISPLAY_STATUS_MONITOR_TITLE        0xa158u
+#define DISPLAY_STATUS_MONITOR_LABEL        0xa164u
+#define DISPLAY_STATUS_MONITOR_FAULT_1      0xa178u
+#define DISPLAY_STATUS_MONITOR_FAULT_2      0xa578u
+#define DISPLAY_STATUS_MONITOR_FAULT_3      0xa590u
+#define DISPLAY_STATUS_MONITOR_FAULT_4      0xa5a4u
+#define DISPLAY_STATUS_MONITOR_FAULT_5      0xa5b8u
+#define DISPLAY_STATUS_MONITOR_FAULT_6      0xa5ccu
+#define DISPLAY_STATUS_MONITOR_FAULT_7      0xa5e0u
+#define DISPLAY_STATUS_MONITOR_FAULT_8      0xa5f4u
+#define DISPLAY_STATUS_MONITOR_FAULT_9      0xa608u
+#define DISPLAY_STATUS_MONITOR_FAULT_10     0xa61cu
+#define DISPLAY_STATUS_MONITOR_FAULT_11     0xa630u
+#define DISPLAY_STATUS_MONITOR_FAULT_12     0xa644u
+#define DISPLAY_STATUS_MONITOR_FAULT_13     0xa658u
+#define DISPLAY_STATUS_MONITOR_FAULT_14     0xa66cu
+
+/* PID 页面和手动平衡页面 */
+#define DISPLAY_PID_PAGE_LABEL_01           0x9400u
+#define DISPLAY_PID_PAGE_LABEL_02           0x9414u
+#define DISPLAY_PID_PAGE_LABEL_03           0x9428u
+#define DISPLAY_PID_PAGE_LABEL_04           0x943cu
+#define DISPLAY_PID_PAGE_SHARED             0x9450u
+#define DISPLAY_MANUAL_BALANCE_PAGE_TITLE   0xa130u
+#define DISPLAY_MANUAL_BALANCE_PAGE_LABEL   0xa140u
+
+#endif /* FIRMWARE_DISPLAY_STRINGS_H */
