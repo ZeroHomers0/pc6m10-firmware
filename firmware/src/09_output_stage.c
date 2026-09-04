@@ -227,6 +227,64 @@ void fio0_pin22_ctrl(int level)
  *   constant_voltage_output_ptr      — 恒压源模式输出值指针（0x1000F77C）
  *   ramp_counter_ptr    — 停机斜坡当前值指针（output_ramp_counter_ptr）
  *   closed_loop_output     — closed_loop_wrapper(PID) 返回的闭环输出角 */
+static void output_check_overvoltage(void)
+{
+      if ((*parameter_overvoltage_limit_ptr == 0) || (*adc_voltage_output_ptr <= *parameter_overvoltage_limit_ptr)) {
+        *output_overvoltage_counter_ptr = 0;
+      }
+      else {
+        *output_overvoltage_counter_ptr = *output_overvoltage_counter_ptr + 1;
+        if ((uint32_t)*parameter_overvoltage_time_ptr * 0x32 < *output_overvoltage_counter_ptr) {
+          *output_overvoltage_counter_ptr = 0;
+          *output_fault_flags_ptr = *output_fault_flags_ptr | 0x10;      /* 过压故障标志 */
+        }
+      }
+}
+
+static void output_check_undervoltage(void)
+{
+      if ((*parameter_undervoltage_limit_ptr == 0) || (*parameter_undervoltage_limit_ptr <= *adc_voltage_output_ptr)) {
+        *output_undervoltage_counter_ptr = 0;
+      }
+      else {
+        *output_undervoltage_counter_ptr = *output_undervoltage_counter_ptr + 1;
+        if ((uint32_t)*parameter_undervoltage_time_ptr * 0x32 < *output_undervoltage_counter_ptr) {
+          *output_undervoltage_counter_ptr = 0;
+          *output_fault_flags_ptr = *output_fault_flags_ptr | 0x20;      /* 过流故障标志 */
+        }
+      }
+}
+
+static void output_check_phase_imbalance(void)
+{
+      if (*parameter_if_overload_limit_ptr != 0) {
+        *output_phase_imbalance_counter_ptr = *output_phase_imbalance_counter_ptr + 1;
+        if (*adc_field_output_ptr < *parameter_if_overload_limit_ptr) {
+          *output_phase_imbalance_counter_ptr = 0;
+        }
+        if ((*parameter_if_overload_limit_ptr <= *adc_field_output_ptr) && ((uint32_t)*parameter_if_overload_time_ptr * 0x32 < *output_phase_imbalance_counter_ptr)) {
+          *output_fault_flags_ptr = *output_fault_flags_ptr | 8;
+        }
+        if (((*parameter_if_overload_limit_ptr * 0xf) / 10 < *adc_field_output_ptr) &&
+           ((uint32_t)*parameter_if_overload_time_ptr * 0x14 < *output_phase_imbalance_counter_ptr)) {
+          *output_fault_flags_ptr = *output_fault_flags_ptr | 8;
+        }
+        if ((*parameter_if_overload_limit_ptr * 2 < *adc_field_output_ptr) && ((uint32_t)*parameter_if_overload_time_ptr * 10 < *output_phase_imbalance_counter_ptr)) {
+          *output_fault_flags_ptr = *output_fault_flags_ptr | 8;
+        }
+        if (((*parameter_if_overload_limit_ptr * 0x19) / 10 < *adc_field_output_ptr) &&
+           ((uint32_t)*parameter_if_overload_time_ptr * 5 < *output_phase_imbalance_counter_ptr)) {
+          *output_fault_flags_ptr = *output_fault_flags_ptr | 0x200;
+        }
+        if ((*parameter_if_overload_limit_ptr * 3 < *adc_field_output_ptr) && ((uint32_t)*parameter_if_overload_time_ptr * 2 < *output_phase_imbalance_counter_ptr)) {
+          *output_fault_flags_ptr = *output_fault_flags_ptr | 0x200;
+        }
+        if (((*parameter_if_overload_limit_ptr * 0x23) / 10 < *adc_field_output_ptr) && (1 < *output_phase_imbalance_counter_ptr)) {
+          *output_fault_flags_ptr = *output_fault_flags_ptr | 0x200;
+        }
+      }
+}
+
 void output_stage(void)
 {
   volatile uint8_t *scheduler_tick_ptr;
@@ -260,54 +318,11 @@ void output_stage(void)
     }
     if ((*parameter_output_mode_ptr == '\x01') && (9 < *adc_output_reference_ptr)) {
       /* —— 过压保护（0x1000EDE4 阈值 / 0x1000EDE8 延时上限）—— */
-      if ((*parameter_overvoltage_limit_ptr == 0) || (*adc_voltage_output_ptr <= *parameter_overvoltage_limit_ptr)) {
-        *output_overvoltage_counter_ptr = 0;
-      }
-      else {
-        *output_overvoltage_counter_ptr = *output_overvoltage_counter_ptr + 1;
-        if ((uint32_t)*parameter_overvoltage_time_ptr * 0x32 < *output_overvoltage_counter_ptr) {
-          *output_overvoltage_counter_ptr = 0;
-          *output_fault_flags_ptr = *output_fault_flags_ptr | 0x10;      /* 过压故障标志 */
-        }
-      }
+      output_check_overvoltage();
       /* —— 过流保护（0x1000EDF8 阈值）—— */
-      if ((*parameter_undervoltage_limit_ptr == 0) || (*parameter_undervoltage_limit_ptr <= *adc_voltage_output_ptr)) {
-        *output_undervoltage_counter_ptr = 0;
-      }
-      else {
-        *output_undervoltage_counter_ptr = *output_undervoltage_counter_ptr + 1;
-        if ((uint32_t)*parameter_undervoltage_time_ptr * 0x32 < *output_undervoltage_counter_ptr) {
-          *output_undervoltage_counter_ptr = 0;
-          *output_fault_flags_ptr = *output_fault_flags_ptr | 0x20;      /* 过流故障标志 */
-        }
-      }
+      output_check_undervoltage();
       /* —— 缺相/不平衡保护（0x1000EE04 判据，多级延时）—— */
-      if (*parameter_if_overload_limit_ptr != 0) {
-        *output_phase_imbalance_counter_ptr = *output_phase_imbalance_counter_ptr + 1;
-        if (*adc_field_output_ptr < *parameter_if_overload_limit_ptr) {
-          *output_phase_imbalance_counter_ptr = 0;
-        }
-        if ((*parameter_if_overload_limit_ptr <= *adc_field_output_ptr) && ((uint32_t)*parameter_if_overload_time_ptr * 0x32 < *output_phase_imbalance_counter_ptr)) {
-          *output_fault_flags_ptr = *output_fault_flags_ptr | 8;
-        }
-        if (((*parameter_if_overload_limit_ptr * 0xf) / 10 < *adc_field_output_ptr) &&
-           ((uint32_t)*parameter_if_overload_time_ptr * 0x14 < *output_phase_imbalance_counter_ptr)) {
-          *output_fault_flags_ptr = *output_fault_flags_ptr | 8;
-        }
-        if ((*parameter_if_overload_limit_ptr * 2 < *adc_field_output_ptr) && ((uint32_t)*parameter_if_overload_time_ptr * 10 < *output_phase_imbalance_counter_ptr)) {
-          *output_fault_flags_ptr = *output_fault_flags_ptr | 8;
-        }
-        if (((*parameter_if_overload_limit_ptr * 0x19) / 10 < *adc_field_output_ptr) &&
-           ((uint32_t)*parameter_if_overload_time_ptr * 5 < *output_phase_imbalance_counter_ptr)) {
-          *output_fault_flags_ptr = *output_fault_flags_ptr | 0x200;
-        }
-        if ((*parameter_if_overload_limit_ptr * 3 < *adc_field_output_ptr) && ((uint32_t)*parameter_if_overload_time_ptr * 2 < *output_phase_imbalance_counter_ptr)) {
-          *output_fault_flags_ptr = *output_fault_flags_ptr | 0x200;
-        }
-        if (((*parameter_if_overload_limit_ptr * 0x23) / 10 < *adc_field_output_ptr) && (1 < *output_phase_imbalance_counter_ptr)) {
-          *output_fault_flags_ptr = *output_fault_flags_ptr | 0x200;
-        }
-      }
+      output_check_phase_imbalance();
       working_value_ptr = output_protection_counter_ptr;
       *output_protection_counter_ptr = *output_protection_counter_ptr + 1;
       if (0x5dc < *working_value_ptr) {                          /* 1500 拍 → 欠压/锁定标志 */
@@ -800,22 +815,10 @@ void EINT2_IRQHandler(void)
  *   后半段为输出预置：按 freq_hz（'2'=50Hz/'<'=60Hz）与 out_phase(0/1) 查表
  *   计算 out_scale/out_div/MR0（0x1000D0C+0x18）与触发使能
  * 局部：ptr=消抖计数/保持计数/输出区复用指针；out_scale=输出比例(0x1000 输出区)指针 */
-void EINT3_IRQHandler(void)
+static void output_process_phase_interrupt(void)
 {
   volatile uint8_t *ptr;
   volatile uint8_t *out_scale;
-
-    SYSTEM_CONTROL->external_interrupt = SYSTEM_CONTROL->external_interrupt | 8;   /* EXTINT 清 EINT3 */
-  if (*(volatile int *)output_run_state_ptr == 0) {
-    if (*output_input_state_ptr == '\x01') {
-      *output_mode_ptr = 1;
-    }
-    if (*output_input_state_ptr == '\x02') {
-      *output_mode_ptr = 2;
-    }
-    *output_input_state_ptr = 0;
-  }
-  *output_eint3_flag_ptr = 1;
   ptr = output_debounce_counter_ptr;
   *output_debounce_counter_ptr = *output_debounce_counter_ptr + '\x01';
   if (9 < (uint8_t)*ptr) {
@@ -980,6 +983,23 @@ void EINT3_IRQHandler(void)
     }
     TIMER2->TCR = 1;
   }
+
+}
+
+void EINT3_IRQHandler(void)
+{
+    SYSTEM_CONTROL->external_interrupt = SYSTEM_CONTROL->external_interrupt | 8;   /* EXTINT 清 EINT3 */
+  if (*(volatile int *)output_run_state_ptr == 0) {
+    if (*output_input_state_ptr == '\x01') {
+      *output_mode_ptr = 1;
+    }
+    if (*output_input_state_ptr == '\x02') {
+      *output_mode_ptr = 2;
+    }
+    *output_input_state_ptr = 0;
+  }
+  *output_eint3_flag_ptr = 1;
+  output_process_phase_interrupt();
   return;
 }
 
@@ -1002,28 +1022,10 @@ void TIMER2_IRQHandler(void)
  *   共 4 个区域/页），按 mode_byte 与奇偶行控制 FIO1/FIO2 各 COM/SEG 位；
  *   output_timer1_registers=TIMER1 基址，MR0 按 freq_hz('2'=0x488/'<'=0x261) 或 0x36 逐行
  * 局部：gpio_base1/gpio_base2 = FIO 池各区域基址（output_fio_base/00010454/00010640，字节偏移） */
-void TIMER1_IRQHandler(void)
+static void lcd_scan_update_rows(void)
 {
   volatile uint8_t *scan_counter_ptr;
-
-  TIMER1->IR = 0xff;
-  TIMER1->TCR = 2;
   scan_counter_ptr = output_scan_counter_ptr;
-  *output_scan_counter_ptr = *output_scan_counter_ptr + '\x01';
-  if ((uint32_t)(uint8_t)*scan_counter_ptr == ((uint8_t)*scan_counter_ptr / 0x28) * 0x28) {
-    if (*output_frequency_ptr == '2') {
-      TIMER1->MR0 = 0x488;
-    }
-    if (*output_frequency_ptr == '<') {
-      TIMER1->MR0 = 0x261;
-    }
-  }
-  else {
-    TIMER1->MR0 = 0x36;
-  }
-  if ((uint8_t)*output_scan_counter_ptr < 0xf1) {
-    TIMER1->TCR = 1;
-  }
   if ((*output_scan_counter_ptr != '\0') && ((uint8_t)*output_scan_counter_ptr < 0x29)) {
     /* —— 区域 0（行 1..0x28）—— */
     if (*output_mode_ptr == '\x01') {
@@ -1213,5 +1215,32 @@ void TIMER1_IRQHandler(void)
   if (0xf0 < (uint8_t)*output_scan_counter_ptr) {
     *output_scan_counter_ptr = 0;
   }
+
+}
+
+void TIMER1_IRQHandler(void)
+{
+  volatile uint8_t *scan_counter_ptr;
+
+  TIMER1->IR = 0xff;
+  TIMER1->TCR = 2;
+  scan_counter_ptr = output_scan_counter_ptr;
+  *output_scan_counter_ptr = *output_scan_counter_ptr + '\x01';
+  if ((uint32_t)(uint8_t)*scan_counter_ptr == ((uint8_t)*scan_counter_ptr / 0x28) * 0x28) {
+    if (*output_frequency_ptr == '2') {
+      TIMER1->MR0 = 0x488;
+    }
+    if (*output_frequency_ptr == '<') {
+      TIMER1->MR0 = 0x261;
+    }
+  }
+  else {
+    TIMER1->MR0 = 0x36;
+  }
+  if ((uint8_t)*output_scan_counter_ptr < 0xf1) {
+    TIMER1->TCR = 1;
+  }
+
+  lcd_scan_update_rows();
   return;
 }
