@@ -27,6 +27,9 @@ release/
 # —— 根目录提取临时文件（docx/字符串池分析中间产物，勿入库）——
 /_*.txt
 
+# —— 本地 IDE 调试配置（官方板 LinkServer/Cortex-Debug，仅本机，不入库）——
+.vscode/
+
 # —— 常见垃圾 ——
 *.pyc
 __pycache__/
