@@ -25,6 +25,7 @@
 #include "inc/types.h"
 #include "inc/reg.h"
 #include "inc/firmware_api.h"
+#include "inc/firmware_language.h"
 #include "inc/firmware_state.h"
 #include "inc/firmware_display_strings.h"
 #include <stdbool.h>
@@ -219,6 +220,7 @@ void main(void)
   i2c_gpio_init();
   adc_init();
   load_config();
+  ui_language_load();
   pin_config();
   gpio2_init();
   timer1_init();

@@ -23,6 +23,7 @@
 #include "inc/firmware_state.h"
 #include "inc/firmware_parameters.h"
 #include "inc/firmware_display_strings.h"
+#include "inc/firmware_language.h"
 
 /* 运行时状态、参数和外设地址统一由 firmware_state.h / firmware_parameters.h 提供。 */
 
@@ -680,7 +681,7 @@ static void state_machine_page_basic_parameters(KeyCode key_code)
     if (key_code == KEY_BACK) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return; }
     if (key_code == KEY_DOWN || key_code == KEY_UP) {
       *ui_idle_timeout_ticks_ptr = 0;
-      if (key_code == KEY_UP) { (*ui_item_index_ptr)++; if (*ui_item_index_ptr > 7) *ui_item_index_ptr = 7; }
+      if (key_code == KEY_UP) { (*ui_item_index_ptr)++; if (*ui_item_index_ptr > 9) *ui_item_index_ptr = 9; }
       if (key_code == KEY_DOWN) { if (*ui_item_index_ptr > 0) (*ui_item_index_ptr)--; }
       if (*ui_item_index_ptr < 4) {
         disp_string(DISPLAY_BASIC_LABEL_01, 0, 0, 0); disp_string(DISPLAY_BASIC_LABEL_02, 1, 0, 0);
@@ -691,7 +692,7 @@ static void state_machine_page_basic_parameters(KeyCode key_code)
         disp_string(DISPLAY_BASIC_LABEL_07, 2, 0, 0); disp_string(DISPLAY_BASIC_LABEL_08, 3, 0, 0);
       }
       if (*ui_item_index_ptr >= 8 && *ui_item_index_ptr < 0xc) {
-        disp_string(DISPLAY_BASIC_LABEL_09, 0, 0, 0); disp_string(DISPLAY_CALIBRATION_RESULT_VALUE_4, 1, 0, 0);
+        disp_string(DISPLAY_BASIC_LABEL_09, 0, 0, 0); disp_string(UI_TEXT_MENU_LANGUAGE, 1, 0, 0);
         disp_string(DISPLAY_CALIBRATION_RESULT_VALUE_4, 2, 0, 0); disp_string(DISPLAY_CALIBRATION_RESULT_VALUE_4, 3, 0, 0);
       }
       if (*ui_item_index_ptr == 0) disp_string(DISPLAY_BASIC_LABEL_01, 0, 0, 1);
@@ -703,6 +704,7 @@ static void state_machine_page_basic_parameters(KeyCode key_code)
       if (*ui_item_index_ptr == 6) disp_string(DISPLAY_BASIC_LABEL_07, 2, 0, 1);
       if (*ui_item_index_ptr == 7) disp_string(DISPLAY_BASIC_LABEL_08, 3, 0, 1);
       if (*ui_item_index_ptr == 8) disp_string(DISPLAY_BASIC_LABEL_09, 0, 0, 1);
+      if (*ui_item_index_ptr == 9) disp_string(UI_TEXT_MENU_LANGUAGE, 1, 0, 1);
     }
     if (key_code == KEY_CONFIRM) {
       *ui_idle_timeout_ticks_ptr = 0; *ui_view_mode_ptr = 0;
@@ -780,6 +782,12 @@ static void state_machine_page_basic_parameters(KeyCode key_code)
         disp_string(DISPLAY_MANUAL_BALANCE_VALUE, 0, 4, 0); disp_string(DISPLAY_PHASE_CALIBRATION_LABEL_2, 1, 2, 0);
         disp_string(DISPLAY_PHASE_CALIBRATION_LABEL_3, 2, 2, 0); disp_signed_angle(*phase_balance_angle_ptr, 2, 7, 1);
         disp_string(DISPLAY_PHASE_CALIBRATION_LABEL_4, 3, 0, 0);
+      }
+      if (*ui_item_index_ptr == 9) {
+        *ui_screen_id_ptr = UI_SCREEN_LANGUAGE; *ui_item_index_ptr = ui_language_get(); disp_clear();
+        disp_string(UI_TEXT_LANGUAGE_TITLE, 0, 0, 0);
+        disp_string(UI_TEXT_LANGUAGE_ZH, 1, 0, *ui_item_index_ptr == UI_LANGUAGE_CHINESE);
+        disp_string(UI_TEXT_LANGUAGE_EN, 2, 0, *ui_item_index_ptr == UI_LANGUAGE_ENGLISH);
       }
     }
     (*ui_idle_timeout_ticks_ptr)++;
@@ -1392,6 +1400,7 @@ static void state_machine_page_runtime_hours(KeyCode key_code)
       delay_for_password_feedback();
       disp_string(DISPLAY_RUNTIME_HOURS_LABEL_3, 1, 0, 0);
       delay_for_password_feedback();
+      ui_language_save(UI_LANGUAGE_CHINESE);
       i2c_write_reg(0, 5);
       i2c_write_reg(0, 6);
       for (;;) {}   /* 0x8DEE 死等（系统重置进入初始参数） */
@@ -1425,6 +1434,7 @@ static void state_machine_page_runtime_hours(KeyCode key_code)
       delay_for_password_feedback();
       disp_string(DISPLAY_RUNTIME_HOURS_LABEL_3, 1, 0, 0);
       delay_for_password_feedback();
+      ui_language_save(UI_LANGUAGE_CHINESE);
       i2c_write_reg(0, 5);
       i2c_write_reg(0, 6);
       i2c_write_reg(0, 7);
@@ -1766,6 +1776,26 @@ static void state_machine_page_authentication(KeyCode key_code)
 
 }
 
+static void state_machine_page_language(KeyCode key_code)
+{
+  if (key_code == KEY_UP || key_code == KEY_DOWN) {
+    *ui_item_index_ptr = (*ui_item_index_ptr == UI_LANGUAGE_CHINESE) ? UI_LANGUAGE_ENGLISH : UI_LANGUAGE_CHINESE;
+    *ui_idle_timeout_ticks_ptr = 0;
+    disp_string(UI_TEXT_LANGUAGE_ZH, 1, 0, *ui_item_index_ptr == UI_LANGUAGE_CHINESE);
+    disp_string(UI_TEXT_LANGUAGE_EN, 2, 0, *ui_item_index_ptr == UI_LANGUAGE_ENGLISH);
+  }
+  if (key_code == KEY_CONFIRM) ui_language_save(*ui_item_index_ptr);
+  if (key_code == KEY_CONFIRM || key_code == KEY_BACK) {
+    *ui_screen_id_ptr = UI_SCREEN_BASIC_PARAMETERS; *ui_item_index_ptr = 9; disp_clear();
+    disp_string(DISPLAY_BASIC_LABEL_09, 0, 0, 0);
+    disp_string(UI_TEXT_MENU_LANGUAGE, 1, 0, 1);
+    return;
+  }
+  if (++(*ui_idle_timeout_ticks_ptr) >= 0x1388) {
+    *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen();
+  }
+}
+
 static void state_machine_dispatch_pages(KeyCode key_code)
 {
   switch (*ui_screen_id_ptr) {
@@ -1819,6 +1849,9 @@ static void state_machine_dispatch_pages(KeyCode key_code)
     return;
   case UI_SCREEN_AUTHENTICATION:
     state_machine_page_authentication(key_code);
+    return;
+  case UI_SCREEN_LANGUAGE:
+    state_machine_page_language(key_code);
     return;
   default:
     return;

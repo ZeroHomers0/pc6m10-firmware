@@ -7,6 +7,7 @@
  * （型号/版本/厂商/电话），地址不变，strpool_map 前置查表；见 PRODUCT_INFO_OVERRIDES。 */
 #include <stdint.h>
 #include "inc/firmware_api.h"
+#include "inc/firmware_language.h"
 
 typedef struct { uint32_t base; uint32_t len; const uint8_t *blob; } strpool_cluster_t;
 
@@ -133,13 +134,22 @@ static const strpool_override_t strpool_override[] = {
 uint32_t strpool_map(uint32_t addr)
 {
   uint32_t i;
+  uint32_t mapped = addr;
+  static const uint8_t menu_language[] = "\x31\x30\x2e\xd3\xef\xd1\xd4\xd1\xa1\xd4\xf1";
+  static const uint8_t language_title[] = "\xd1\xa1\xd4\xf1\xd3\xef\xd1\xd4";
+  static const uint8_t language_zh[] = "\x31\x2e\xd6\xd0\xce\xc4";
+  static const uint8_t language_en[] = "2.English";
+  if (addr == UI_TEXT_MENU_LANGUAGE) mapped = (uint32_t)menu_language;
+  else if (addr == UI_TEXT_LANGUAGE_TITLE) mapped = (uint32_t)language_title;
+  else if (addr == UI_TEXT_LANGUAGE_ZH) mapped = (uint32_t)language_zh;
+  else if (addr == UI_TEXT_LANGUAGE_EN) mapped = (uint32_t)language_en;
   for (i = 0; i < sizeof(strpool_override) / sizeof(strpool_override[0]); i++) {
     if (addr == strpool_override[i].addr)
-      return (uint32_t)(strpool_override_blob + strpool_override[i].off);
+      mapped = (uint32_t)(strpool_override_blob + strpool_override[i].off);
   }
   for (i = 0; i < sizeof(strpool_clusters) / sizeof(strpool_clusters[0]); i++) {
     if (addr >= strpool_clusters[i].base && addr < strpool_clusters[i].base + strpool_clusters[i].len)
-      return (uint32_t)(strpool_clusters[i].blob + (addr - strpool_clusters[i].base));
+      mapped = (uint32_t)(strpool_clusters[i].blob + (addr - strpool_clusters[i].base));
   }
-  return addr;
+  return ui_language_translate(addr, mapped);
 }
