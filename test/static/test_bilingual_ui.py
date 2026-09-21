@@ -54,6 +54,18 @@ for source in (STATE, START):
             col = int(col_text, 0)
             assert col + len(entry_map[address]) <= 16, \
                 f"English text exceeds LCD edge at call site: {name} col={col} text={entry_map[address]!r}"
+# Automatically cover every translated constant used as a right-side field.
+# Such fields must reach column 15 so shorter values cannot leave stale pixels
+# or stale inverse-video spaces behind.
+for source_path in (ROOT / "firmware/src").glob("*.c"):
+    source = source_path.read_text(encoding="utf-8")
+    for token, col_text in re.findall(
+            r'disp_string\(\s*(DISPLAY_[A-Z0-9_]+|0x[0-9a-fA-F]+),\s*[^,]+,\s*(0x[0-9a-fA-F]+|\d+)', source):
+        address = display_defs.get(token, int(token, 16) if token.startswith("0x") else -1)
+        col = int(col_text, 0)
+        if address in entry_map and col >= 10:
+            assert col + len(entry_map[address]) == 16, \
+                f"right-side field must repaint through column 15: {source_path.name} {token} col={col} text={entry_map[address]!r}"
 assert "ui_language_load();" in START
 assert "EEPROM_UI_LANGUAGE = 0xff" in (ROOT / "firmware/inc/firmware_language.h").read_text(encoding="utf-8")
 assert "UI_SCREEN_LANGUAGE" in STATE and "*ui_item_index_ptr > 9" in STATE

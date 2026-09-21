@@ -9,7 +9,7 @@
 
 - GCC 可编译工程：`firmware/`，Arm GNU Toolchain 14.2.Rel1。
 - 当前构建：`text 62472 / data 0 / bss 2192`。
-- 当前 `firmware.bin` SHA-256：`81A8E65B4125AD27E10CF57F3037833B40F6C2EAD7C8A4DA44A1A7DAE80C2942`。
+- 当前 `firmware.bin` SHA-256：`91CAD2ACEEFF14EBAAE0FD703CEA2C946A0E5EF43D0DAC139C55800B489E6C73`。
 - **2026-09-19 中英文界面**：主设置菜单新增第 10 项语言选择，完整可见文字支持中文/英文；
   语言保存于 EEPROM `0xFF`，空白或非法值默认中文，恢复出厂恢复中文。英文字符串生成与测试
   强制限制为 128×64 LCD 的每行 16 个字符以内。

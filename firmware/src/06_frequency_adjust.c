@@ -34,10 +34,10 @@ void freq_adjust_sync(KeyCode key_code)
   }
   if (key_code == KEY_START) {
     *parameter_output_mode_ptr = 1;
-    disp_string(DISPLAY_STATUS_OUTPUT_DISABLED, 3, 0xb, 0);
+    disp_string(DISPLAY_STATUS_OUTPUT_DISABLED, 3, 0xa, 0);
   }
   if (key_code == KEY_STOP) {
     *parameter_output_mode_ptr = 0;
-    disp_string(DISPLAY_FREQUENCY_STOPPED, 3, 0xb, 0);
+    disp_string(DISPLAY_FREQUENCY_STOPPED, 3, 0xa, 0);
   }
 }
