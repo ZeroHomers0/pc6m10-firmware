@@ -351,21 +351,24 @@ glyph16_found:
 void disp_string(int str_addr,uint32_t row,uint32_t col,uint32_t invert)
 {
   uint32_t i;
+  uint32_t end_col = col;
 
   str_addr = (int)strpool_map((uint32_t)str_addr);
-  for (i = 0; (i < 0x10 && (*(volatile char *)(str_addr + i) != '\0')); i = i + 1 & 0xff)
+  /* GBK characters consume two bytes and two LCD columns; bound by columns. */
+  for (i = 0; (i < 0x20 && end_col < 0x10 && (*(volatile char *)(str_addr + i) != '\0')); i = i + 1 & 0xff)
   {
     if (*(volatile uint8_t *)(str_addr + i) < 0xa1) {
-      disp_render_char8(*(volatile uint8_t *)(str_addr + i),row,col,invert);
-      col = col + 1;
+      disp_render_char8(*(volatile uint8_t *)(str_addr + i),row,end_col,invert);
+      end_col = end_col + 1;
     }
     else {
+      if (end_col > 0xe || *(volatile uint8_t *)(str_addr + i + 1) == '\0') break;
       disp_render_char16(*(volatile uint8_t *)(str_addr + i),*(volatile uint8_t *)(str_addr + i + 1),
-                         row,col,invert);
-      col = col + 2;
+                         row,end_col,invert);
+      end_col = end_col + 2;
       i = i + 1 & 0xff;
     }
-    col = col & 0xff;
+    end_col = end_col & 0xff;
   }
   return;
 }

@@ -8,11 +8,14 @@
 `LPC1765.bin`（262144 B）是所有等价验证的金标准。
 
 - GCC 可编译工程：`firmware/`，Arm GNU Toolchain 14.2.Rel1。
-- 当前构建：`text 62416 / data 0 / bss 2192`。
-- 当前 `firmware.bin` SHA-256：`8A08BD602A41CCA63A23F57CBCEEBE48CDDF6944E1A70F3814A3C15B5281BAEF`。
+- 当前构建：`text 62540 / data 0 / bss 2192`。
+- 当前 `firmware.bin` SHA-256：`DCC7674C775A9F179B0A653FD7B4186D04D25D294F839CD4C37EC8462C1132BF`。
 - **2026-09-19 中英文界面**：主设置菜单新增第 10 项语言选择，完整可见文字支持中文/英文；
   语言保存于 EEPROM `0xFF`，空白或非法值默认中文，恢复出厂恢复中文。英文字符串生成与测试
   强制限制为 128×64 LCD 的每行 16 个字符以内。
+- **2026-09-21 显示重绘修复**：字符串渲染按 LCD 列而非字节数限制，避免 ASCII/GBK 混排的
+  `10.语言选择` 截断、残留和选中背景不完整；参数编辑超时清除数值后重新绘制 V/A/° 单位，
+  确保中英文界面单位在重绘后保持可见。A/B 显示矩阵和全执行验证均 PASS。
 - 自编译固件已于 2026-08-26 完成 CRP 布局修复（`0x2FC` 显式保留 `0xFFFFFFFF`，见
   `firmware/lpc1765.ld`、`firmware/startup.s`、`firmware/build.sh`）并经 J-Link SWD 烧写入板、
   全镜像校验通过；过程见 `docs/w8/W8_POST_FLASH_2026-08-26.md`。

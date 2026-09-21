@@ -1042,24 +1042,30 @@ static void state_machine_page_protection(KeyCode key_code)
       *ui_statistics_timeout_ticks_ptr = 0;
       if (*ui_view_mode_ptr == 0) return;              /* 查看态：本帧提前返回 */
       switch (*ui_item_index_ptr) {
-        case 0:  if (*parameter_overvoltage_limit_ptr != 0) disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 0, 0xb, 0);
+        case 0:  if (*parameter_overvoltage_limit_ptr != 0) { disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 0, 0xb, 0); disp_string(DISPLAY_UNIT_VOLT, 0, 0xf, 0); }
                  else disp_string(DISPLAY_BASIC_SHARED_LABEL, 0, 0xb, 0);
                  break;
         case 1:  disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 1, 0xb, 0); break;
-        case 2:  if (*parameter_undervoltage_limit_ptr != 0) disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 2, 0xb, 0);
+        case 2:  if (*parameter_undervoltage_limit_ptr != 0) { disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 2, 0xb, 0); disp_string(DISPLAY_UNIT_VOLT, 2, 0xf, 0); }
                  else disp_string(DISPLAY_BASIC_SHARED_LABEL, 2, 0xb, 0);
                  break;
         case 3:  disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 3, 0xb, 0); break;
-        case 4:  if (*parameter_if_overload_limit_ptr != 0) disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 0, 0xb, 0);
+        case 4:  if (*parameter_if_overload_limit_ptr != 0) { disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 0, 0xb, 0); disp_string(DISPLAY_UNIT_AMPERE, 0, 0xf, 0); }
                  else disp_string(DISPLAY_BASIC_SHARED_LABEL, 0, 0xb, 0);
                  break;
         case 5:  disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 1, 0xb, 0); break;
-        case 6:  if (*parameter_ct_overload_limit_ptr != 0) disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 2, 0xb, 0);
+        case 6:  if (*parameter_ct_overload_limit_ptr != 0) { disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 2, 0xb, 0); disp_string(DISPLAY_UNIT_AMPERE, 2, 0xf, 0); }
                  else disp_string(DISPLAY_BASIC_SHARED_LABEL, 2, 0xb, 0);
                  break;
         case 7:  disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 3, 0xb, 0); break;
         case 8:  disp_string(DISPLAY_BASIC_SHARED_LABEL, 0, 0xb, 0); break;
-        case 9:  disp_string(DISPLAY_BASIC_SHARED_LABEL, 1, 0xb, 0); break;
+        case 9:  if (*parameter_phase_balance_ptr >= 0xa) {
+                   disp_string(DISPLAY_BASIC_SHARED_LABEL, 1, 0xb, 0);
+                   disp_string(DISPLAY_UNIT_DEGREE, 1, 0xf, 0);
+                 } else {
+                   disp_string(DISPLAY_BASIC_SHARED_LABEL, 1, 0xb, 0);
+                 }
+                 break;
       }
     }
     (*ui_idle_timeout_ticks_ptr)++;
