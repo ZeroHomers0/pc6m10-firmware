@@ -68,6 +68,7 @@ for source_path in (ROOT / "firmware/src").glob("*.c"):
                 f"right-side field must repaint through column 15: {source_path.name} {token} col={col} text={entry_map[address]!r}"
 assert "ui_language_load();" in START
 assert "disp_string(DISPLAY_STATUS_MONITOR_TITLE, 0, 2, 0)" in STATE
+assert "draw_protection_parameter_page(0);" in STATE
 assert "EEPROM_UI_LANGUAGE = 0xff" in (ROOT / "firmware/inc/firmware_language.h").read_text(encoding="utf-8")
 assert "UI_SCREEN_LANGUAGE" in STATE and "*ui_item_index_ptr > 9" in STATE
 print(f"BILINGUAL_UI: PASS translations={len(entries)} max_width={max(map(len, entries))}")

@@ -724,10 +724,7 @@ static void state_machine_page_basic_parameters(KeyCode key_code)
         *ui_screen_id_ptr = UI_SCREEN_PROTECTION_PARAMETERS; *ui_item_index_ptr = 0;
         disp_string(DISPLAY_BASIC_RESULT_01, 0, 0, 0); disp_string(DISPLAY_BASIC_RESULT_02, 1, 0, 0);
         disp_string(DISPLAY_BASIC_RESULT_03, 2, 0, 0); disp_string(DISPLAY_BASIC_RESULT_04, 3, 0, 0);
-        disp_uint4(*parameter_overvoltage_limit_ptr, 0, 0xb, 1);
-        disp_uint4(*parameter_overvoltage_time_ptr, 1, 0xb, 0);
-        disp_uint4(*parameter_undervoltage_limit_ptr, 2, 0xb, 0);
-        disp_uint4(*parameter_undervoltage_time_ptr, 3, 0xb, 0);
+        draw_protection_parameter_page(0);
         *ui_statistics_timeout_ticks_ptr = 0xfa;
       }
       if (*ui_item_index_ptr == 2) {
