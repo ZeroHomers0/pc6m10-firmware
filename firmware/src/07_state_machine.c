@@ -1345,7 +1345,11 @@ static void state_machine_page_status_monitor(KeyCode key_code)
     (*ui_statistics_timeout_ticks_ptr)++;
     if (*ui_statistics_timeout_ticks_ptr > 0xfa) {
       *ui_statistics_timeout_ticks_ptr = 0;
-      disp_string(DISPLAY_STATUS_MONITOR_TITLE, 0, 2, 0);
+      /* English title is 12 half-width columns; the Chinese title is four
+       * full-width glyphs.  Center each title independently so both align
+       * with the corresponding fault text (e.g. PHASE LOSS / 缺相保护). */
+      disp_string(DISPLAY_STATUS_MONITOR_TITLE, 0,
+                  ui_language_get() == UI_LANGUAGE_ENGLISH ? 2 : 4, 0);
       if (*output_fault_flags_ptr == 0) {
         disp_string(DISPLAY_STATUS_MONITOR_LABEL, 2, 0, 0);
       } else {
