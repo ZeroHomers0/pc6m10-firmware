@@ -27,6 +27,13 @@
 
 /* 运行时状态、参数和外设地址统一由 firmware_state.h / firmware_parameters.h 提供。 */
 
+/* 数字绘制函数会主动擦除 col=0xf，以消除短值残留；这些页面的行标题把
+ * 单位放在同一列，因此数值绘制后必须补回单位。ASCII 单位在中英文界面相同。 */
+static void draw_unit_second(uint32_t row)
+{
+  disp_render_char8('S', row, 0xf, 0);
+}
+
 /* =============================================================================
  * case3 当前项值渲染 (0x7458-0x7A32 精简)：按项号 item_index 显示其值/枚举到 (row,0xb)。
  * 所有值串地址与枚举宽度均经 LPC1765.bin 校验，禁止臆造。
@@ -39,13 +46,13 @@ static void draw_basic_parameter_item(uint32_t item_index, uint32_t row, uint32_
       else if (*parameter_control_mode_ptr == 1) { disp_string(DISPLAY_CONTROL_MODE_OPTION_2, row, 0xb, attr); fio1_pin20_ctrl(0); fio1_pin21_ctrl(1); }
       else { disp_string(DISPLAY_CONTROL_MODE_OPTION_3, row, 0xb, attr); fio1_pin20_ctrl(0); fio1_pin21_ctrl(0); }
       break;
-    case 1: disp_uint4(*parameter_voltage_range_ptr, row, 0xb, attr); break;
-    case 2: disp_uint4(*parameter_current_range_ptr, row, 0xb, attr); break;
-    case 3: disp_uint4(*parameter_transformer_ratio_ptr, row, 0xb, attr); break;
-    case 4: disp_uint4(*parameter_voltage_limit_ptr, row, 0xb, attr); break;
-    case 5: disp_uint4(*parameter_current_limit_ptr, row, 0xb, attr); break;
-    case 6: disp_number3(*parameter_soft_start_time_ptr, row, 0xb, attr); break;
-    case 7: disp_number3(*parameter_soft_stop_time_ptr, row, 0xb, attr); break;
+    case 1: disp_uint4(*parameter_voltage_range_ptr, row, 0xb, attr); disp_string(DISPLAY_UNIT_VOLT, row, 0xf, 0); break;
+    case 2: disp_uint4(*parameter_current_range_ptr, row, 0xb, attr); disp_string(DISPLAY_UNIT_AMPERE, row, 0xf, 0); break;
+    case 3: disp_uint4(*parameter_transformer_ratio_ptr, row, 0xb, attr); disp_string(DISPLAY_UNIT_AMPERE, row, 0xf, 0); break;
+    case 4: disp_uint4(*parameter_voltage_limit_ptr, row, 0xb, attr); disp_string(DISPLAY_UNIT_VOLT, row, 0xf, 0); break;
+    case 5: disp_uint4(*parameter_current_limit_ptr, row, 0xb, attr); disp_string(DISPLAY_UNIT_AMPERE, row, 0xf, 0); break;
+    case 6: disp_number3(*parameter_soft_start_time_ptr, row, 0xb, attr); draw_unit_second(row); break;
+    case 7: disp_number3(*parameter_soft_stop_time_ptr, row, 0xb, attr); draw_unit_second(row); break;
     case 8: disp_number3(*parameter_phase_limit_ptr, row, 0xb, attr); break;
     case 9: disp_signed_angle(*parameter_master_slave_offset_ptr, row, 0xb, attr); break;
     case 10:
@@ -98,22 +105,22 @@ static void draw_protection_parameter_value(uint32_t item_index, uint32_t row, u
       if (*parameter_overvoltage_limit_ptr) { disp_uint4(*parameter_overvoltage_limit_ptr,row,0xb,attr); disp_string(DISPLAY_UNIT_VOLT,row,0xf,0); }
       else disp_string(DISPLAY_OPTION_DISABLED,row,0xb,attr);
       break;
-    case 1: disp_uint4(*parameter_overvoltage_time_ptr,row,0xb,attr); break;
+    case 1: disp_uint4(*parameter_overvoltage_time_ptr,row,0xb,attr); draw_unit_second(row); break;
     case 2:
       if (*parameter_undervoltage_limit_ptr) { disp_uint4(*parameter_undervoltage_limit_ptr,row,0xb,attr); disp_string(DISPLAY_UNIT_VOLT,row,0xf,0); }
       else disp_string(DISPLAY_OPTION_DISABLED,row,0xb,attr);
       break;
-    case 3: disp_uint4(*parameter_undervoltage_time_ptr,row,0xb,attr); break;
+    case 3: disp_uint4(*parameter_undervoltage_time_ptr,row,0xb,attr); draw_unit_second(row); break;
     case 4:
       if (*parameter_if_overload_limit_ptr) { disp_uint4(*parameter_if_overload_limit_ptr,row,0xb,attr); disp_string(DISPLAY_UNIT_AMPERE,row,0xf,0); }
       else disp_string(DISPLAY_OPTION_DISABLED,row,0xb,attr);
       break;
-    case 5: disp_uint4(*parameter_if_overload_time_ptr,row,0xb,attr); break;
+    case 5: disp_uint4(*parameter_if_overload_time_ptr,row,0xb,attr); draw_unit_second(row); break;
     case 6:
       if (*parameter_ct_overload_limit_ptr) { disp_uint4(*parameter_ct_overload_limit_ptr,row,0xb,attr); disp_string(DISPLAY_UNIT_AMPERE,row,0xf,0); }
       else disp_string(DISPLAY_OPTION_DISABLED,row,0xb,attr);
       break;
-    case 7: disp_uint4(*parameter_ct_overload_time_ptr,row,0xb,attr); break;
+    case 7: disp_uint4(*parameter_ct_overload_time_ptr,row,0xb,attr); draw_unit_second(row); break;
     case 8:
       if (*parameter_phase_loss_enable_ptr) disp_string(DISPLAY_OPTION_ENABLED,row,0xb,attr);
       else disp_string(DISPLAY_OPTION_DISABLED,row,0xb,attr);
@@ -712,12 +719,7 @@ static void state_machine_page_basic_parameters(KeyCode key_code)
         *ui_screen_id_ptr = UI_SCREEN_BASIC_PARAMETER_EDIT; *ui_item_index_ptr = 0;
         disp_string(DISPLAY_BASIC_LABEL_10, 0, 0, 0); disp_string(DISPLAY_BASIC_LABEL_11, 1, 0, 0);
         disp_string(DISPLAY_BASIC_LABEL_12, 2, 0, 0); disp_string(DISPLAY_BASIC_LABEL_13, 3, 0, 0);
-        if (*parameter_control_mode_ptr == 0) { disp_string(DISPLAY_CONTROL_MODE_OPTION_1, 0, 0xb, 1); fio1_pin20_ctrl(1); fio1_pin21_ctrl(0); }
-        if (*parameter_control_mode_ptr == 1) { disp_string(DISPLAY_CONTROL_MODE_OPTION_2, 0, 0xb, 1); fio1_pin20_ctrl(0); fio1_pin21_ctrl(1); }
-        if (*parameter_control_mode_ptr == 2) { disp_string(DISPLAY_CONTROL_MODE_OPTION_3, 0, 0xb, 1); fio1_pin20_ctrl(0); fio1_pin21_ctrl(0); }
-        disp_uint4(*parameter_voltage_range_ptr, 1, 0xb, 0);
-        disp_uint4(*parameter_current_range_ptr, 2, 0xb, 0);
-        disp_uint4(*parameter_transformer_ratio_ptr, 3, 0xb, 0);
+        draw_basic_parameter_page(0);
         *ui_statistics_timeout_ticks_ptr = 0xfa;
       }
       if (*ui_item_index_ptr == 1) {
@@ -1045,19 +1047,19 @@ static void state_machine_page_protection(KeyCode key_code)
         case 0:  if (*parameter_overvoltage_limit_ptr != 0) { disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 0, 0xb, 0); disp_string(DISPLAY_UNIT_VOLT, 0, 0xf, 0); }
                  else disp_string(DISPLAY_BASIC_SHARED_LABEL, 0, 0xb, 0);
                  break;
-        case 1:  disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 1, 0xb, 0); break;
+        case 1:  disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 1, 0xb, 0); draw_unit_second(1); break;
         case 2:  if (*parameter_undervoltage_limit_ptr != 0) { disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 2, 0xb, 0); disp_string(DISPLAY_UNIT_VOLT, 2, 0xf, 0); }
                  else disp_string(DISPLAY_BASIC_SHARED_LABEL, 2, 0xb, 0);
                  break;
-        case 3:  disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 3, 0xb, 0); break;
+        case 3:  disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 3, 0xb, 0); draw_unit_second(3); break;
         case 4:  if (*parameter_if_overload_limit_ptr != 0) { disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 0, 0xb, 0); disp_string(DISPLAY_UNIT_AMPERE, 0, 0xf, 0); }
                  else disp_string(DISPLAY_BASIC_SHARED_LABEL, 0, 0xb, 0);
                  break;
-        case 5:  disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 1, 0xb, 0); break;
+        case 5:  disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 1, 0xb, 0); draw_unit_second(1); break;
         case 6:  if (*parameter_ct_overload_limit_ptr != 0) { disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 2, 0xb, 0); disp_string(DISPLAY_UNIT_AMPERE, 2, 0xf, 0); }
                  else disp_string(DISPLAY_BASIC_SHARED_LABEL, 2, 0xb, 0);
                  break;
-        case 7:  disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 3, 0xb, 0); break;
+        case 7:  disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 3, 0xb, 0); draw_unit_second(3); break;
         case 8:  disp_string(DISPLAY_BASIC_SHARED_LABEL, 0, 0xb, 0); break;
         case 9:  if (*parameter_phase_balance_ptr >= 0xa) {
                    disp_string(DISPLAY_BASIC_SHARED_LABEL, 1, 0xb, 0);
