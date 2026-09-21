@@ -201,15 +201,17 @@ csrc.append("  if (addr == UI_TEXT_MENU_LANGUAGE) mapped = (uint32_t)menu_langua
 csrc.append("  else if (addr == UI_TEXT_LANGUAGE_TITLE) mapped = (uint32_t)language_title;")
 csrc.append("  else if (addr == UI_TEXT_LANGUAGE_ZH) mapped = (uint32_t)language_zh;")
 csrc.append("  else if (addr == UI_TEXT_LANGUAGE_EN) mapped = (uint32_t)language_en;")
-if PRODUCT_INFO_OVERRIDES:
-    csrc.append("  for (i = 0; i < sizeof(strpool_override) / sizeof(strpool_override[0]); i++) {")
-    csrc.append("    if (addr == strpool_override[i].addr)")
-    csrc.append("      mapped = (uint32_t)(strpool_override_blob + strpool_override[i].off);")
-    csrc.append("  }")
 csrc.append("  for (i = 0; i < sizeof(strpool_clusters) / sizeof(strpool_clusters[0]); i++) {")
 csrc.append("    if (addr >= strpool_clusters[i].base && addr < strpool_clusters[i].base + strpool_clusters[i].len)")
 csrc.append("      mapped = (uint32_t)(strpool_clusters[i].blob + (addr - strpool_clusters[i].base));")
 csrc.append("  }")
+if PRODUCT_INFO_OVERRIDES:
+    # 产品信息地址落在普通字符串簇内，覆写必须在簇映射之后应用，
+    # 否则随后簇循环会把定制指针覆盖回原厂字符串。
+    csrc.append("  for (i = 0; i < sizeof(strpool_override) / sizeof(strpool_override[0]); i++) {")
+    csrc.append("    if (addr == strpool_override[i].addr)")
+    csrc.append("      mapped = (uint32_t)(strpool_override_blob + strpool_override[i].off);")
+    csrc.append("  }")
 csrc.append("  return ui_language_translate(addr, mapped);")
 csrc.append("}")
 csrc.append("")

@@ -143,13 +143,13 @@ uint32_t strpool_map(uint32_t addr)
   else if (addr == UI_TEXT_LANGUAGE_TITLE) mapped = (uint32_t)language_title;
   else if (addr == UI_TEXT_LANGUAGE_ZH) mapped = (uint32_t)language_zh;
   else if (addr == UI_TEXT_LANGUAGE_EN) mapped = (uint32_t)language_en;
-  for (i = 0; i < sizeof(strpool_override) / sizeof(strpool_override[0]); i++) {
-    if (addr == strpool_override[i].addr)
-      mapped = (uint32_t)(strpool_override_blob + strpool_override[i].off);
-  }
   for (i = 0; i < sizeof(strpool_clusters) / sizeof(strpool_clusters[0]); i++) {
     if (addr >= strpool_clusters[i].base && addr < strpool_clusters[i].base + strpool_clusters[i].len)
       mapped = (uint32_t)(strpool_clusters[i].blob + (addr - strpool_clusters[i].base));
+  }
+  for (i = 0; i < sizeof(strpool_override) / sizeof(strpool_override[0]); i++) {
+    if (addr == strpool_override[i].addr)
+      mapped = (uint32_t)(strpool_override_blob + strpool_override[i].off);
   }
   return ui_language_translate(addr, mapped);
 }
