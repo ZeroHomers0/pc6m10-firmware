@@ -8,8 +8,8 @@
 `LPC1765.bin`（262144 B）是所有等价验证的金标准。
 
 - GCC 可编译工程：`firmware/`，Arm GNU Toolchain 14.2.Rel1。
-- 当前构建：`text 61984 / data 0 / bss 2192`。
-- 当前 `firmware.bin` SHA-256：`EFC6B59EBF5C2FD4FA5FBFE28AA8929637A30B739487094EFD0843338E77AD10`。
+- 当前构建：`text 62292 / data 0 / bss 2192`。
+- 当前 `firmware.bin` SHA-256：`EDDA00C33990075D094E4BC15A51AE25D70A9449BED6FF5F2A5A09ACEF37989C`。
 - **2026-09-19 中英文界面**：主设置菜单新增第 10 项语言选择，完整可见文字支持中文/英文；
   语言保存于 EEPROM `0xFF`，空白或非法值默认中文，恢复出厂恢复中文。英文字符串生成与测试
   强制限制为 128×64 LCD 的每行 16 个字符以内。
