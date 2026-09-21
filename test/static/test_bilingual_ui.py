@@ -22,7 +22,7 @@ assert 'UI_TEXT_MENU_LANGUAGE,"10.LANGUAGE     "' in LANG, "language menu must e
 for address in (0x4814, 0x4824, 0x4834, 0x4844, 0x6488, 0x649c, 0x64b0, 0x64c4,
                 0x64d8, 0x64ec, 0x6500, 0x6514, 0x6528):
     assert len(entry_map[address]) == 16, f"menu row must erase all columns: {address:#x}"
-assert re.search(r'menu_language\[\].*\\x31\\x30\\xd3.*\\xf1 {6}"',
+assert re.search(r'menu_language\[\].*\\x31\\x30\\x2e\\xd3.*\\xf1 {5}"',
                  (ROOT / "firmware/src/strpool.c").read_text(encoding="utf-8")), \
     "Chinese language menu must align GBK glyphs and erase the whole row"
 display_source = (ROOT / "firmware/src/02_lcd_display.c").read_text(encoding="utf-8")
@@ -67,6 +67,7 @@ for source_path in (ROOT / "firmware/src").glob("*.c"):
             assert col + len(entry_map[address]) == 16, \
                 f"right-side field must repaint through column 15: {source_path.name} {token} col={col} text={entry_map[address]!r}"
 assert "ui_language_load();" in START
+assert "disp_string(DISPLAY_STATUS_MONITOR_TITLE, 0, 2, 0)" in STATE
 assert "EEPROM_UI_LANGUAGE = 0xff" in (ROOT / "firmware/inc/firmware_language.h").read_text(encoding="utf-8")
 assert "UI_SCREEN_LANGUAGE" in STATE and "*ui_item_index_ptr > 9" in STATE
 print(f"BILINGUAL_UI: PASS translations={len(entries)} max_width={max(map(len, entries))}")
