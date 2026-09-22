@@ -27,8 +27,8 @@
 
 /* 运行时状态、参数和外设地址统一由 firmware_state.h / firmware_parameters.h 提供。 */
 
-/* 数字绘制函数会主动擦除 col=0xf，以消除短值残留；这些页面的行标题把
- * 单位放在同一列，因此数值绘制后必须补回单位。ASCII 单位在中英文界面相同。 */
+/* S 单位在原厂显示序列中是独立字形调用，并非行标签的一部分。数值函数不得
+ * 擦除 col=0xf；这里仅复用原厂的单位绘制契约。 */
 static void draw_unit_second(uint32_t row)
 {
   disp_render_char8('S', row, 0xf, 0);
@@ -688,8 +688,10 @@ static void state_machine_page_basic_parameters(KeyCode key_code)
     if (key_code == KEY_BACK) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return; }
     if (key_code == KEY_DOWN || key_code == KEY_UP) {
       *ui_idle_timeout_ticks_ptr = 0;
-      if (key_code == KEY_UP) { (*ui_item_index_ptr)++; if (*ui_item_index_ptr > 9) *ui_item_index_ptr = 9; }
+      if (key_code == KEY_UP) { (*ui_item_index_ptr)++; if (*ui_item_index_ptr > 8) *ui_item_index_ptr = 8; }
       if (key_code == KEY_DOWN) { if (*ui_item_index_ptr > 0) (*ui_item_index_ptr)--; }
+      /* 菜单页长度不同，导航时整屏清除可同时消除末列和反显背景残留。 */
+      disp_clear();
       if (*ui_item_index_ptr < 4) {
         disp_string(DISPLAY_BASIC_LABEL_01, 0, 0, 0); disp_string(DISPLAY_BASIC_LABEL_02, 1, 0, 0);
         disp_string(DISPLAY_BASIC_LABEL_03, 2, 0, 0); disp_string(DISPLAY_BASIC_LABEL_04, 3, 0, 0);
@@ -699,7 +701,7 @@ static void state_machine_page_basic_parameters(KeyCode key_code)
         disp_string(DISPLAY_BASIC_LABEL_07, 2, 0, 0); disp_string(DISPLAY_BASIC_LABEL_08, 3, 0, 0);
       }
       if (*ui_item_index_ptr >= 8 && *ui_item_index_ptr < 0xc) {
-        disp_string(DISPLAY_BASIC_LABEL_09, 0, 0, 0); disp_string(UI_TEXT_MENU_LANGUAGE, 1, 0, 0);
+        disp_string(UI_TEXT_MENU_LANGUAGE, 0, 0, 0); disp_string(DISPLAY_CALIBRATION_RESULT_VALUE_4, 1, 0, 0);
         disp_string(DISPLAY_CALIBRATION_RESULT_VALUE_4, 2, 0, 0); disp_string(DISPLAY_CALIBRATION_RESULT_VALUE_4, 3, 0, 0);
       }
       if (*ui_item_index_ptr == 0) disp_string(DISPLAY_BASIC_LABEL_01, 0, 0, 1);
@@ -710,8 +712,7 @@ static void state_machine_page_basic_parameters(KeyCode key_code)
       if (*ui_item_index_ptr == 5) disp_string(DISPLAY_BASIC_LABEL_06, 1, 0, 1);
       if (*ui_item_index_ptr == 6) disp_string(DISPLAY_BASIC_LABEL_07, 2, 0, 1);
       if (*ui_item_index_ptr == 7) disp_string(DISPLAY_BASIC_LABEL_08, 3, 0, 1);
-      if (*ui_item_index_ptr == 8) disp_string(DISPLAY_BASIC_LABEL_09, 0, 0, 1);
-      if (*ui_item_index_ptr == 9) disp_string(UI_TEXT_MENU_LANGUAGE, 1, 0, 1);
+      if (*ui_item_index_ptr == 8) disp_string(UI_TEXT_MENU_LANGUAGE, 0, 0, 1);
     }
     if (key_code == KEY_CONFIRM) {
       *ui_idle_timeout_ticks_ptr = 0; *ui_view_mode_ptr = 0;
@@ -777,12 +778,6 @@ static void state_machine_page_basic_parameters(KeyCode key_code)
         disp_string(DISPLAY_BASIC_MANUAL_BALANCE_LABEL_3, 2, 0, 0); disp_string(DISPLAY_BASIC_MANUAL_BALANCE_LABEL_4, 3, 0, 0);
       }
       if (*ui_item_index_ptr == 8) {
-        *ui_screen_id_ptr = UI_SCREEN_MANUAL_BALANCE; *ui_item_index_ptr = 0; disp_clear();
-        disp_string(DISPLAY_MANUAL_BALANCE_VALUE, 0, 4, 0); disp_string(DISPLAY_PHASE_CALIBRATION_LABEL_2, 1, 2, 0);
-        disp_string(DISPLAY_PHASE_CALIBRATION_LABEL_3, 2, 2, 0); disp_signed_angle(*phase_balance_angle_ptr, 2, 7, 1);
-        disp_string(DISPLAY_PHASE_CALIBRATION_LABEL_4, 3, 0, 0);
-      }
-      if (*ui_item_index_ptr == 9) {
         *ui_screen_id_ptr = UI_SCREEN_LANGUAGE; *ui_item_index_ptr = ui_language_get(); disp_clear();
         disp_string(UI_TEXT_LANGUAGE_TITLE, 0, 0, 0);
         disp_string(UI_TEXT_LANGUAGE_ZH, 1, 0, *ui_item_index_ptr == UI_LANGUAGE_CHINESE);
@@ -1044,30 +1039,24 @@ static void state_machine_page_protection(KeyCode key_code)
       *ui_statistics_timeout_ticks_ptr = 0;
       if (*ui_view_mode_ptr == 0) return;              /* 查看态：本帧提前返回 */
       switch (*ui_item_index_ptr) {
-        case 0:  if (*parameter_overvoltage_limit_ptr != 0) { disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 0, 0xb, 0); disp_string(DISPLAY_UNIT_VOLT, 0, 0xf, 0); }
+        case 0:  if (*parameter_overvoltage_limit_ptr != 0) disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 0, 0xb, 0);
                  else disp_string(DISPLAY_BASIC_SHARED_LABEL, 0, 0xb, 0);
                  break;
-        case 1:  disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 1, 0xb, 0); draw_unit_second(1); break;
-        case 2:  if (*parameter_undervoltage_limit_ptr != 0) { disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 2, 0xb, 0); disp_string(DISPLAY_UNIT_VOLT, 2, 0xf, 0); }
+        case 1:  disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 1, 0xb, 0); break;
+        case 2:  if (*parameter_undervoltage_limit_ptr != 0) disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 2, 0xb, 0);
                  else disp_string(DISPLAY_BASIC_SHARED_LABEL, 2, 0xb, 0);
                  break;
-        case 3:  disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 3, 0xb, 0); draw_unit_second(3); break;
-        case 4:  if (*parameter_if_overload_limit_ptr != 0) { disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 0, 0xb, 0); disp_string(DISPLAY_UNIT_AMPERE, 0, 0xf, 0); }
+        case 3:  disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 3, 0xb, 0); break;
+        case 4:  if (*parameter_if_overload_limit_ptr != 0) disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 0, 0xb, 0);
                  else disp_string(DISPLAY_BASIC_SHARED_LABEL, 0, 0xb, 0);
                  break;
-        case 5:  disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 1, 0xb, 0); draw_unit_second(1); break;
-        case 6:  if (*parameter_ct_overload_limit_ptr != 0) { disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 2, 0xb, 0); disp_string(DISPLAY_UNIT_AMPERE, 2, 0xf, 0); }
+        case 5:  disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 1, 0xb, 0); break;
+        case 6:  if (*parameter_ct_overload_limit_ptr != 0) disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 2, 0xb, 0);
                  else disp_string(DISPLAY_BASIC_SHARED_LABEL, 2, 0xb, 0);
                  break;
-        case 7:  disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 3, 0xb, 0); draw_unit_second(3); break;
+        case 7:  disp_string(DISPLAY_PROTECTION_SHARED_LABEL, 3, 0xb, 0); break;
         case 8:  disp_string(DISPLAY_BASIC_SHARED_LABEL, 0, 0xb, 0); break;
-        case 9:  if (*parameter_phase_balance_ptr >= 0xa) {
-                   disp_string(DISPLAY_BASIC_SHARED_LABEL, 1, 0xb, 0);
-                   disp_string(DISPLAY_UNIT_DEGREE, 1, 0xf, 0);
-                 } else {
-                   disp_string(DISPLAY_BASIC_SHARED_LABEL, 1, 0xb, 0);
-                 }
-                 break;
+        case 9:  disp_string(DISPLAY_BASIC_SHARED_LABEL, 1, 0xb, 0); break;
       }
     }
     (*ui_idle_timeout_ticks_ptr)++;
@@ -1795,9 +1784,8 @@ static void state_machine_page_language(KeyCode key_code)
   }
   if (key_code == KEY_CONFIRM) ui_language_save(*ui_item_index_ptr);
   if (key_code == KEY_CONFIRM || key_code == KEY_BACK) {
-    *ui_screen_id_ptr = UI_SCREEN_BASIC_PARAMETERS; *ui_item_index_ptr = 9; disp_clear();
-    disp_string(DISPLAY_BASIC_LABEL_09, 0, 0, 0);
-    disp_string(UI_TEXT_MENU_LANGUAGE, 1, 0, 1);
+    *ui_screen_id_ptr = UI_SCREEN_BASIC_PARAMETERS; *ui_item_index_ptr = 8; disp_clear();
+    disp_string(UI_TEXT_MENU_LANGUAGE, 0, 0, 1);
     return;
   }
   if (++(*ui_idle_timeout_ticks_ptr) >= 0x1388) {

@@ -16,20 +16,23 @@ used_glyphs = set("".join(entries))
 assert used_glyphs <= original_glyphs | extended_glyphs, \
     f"English LCD text uses unsupported glyphs: {sorted(used_glyphs - original_glyphs - extended_glyphs)}"
 assert 'ext_char8_map[] = "/GJKLQY"' in (ROOT / "firmware/src/02_lcd_display.c").read_text(encoding="utf-8")
-assert '"INPUT:        %"' in LANG and '"OUTPUT:       V"' in LANG and '"CURRENT:      A"' in LANG
+for address in (0x4370, 0x4384, 0x4398):
+    assert len(entry_map[address]) == 16, \
+        f"main status row must repaint through column 15: {address:#x}"
 assert LANG.count('" PASS: ------"') == 2
-assert 'UI_TEXT_MENU_LANGUAGE,"10.LANGUAGE     "' in LANG, "language menu must erase all 16 columns"
+assert 'UI_TEXT_MENU_LANGUAGE,"9.LANGUAGE      "' in LANG, "language menu must erase all 16 columns"
 for address in (0x4814, 0x4824, 0x4834, 0x4844, 0x6488, 0x649c, 0x64b0, 0x64c4,
                 0x64d8, 0x64ec, 0x6500, 0x6514, 0x6528):
     assert len(entry_map[address]) == 16, f"menu row must erase all columns: {address:#x}"
-assert re.search(r'menu_language\[\].*\\x31\\x30\\x2e\\xd3.*\\xf1 {5}"',
+assert re.search(r'menu_language\[\].*\\x39\\x2e\\xd3.*\\xf1 {6}"',
                  (ROOT / "firmware/src/strpool.c").read_text(encoding="utf-8")), \
     "Chinese language menu must align GBK glyphs and erase the whole row"
 display_source = (ROOT / "firmware/src/02_lcd_display.c").read_text(encoding="utf-8")
 for gbk_pair in ("{0xd3,0xef}", "{0xd1,0xd4}", "{0xd1,0xa1}", "{0xd4,0xf1}", "{0xce,0xc4}"):
     assert gbk_pair in display_source, f"missing language UI glyph: {gbk_pair}"
 assert "glyph_base + glyph_index * 0x20" in display_source
-assert display_source.count("if (col == 0xb)") >= 4, "variable-width numeric fields must clear through column 15"
+assert display_source.count("if (col == 0xb)") == 2, \
+    "only three-column numeric fields should clear the unused value column"
 for address in (0x6018, 0x6020, 0x6028, 0x6030, 0x6038, 0x6040, 0x6048, 0x6050,
                 0x6058, 0x6060, 0x6594, 0x659c, 0x65a4, 0x6af8, 0x6b08, 0x6b14,
                 0x6b24, 0x7998, 0x79a0, 0x79a8, 0x79b4, 0x79bc):
@@ -68,8 +71,16 @@ for source_path in (ROOT / "firmware/src").glob("*.c"):
                 f"right-side field must repaint through column 15: {source_path.name} {token} col={col} text={entry_map[address]!r}"
 assert "ui_language_load();" in START
 assert "ui_language_get() == UI_LANGUAGE_ENGLISH ? 2 : 4" in STATE
-assert "disp_render_char16_odd" in display_source
+assert "disp_render_char16_odd" not in display_source, \
+    "6P language labels start Chinese glyphs on even columns and need no odd-column renderer"
+assert "S 单位在原厂显示序列中" in STATE
+assert "col 15 留给单位" in display_source
+assert "/* 菜单页长度不同" in STATE
 assert "draw_protection_parameter_page(0);" in STATE
 assert "EEPROM_UI_LANGUAGE = 0xff" in (ROOT / "firmware/inc/firmware_language.h").read_text(encoding="utf-8")
-assert "UI_SCREEN_LANGUAGE" in STATE and "*ui_item_index_ptr > 9" in STATE
+basic_menu = STATE[STATE.index("static void state_machine_page_basic_parameters"):STATE.index("static void state_machine_page_basic_parameter_edit")]
+assert "UI_SCREEN_LANGUAGE" in basic_menu and "*ui_item_index_ptr > 8" in basic_menu
+assert "*ui_item_index_ptr > 9" not in basic_menu
+assert "*ui_screen_id_ptr = UI_SCREEN_BASIC_PARAMETERS; *ui_item_index_ptr = 8" in STATE
+assert "*ui_screen_id_ptr = UI_SCREEN_MANUAL_BALANCE" not in basic_menu
 print(f"BILINGUAL_UI: PASS translations={len(entries)} max_width={max(map(len, entries))}")

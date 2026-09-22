@@ -294,47 +294,6 @@ glyph_found:
 /* 0x00000C3A —— 渲染 16×16 汉字（GB 双字节）
  *   查表 0x10000FC4（0x8F 个汉字，每字 2 字节码）→ 字形 0x10000FCC（每字 0x20 字节）
  *   行占 2 页（上半字 + 下半字） */
-/* A GBK glyph normally starts on an even 8-pixel LCD column.  The language
- * menu is intentionally written as "10.语言选择", so the first Chinese glyph
- * starts at column 3.  Rounding that column down overwrites the period and
- * leaves the following physical column outside disp_string()'s clear range.
- * Write odd-column glyphs at their real pixel address, splitting at the two
- * controller halves when necessary. */
-static void disp_render_char16_odd(uint32_t glyph_base,uint32_t glyph_index,
-                                   char row,int col,uint32_t invert)
-{
-  uint32_t page;
-  uint32_t bit_index;
-  uint32_t pixel_col;
-  uint32_t chip;
-  uint32_t active_chip;
-
-  for (page = 0; page < 2; ++page) {
-    active_chip = 2;
-    for (bit_index = 0; bit_index < 0x10; ++bit_index) {
-      pixel_col = ((uint32_t)col * 8U) + bit_index;
-      chip = (pixel_col < 0x40U) ? 0U : 1U;
-      if (chip != active_chip) {
-        if (chip == 0U) {
-          FIO1->CLR = FIO1->CLR | 0x4000000;
-          FIO1->SET = FIO1->SET | 0x2000000;
-        }
-        else {
-          FIO1->SET = FIO1->SET | 0x4000000;
-          FIO1->CLR = FIO1->CLR | 0x2000000;
-        }
-        Delay(10);
-        disp_cmd(0xc0);
-        disp_cmd(row * 2 + -0x48 + page);
-        active_chip = chip;
-      }
-      disp_cmd((pixel_col & 0x3fU) + 0x40U);
-      disp_data(*(volatile uint8_t *)(glyph_base + glyph_index * 0x20U +
-                                      page * 0x10U + bit_index), invert);
-    }
-  }
-}
-
 void disp_render_char16(uint32_t gb_hi,uint32_t gb_lo,char row,int col,uint32_t invert)
 {
   uint32_t col2;
@@ -361,10 +320,6 @@ void disp_render_char16(uint32_t gb_hi,uint32_t gb_lo,char row,int col,uint32_t 
   }
   glyph_base = lcd_gbk_font;
 glyph16_found:
-  if ((col & 1) != 0) {
-    disp_render_char16_odd(glyph_base, glyph_index, row, col, invert);
-    return;
-  }
   if (col2 < 4) {
     FIO1->CLR = FIO1->CLR | 0x4000000;
     FIO1->SET = FIO1->SET | 0x2000000;
@@ -473,10 +428,8 @@ void disp_number3(int val,uint32_t row,int col,uint32_t invert)
     disp_digit((val / 10) % 10 & 0xff,row,col + 1U & 0xff,invert);
   }
   disp_digit(val % 10 & 0xff,row,col + 2U & 0xff,invert);
-  if (col == 0xb) {
-    disp_render_char8(0x20,row,0xe,invert);
-    disp_render_char8(0x20,row,0xf,invert);
-  }
+  /* 参数值域为 col 11..14；三位数需显式擦除未使用的末列。col 15 留给单位。 */
+  if (col == 0xb) disp_render_char8(0x20,row,0xe,invert);
   return;
 }
 
@@ -502,7 +455,6 @@ void disp_uint4(uint32_t val,uint32_t row,int col,uint32_t invert)
     disp_digit((val / 10) % 10,row,col + 2U & 0xff,invert);
   }
   disp_digit(val % 10,row,col + 3U & 0xff,invert);
-  if (col == 0xb) disp_render_char8(0x20,row,0xf,invert);
   return;
 }
 
@@ -607,10 +559,8 @@ void disp_signed_angle(int angle,uint32_t row,int col,uint32_t invert)
     }
     disp_digit(mag % 10,row,col + 2U & 0xff,invert);
   }
-  if (col == 0xb) {
-    disp_render_char8(0x20,row,0xe,invert);
-    disp_render_char8(0x20,row,0xf,invert);
-  }
+  /* 与三位数共用四列值域，末列必须擦除；单位列不属于数值域。 */
+  if (col == 0xb) disp_render_char8(0x20,row,0xe,invert);
   return;
 }
 
@@ -656,7 +606,6 @@ void disp_offset(uint32_t offset,uint32_t row,int col,uint32_t invert)
     }
     disp_digit(offset % 10,row,col + 3U & 0xff,invert);
   }
-  if (col == 0xb) disp_render_char8(0x20,row,0xf,invert);
   return;
 }
 
