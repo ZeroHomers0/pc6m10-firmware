@@ -58,7 +58,7 @@ for a in str_addrs:
 
 # [4] 关键字串搜索
 P("[4] 关键字串位置")
-for kw in [b"SINEP0WER", b"ST33C", b"V2.0", b"SINE", b"ST0P"]:
+for kw in [b"SINEP0WER", b"V2.0", b"SINE", b"ST0P"]:
     pos, found = 0, []
     while True:
         i = b.find(kw, pos)

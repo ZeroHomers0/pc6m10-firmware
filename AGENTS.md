@@ -8,8 +8,8 @@
 `LPC1765.bin`（262144 B）是所有等价验证的金标准。
 
 - GCC 可编译工程：`firmware/`，Arm GNU Toolchain 14.2.Rel1。
-- 当前构建：`text 62840 / data 3000 / bss 2188`。
-- 当前 `firmware.bin` SHA-256：`C6D3F35DD6C5A451947C27BA1825D8CE35C43D031F4EA02E32A9438BB32AE74E`。
+- 当前构建：`text 59296 / data 0 / bss 2188`。
+- 当前 `firmware.bin` SHA-256：`3C8412F4EA7C5E24CD96671BDF95C2413960A3840859A793A484334935CD2F8D`。
 - 自编译固件已于 2026-08-26 完成 CRP 布局修复（`0x2FC` 显式保留 `0xFFFFFFFF`，见
   `firmware/lpc1765.ld`、`firmware/startup.s`、`firmware/build.sh`）并经 J-Link SWD 烧写入板、
   全镜像校验通过；过程见 `docs/w8/W8_POST_FLASH_2026-08-26.md`。
@@ -22,7 +22,7 @@
   `DOCUMENTATION_INDEX.md` 为准。实机通过不代表分级波形/带载 100% 量化等价。
 - **2026-09-01 产品信息定制**（用户要求）：case9「产品版本信息」屏 4 行文本覆写为
   型号:PC6M-10 / 版本:V2.0 / 厂商:XIANPOWER / 电话:02984205750（原厂
-  ST33C / V2.0.2016 / SINEP0WER / 18938061832）。实现：`tools/generation/generate_string_pool.py`
+  原厂型号（略） / V2.0.2016 / SINEP0WER / 18938061832）。实现：`tools/generation/generate_string_pool.py`
   新增 `PRODUCT_INFO_OVERRIDES`（0x6b78/0x6b84/0x6b94/0x6ba4），重新生成 `firmware/src/strpool.c`
   得 `strpool_override` 段，`strpool_map` 前置查表（flash 地址不变，仅替换显示内容；
   原厂串仍保留于 blob）。重建固件后六相 A/B 验证全 PASS（含 DISPLAY_MATRIX 106 /
@@ -39,9 +39,18 @@
   `strpool.c` 并重建固件（text 62840 / data 3000 / bss 2188，SHA-256 `C6D3F35D…AE74`），
   六相 A/B 全 PASS、`run_tests.py` 25/25。详见 `docs/w8/W8_ISSUE_FIX_2026-09-01.md`。
 
+- **2026-11-13 菜单文字定制**（用户要求，2026-11-13 已烧写并读回校验）：相位限制→αmin限制、起始相位→αmax限制（含标定结果页同名项）、主从偏移→主从移相、相位校准→相位补偿；控制方式选项通讯→远程、定值→面板，本地不变。min/max 为 5×5 紧凑下标（3 字母共16像素）；α 按 Times New Roman 原字形等比例采样为16×16点阵，占满首末行，α+下标总宽仍32像素；新增字形集中在 `firmware/src/02_lcd_display.c`，不新增字库头文件。文字覆写入口为 `tools/generation/generate_string_pool.py` 的 `MENU_TEXT_OVERRIDES`。构建 `text 59296 / data 0 / bss 2188`，SHA-256 `A8C75FE705D87CA2A664E5C94F4494DF1747AE5FF3767EB6F9C2F1C530A97A1C`。完整回归 26/26、原 BIN A/B 全套及菜单专项验证通过；菜单文字/新增字形为有意定制偏离，不改变控制参数逻辑。状态矩阵移除未使用且会触发 Unicorn 异常的 GPIO 写 hook、跳过无副作用 Delay，并新增完整返回检查；菜单编辑测试同样跳过 Delay 并检查返回。日志见 `evidence/reverse/reports/menu_*_2026-11-13.log`。
+
+- **2026-11-13 背光时长定制**（用户要求，2026-11-13 已烧写并读回校验）：`state_machine_update_entry()` 背光无操作阈值由5000拍改为10000拍（每拍约2ms，约20秒）；按键点亮并清零计时。此为原 BIN 的有意定制偏离；其它菜单超时阈值保持原值。专项入口 `tools/verification/verify_backlight_timeout.py`，原 BIN/新 ELF 边界与按键续亮28例、完整 A/B 矩阵及回归26/26通过；日志见 `evidence/reverse/reports/backlight_*_2026-11-13.log`。当前固件 SHA 见本文顶部。
+
+- **2026-11-13 新版烧写完成**：使用仓库打包 J-Link（S/N 609799999，SWD 100kHz），用户已确认断开市电/门极/负载、仅接控制电。先备份板上完整256KiB并二次 verifybin 通过，再擦写当前固件（SHA见顶部）。verifybin通过；整片读回前59856字节与包内固件逐字节一致，其余Flash全FF，CRP=FFFFFFFF。备份/日志/manifest位于 `backup/flash_2026-11-13_menu20s/`（不提交备份）。固件包位于 `release/PC6M10_2026-11-13_menu_alpha_backlight20s.zip`。尚待用户物理断电上电及本次菜单/背光冒烟确认；本次不以J-Link驱动nRESET作为运行重启。
+
+- **2026-11-13 项目命名清理**（用户要求）：活动源码注释、工具脚本、项目/分析/历史说明及软件设计 Word 文档统一使用本项目名称；历史原厂型号引用改为省略标记，不修改原始证据内容。原始 BIN、备份及 `evidence/` 下提取/反编译资料保留原样。Word 仅替换一处适用固件字段；XML复查通过，因本机缺少LibreOffice未完成渲染。重新构建后BIN哈希与已烧写版完全一致，菜单与背光专项、原BIN A/B全套通过（`evidence/reverse/reports/naming_cleanup_ab_2026-11-13.log`），无需重复烧写。
+
 ## 必须遵守
 
 - 全程中文交流。
+- Git 提交说明必须使用中文（提交标题及正文均使用中文描述）。
 - 反编译、反汇编和硬件原始资料属于证据，不得因为当前未引用而删除。
 - 修改源码后必须以原始 BIN 做 A/B 执行级验证，不能仅依赖手写模型。
 - J-Link 一律调用仓库打包版 `tools/jlink/JLink.exe`（免安装），禁止依赖本机其他安装路径；

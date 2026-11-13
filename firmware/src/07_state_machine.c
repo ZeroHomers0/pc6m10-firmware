@@ -191,7 +191,8 @@ static void state_machine_update_entry(KeyCode key_code)
 /* ================= entry 公共逻辑 (0x458C-0x4B16) ================= */
   (*state_entry_ticks_ptr)++;
   if (key_code != KEY_NONE) { *state_entry_ticks_ptr = 0; lcd_ctrl_line(1); }
-  if (*state_entry_ticks_ptr > 0x1388) { *state_entry_ticks_ptr = 0; lcd_ctrl_line(0); }
+  /* 背光无操作超时：10000 × 2ms ≈20秒（用户定制，原 BIN 为5000拍）。 */
+  if (*state_entry_ticks_ptr > 10000u) { *state_entry_ticks_ptr = 0; lcd_ctrl_line(0); }
 
   if (debounce_p09() == 1) {                    /* P0.9 高电平：累计/影子值→EEPROM */
     if (*runtime_total_hour_ptr != *eeprom_shadow_runtime_hours) {

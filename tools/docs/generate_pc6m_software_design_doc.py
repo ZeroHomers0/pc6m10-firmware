@@ -371,7 +371,7 @@ p = doc.add_paragraph()
 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 font_run(p.add_run("基于 LPC1765FBD100 的六路移相触发、闭环控制与人机交互软件"), size=12.5, color=MUTED)
 p.paragraph_format.space_after = Pt(90)
-add_table(["文档版本", "适用固件", "编制日期"], [["V1.1", "PC6M-10 / ST33C", "2026-08-31"]], [2600, 3760, 3000], header_fill=LIGHT_GRAY, font_size=10)
+add_table(["文档版本", "适用固件", "编制日期"], [["V1.1", "PC6M-10", "2026-08-31"]], [2600, 3760, 3000], header_fill=LIGHT_GRAY, font_size=10)
 p = doc.add_paragraph()
 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 p.paragraph_format.space_before = Pt(35)

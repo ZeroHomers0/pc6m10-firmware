@@ -1,7 +1,7 @@
 # I2C 参数系统逆向报告 — 芯片 @0x53 与影子同步
 
 > 固件：`LPC1765.bin`（LPC1765 / Cortex-M3）
-> 设备：ST33C 变频电源（恒压/恒流/开环，SINEP0WER）
+> 设备：PC6M-10 三相 SCR 移相触发功率控制板（恒压/恒流/开环，SINEP0WER）
 > 恢复时间：2026-08-20（死机后重建会话）
 > 关联文档：[[uart3_protocol.md]]、[[state_machine_analysis.md]]、[[PLAN.md]]、[[PROGRESS_2026-08-20.md]]
 

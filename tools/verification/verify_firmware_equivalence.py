@@ -246,14 +246,9 @@ def verify_state_machine_matrix():
             for menu3, key in ((0, 0), (0, 2), (0, 3), (1, 2), (1, 3)):
                 cases.append((menu, menu2, menu3, key))
 
-    ranges = ((0x2009C000, 0x2009CFFF), (0x40008000, 0x40008FFF),
-              (0x40090000, 0x40090FFF), (0x400FC000, 0x400FDFFF))
-    # 预算：单帧最重为 case63 导航（4 个标签 disp_string + 显示块），ELF ≈3.9M 条；
-    # BIN 与 ELF 的 disp_string 渲染速度不同（GPIO 写迹已单独验证像素一致），
-    # 预算过低会导致两者在逻辑进度不同的点被截断 → SRAM 末态假分歧。
-    # 故预算提到 > 最重帧，令 BIN/ELF 都完整跑完一帧在返回点(0x3FF00)停下再比对。
+    # 只比较完整一帧的 SRAM 末态。跳过纯忙等，字符渲染仍执行。
+    # GPIO 叶函数/输出写序列由其它矩阵独立验证。
     for menu, menu2, menu3, key in cases:
-        traces = []
         states = []
         for is_new, entry in ((False, 0x458C), (True, SYMS["state_machine"])):
             uc = machine(is_new)
@@ -262,13 +257,16 @@ def verify_state_machine_matrix():
             uc.mem_write(0x10001698, struct.pack("<IIIII", 4000, 4001, 4002, 4003, 4004))
             uc.mem_write(0x10001660, struct.pack("<I", 90))
             uc.mem_write(0x10001710, bytes((2, 10, 10, 0, 0, 0, 2, 2, 2)))
-            trace = []
-            callback = lambda machine, access, address, size, value, user: trace.append((address, size, value))
-            for begin, end in ranges:
-                uc.hook_add(UC_HOOK_MEM_WRITE, callback, begin=begin, end=end)
+            # 本矩阵只比较 SRAM；不安装无用的 GPIO 写 hook。
+            # Unicorn 对部分 ELF 布局在 GPIO 写 hook 下会异常回到调用前的指令。
+            # 仅跳过无副作用的忙等；LCD 字符、总线和业务函数仍真实执行。
+            delay_entry = SYMS["Delay"] if is_new else 0x7A8
+            uc.hook_add(UC_HOOK_CODE,
+                        lambda m, a, n, u: m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR)),
+                        begin=delay_entry, end=delay_entry + 1)
             uc.reg_write(UC_ARM_REG_R0, key)
-            run(uc, entry, max_insn=6_000_000)
-            traces.append(trace)
+            run(uc, entry, max_insn=12_000_000)
+            assert uc.reg_read(UC_ARM_REG_PC) == 0x3FF00, f"state machine incomplete {(menu, menu2, menu3, key, is_new)} PC={uc.reg_read(UC_ARM_REG_PC):x}"
             states.append(bytes(uc.mem_read(0x10000000, 0x2200)))
         label = (menu, menu2, menu3, key)
         # 状态机内部会调用多个 GPIO 叶函数；其逐次 MMIO 已由专门矩阵独立验证。

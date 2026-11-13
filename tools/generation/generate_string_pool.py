@@ -68,7 +68,7 @@ EXTRA = {0x7974, 0x7980, 0x86e0}   # 'V' 过压/欠压 · 'A' IF/CT 过载 · '%
 
 # ── 产品信息定制覆写（2026-09-01 用户要求）────────────────────────────
 # case9 产品版本信息屏 4 行文本：地址保持原固件 flash 地址，strpool_map 前置
-# 查表返回定制串（GBK 字节）。原厂内容：型号:ST33C / 版本:V2.0.2016 /
+# 查表返回定制串（GBK 字节）。原厂内容：型号:（原厂型号略） / 版本:V2.0.2016 /
 # 厂商:SINEP0WER / 电话:18938061832。改这里并重新生成即可。
 PRODUCT_INFO_OVERRIDES = {
     0x6b78: "型号:PC6M-10",
@@ -76,6 +76,18 @@ PRODUCT_INFO_OVERRIDES = {
     0x6b94: "厂商:XIANPOWER",
     0x6ba4: "电话:02984205750",
 }
+
+# 菜单显示定制（2026-11-13）：仅替换文字，保留编号、值列和单位列。
+MENU_TEXT_OVERRIDES = {
+    0x7034: "9.αmin限制:   度",
+    0x70c0: "16αmax限制:   度",
+    0x5b90: "11αmax限制:   度",
+    0x7048: "10主从移相:   度",
+    0x6b34: "相位补偿",
+    0x7998: " 远程",
+    0x79a8: " 面板",
+}
+STRING_OVERRIDES = {**PRODUCT_INFO_OVERRIDES, **MENU_TEXT_OVERRIDES}
 
 def addrs_final():
     raw = addrs_from_src() | addrs_from_display_header() | EXTRA
@@ -139,7 +151,7 @@ csrc.append(" * 反编译把 disp_string 第一实参直传原固件 flash 字�
 csrc.append(" * GCC 重链接后该地址是指令字节。strpool_map 把 flash 地址映射到本 blob 内偏移。")
 csrc.append(" * 未命中（RAM/外设地址）原样返回。")
 csrc.append(" * 产品信息定制（2026-09-01 用户要求）：case9 版本屏 4 行文本覆写为定制内容")
-csrc.append(" * （型号/版本/厂商/电话），地址不变，strpool_map 前置查表；见 PRODUCT_INFO_OVERRIDES。 */")
+csrc.append(" * （型号/版本/厂商/电话）；2026-11-13 菜单文字定制。见 STRING_OVERRIDES。 */")
 csrc.append("#include <stdint.h>")
 csrc.append("#include \"inc/firmware_api.h\"")
 csrc.append("")
@@ -163,35 +175,35 @@ for base, ln, off in records:
 csrc.append("};")
 csrc.append("")
 
-# 产品信息定制覆写段（strpool_map 前置查表）
-if PRODUCT_INFO_OVERRIDES:
+# 产品信息与菜单文字定制覆写段（strpool_map 前置查表）
+if STRING_OVERRIDES:
     ov_off = {}
     ovb = bytearray()
-    for a in sorted(PRODUCT_INFO_OVERRIDES):
+    for a in sorted(STRING_OVERRIDES):
         ov_off[a] = len(ovb)
-        ovb += PRODUCT_INFO_OVERRIDES[a].encode("gbk") + b"\x00"
-    csrc.append("/* 产品信息定制覆写（2026-09-01 用户要求）：case9 版本屏 4 行文本（GBK 字节）。")
+        ovb += STRING_OVERRIDES[a].encode("gbk") + b"\x00"
+    csrc.append("/* 产品信息（2026-09-01）与菜单文字（2026-11-13）定制覆写（GBK 字节）。")
     csrc.append(" * 地址保持原固件 flash 地址，strpool_map 前置查表返回定制串；")
     csrc.append(" * 原厂内容仍在原簇 blob 中保留（未使用）。 */")
     csrc.append("static const uint8_t strpool_override_blob[] =")
     ovlines = []
-    for a in sorted(PRODUCT_INFO_OVERRIDES):
-        chunk = PRODUCT_INFO_OVERRIDES[a].encode("gbk") + b"\x00"
+    for a in sorted(STRING_OVERRIDES):
+        chunk = STRING_OVERRIDES[a].encode("gbk") + b"\x00"
         ovlines.append('  "' + "".join("\\x%02x" % b for b in chunk) +
-                       '" /* %s */' % PRODUCT_INFO_OVERRIDES[a])
+                       '" /* %s */' % STRING_OVERRIDES[a])
     csrc.append("\n".join(ovlines) + ";")
     csrc.append("")
     csrc.append("typedef struct { uint32_t addr; uint32_t off; } strpool_override_t;")
     csrc.append("static const strpool_override_t strpool_override[] = {")
     csrc.append("  " + ", ".join("{ 0x%04x, %d }" % (a, ov_off[a])
-                                 for a in sorted(PRODUCT_INFO_OVERRIDES)) + "};")
+                                 for a in sorted(STRING_OVERRIDES)) + "};")
     csrc.append("")
     csrc.append("")
 
 csrc.append("uint32_t strpool_map(uint32_t addr)")
 csrc.append("{")
 csrc.append("  uint32_t i;")
-if PRODUCT_INFO_OVERRIDES:
+if STRING_OVERRIDES:
     csrc.append("  for (i = 0; i < sizeof(strpool_override) / sizeof(strpool_override[0]); i++) {")
     csrc.append("    if (addr == strpool_override[i].addr)")
     csrc.append("      return (uint32_t)(strpool_override_blob + strpool_override[i].off);")

@@ -4,7 +4,7 @@
  * GCC 重链接后该地址是指令字节。strpool_map 把 flash 地址映射到本 blob 内偏移。
  * 未命中（RAM/外设地址）原样返回。
  * 产品信息定制（2026-09-01 用户要求）：case9 版本屏 4 行文本覆写为定制内容
- * （型号/版本/厂商/电话），地址不变，strpool_map 前置查表；见 PRODUCT_INFO_OVERRIDES。 */
+ * （型号/版本/厂商/电话）；2026-11-13 菜单文字定制。见 STRING_OVERRIDES。 */
 #include <stdint.h>
 #include "inc/firmware_api.h"
 
@@ -116,18 +116,25 @@ static const strpool_cluster_t strpool_clusters[] = {
   {44060, 5, strpool_blob + 2562},
 };
 
-/* 产品信息定制覆写（2026-09-01 用户要求）：case9 版本屏 4 行文本（GBK 字节）。
+/* 产品信息（2026-09-01）与菜单文字（2026-11-13）定制覆写（GBK 字节）。
  * 地址保持原固件 flash 地址，strpool_map 前置查表返回定制串；
  * 原厂内容仍在原簇 blob 中保留（未使用）。 */
 static const uint8_t strpool_override_blob[] =
+  "\x31\x31\xa6\xc1\x6d\x61\x78\xcf\xde\xd6\xc6\x3a\x20\x20\x20\xb6\xc8\x00" /* 11αmax限制:   度 */
+  "\xcf\xe0\xce\xbb\xb2\xb9\xb3\xa5\x00" /* 相位补偿 */
   "\xd0\xcd\xba\xc5\x3a\x50\x43\x36\x4d\x2d\x31\x30\x00" /* 型号:PC6M-10 */
   "\xb0\xe6\xb1\xbe\x3a\x56\x32\x2e\x30\x00" /* 版本:V2.0 */
   "\xb3\xa7\xc9\xcc\x3a\x58\x49\x41\x4e\x50\x4f\x57\x45\x52\x00" /* 厂商:XIANPOWER */
-  "\xb5\xe7\xbb\xb0\x3a\x30\x32\x39\x38\x34\x32\x30\x35\x37\x35\x30\x00" /* 电话:02984205750 */;
+  "\xb5\xe7\xbb\xb0\x3a\x30\x32\x39\x38\x34\x32\x30\x35\x37\x35\x30\x00" /* 电话:02984205750 */
+  "\x39\x2e\xa6\xc1\x6d\x69\x6e\xcf\xde\xd6\xc6\x3a\x20\x20\x20\xb6\xc8\x00" /* 9.αmin限制:   度 */
+  "\x31\x30\xd6\xf7\xb4\xd3\xd2\xc6\xcf\xe0\x3a\x20\x20\x20\xb6\xc8\x00" /* 10主从移相:   度 */
+  "\x31\x36\xa6\xc1\x6d\x61\x78\xcf\xde\xd6\xc6\x3a\x20\x20\x20\xb6\xc8\x00" /* 16αmax限制:   度 */
+  "\x20\xd4\xb6\xb3\xcc\x00" /*  远程 */
+  "\x20\xc3\xe6\xb0\xe5\x00" /*  面板 */;
 
 typedef struct { uint32_t addr; uint32_t off; } strpool_override_t;
 static const strpool_override_t strpool_override[] = {
-  { 0x6b78, 0 }, { 0x6b84, 13 }, { 0x6b94, 23 }, { 0x6ba4, 38 }};
+  { 0x5b90, 0 }, { 0x6b34, 18 }, { 0x6b78, 27 }, { 0x6b84, 40 }, { 0x6b94, 50 }, { 0x6ba4, 65 }, { 0x7034, 82 }, { 0x7048, 100 }, { 0x70c0, 117 }, { 0x7998, 135 }, { 0x79a8, 141 }};
 
 
 uint32_t strpool_map(uint32_t addr)

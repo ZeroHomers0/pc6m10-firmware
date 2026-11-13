@@ -58,7 +58,15 @@ def run(is_new, entry, item, val, key, cap=60_000_000):
     uc.mem_write(0x10001744, bytes((3, item, 1)))      # MENU=3, MENU2=item, MENU3=1
     uc.mem_write(0x10001778, struct.pack("<I", 0xfb))  # TIMEOUT3（编辑态整页重绘阈值）
     uc.reg_write(V.UC_ARM_REG_R0, key)
+    # 菜单改字增加字形路径：跳过纯忙等，保留完整菜单/显示执行。
+    from unicorn import UC_HOOK_CODE
+    from unicorn.arm_const import UC_ARM_REG_PC, UC_ARM_REG_LR
+    delay_entry = V.SYMS["Delay"] if is_new else 0x7A8
+    uc.hook_add(UC_HOOK_CODE,
+                lambda m, a, n, u: m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR)),
+                begin=delay_entry, end=delay_entry + 1)
     V.run(uc, entry, max_insn=cap)
+    assert uc.reg_read(UC_ARM_REG_PC) == 0x3FF00, "case3 instruction budget exhausted"
     return int.from_bytes(uc.mem_read(addr, width), "little")
 
 
