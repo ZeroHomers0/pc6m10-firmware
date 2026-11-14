@@ -8,8 +8,8 @@
 `LPC1765.bin`（262144 B）是所有等价验证的金标准。
 
 - GCC 可编译工程：`firmware/`，Arm GNU Toolchain 14.2.Rel1。
-- 当前构建：`text 59296 / data 0 / bss 2188`。
-- 当前 `firmware.bin` SHA-256：`3C8412F4EA7C5E24CD96671BDF95C2413960A3840859A793A484334935CD2F8D`。
+- 当前构建：`text 59384 / data 0 / bss 2188`。
+- 当前 `firmware.bin` SHA-256：`7C8283EF94CFFF298CE7FC172F7A90F691461CBF66C68373B776587D9547BE47`。
 - 自编译固件已于 2026-08-26 完成 CRP 布局修复（`0x2FC` 显式保留 `0xFFFFFFFF`，见
   `firmware/lpc1765.ld`、`firmware/startup.s`、`firmware/build.sh`）并经 J-Link SWD 烧写入板、
   全镜像校验通过；过程见 `docs/w8/W8_POST_FLASH_2026-08-26.md`。
@@ -46,6 +46,8 @@
 - **2026-11-13 新版烧写完成**：使用仓库打包 J-Link（S/N 609799999，SWD 100kHz），用户已确认断开市电/门极/负载、仅接控制电。先备份板上完整256KiB并二次 verifybin 通过，再擦写当前固件（SHA见顶部）。verifybin通过；整片读回前59856字节与包内固件逐字节一致，其余Flash全FF，CRP=FFFFFFFF。备份/日志/manifest位于 `backup/flash_2026-11-13_menu20s/`（不提交备份）。固件包位于 `release/PC6M10_2026-11-13_menu_alpha_backlight20s.zip`。尚待用户物理断电上电及本次菜单/背光冒烟确认；本次不以J-Link驱动nRESET作为运行重启。
 
 - **2026-11-13 项目命名清理**（用户要求）：活动源码注释、工具脚本、项目/分析/历史说明及软件设计 Word 文档统一使用本项目名称；历史原厂型号引用改为省略标记，不修改原始证据内容。原始 BIN、备份及 `evidence/` 下提取/反编译资料保留原样。Word 仅替换一处适用固件字段；XML复查通过，因本机缺少LibreOffice未完成渲染。重新构建后BIN哈希与已烧写版完全一致，菜单与背光专项、原BIN A/B全套通过（`evidence/reverse/reports/naming_cleanup_ab_2026-11-13.log`），无需重复烧写。
+
+- **2026-11-14 菜单标题调整**：按用户要求在 `firmware-menu-display-2026-11-13` 分支将相位补偿改为同步校准，补齐同/步点阵并集中在显示模块。菜单专项及原BIN完整A/B验证通过（`evidence/reverse/reports/menu_sync_calibration_ab_2026-11-14.log`）；2026-11-14已通过仓库J-Link烧写，verifybin及整片读回核对通过，CRP=FFFFFFFF；备份和日志见 `backup/flash_2026-11-14_sync_calibration/`。尚待用户物理断电上电及显示确认。
 
 ## 必须遵守
 
