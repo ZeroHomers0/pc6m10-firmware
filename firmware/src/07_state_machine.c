@@ -1,3 +1,4 @@
+#include "inc/input_events.h"
 /* =============================================================================
  * 07_state_machine.c — 用户界面状态机
  * 页面入口、页面绘制和交互处理已经按功能拆分；字符串资源地址集中在
@@ -433,22 +434,22 @@ static void state_machine_page_main(KeyCode key_code)
           disp_string(DISPLAY_STATUS_RUNNING, 3, 0xa, 0);
         }
         if (*operation_configuration_ptr == 0 && *parameter_control_method_ptr != 0) *run_stop_state_ptr = 0;
-        if (*output_fault_flags_ptr == 0 && *stop_request_ptr == 0 && (key_code == KEY_START || *ui_scan_stop_flag_ptr == 7)) {
+        if (*output_fault_flags_ptr == 0 && *stop_request_ptr == 0 && (key_code == KEY_START || *ui_scan_stop_flag_ptr == TERMINAL_EVENT_START)) {
           if (*parameter_start_mode_ptr == 0) {
             *run_stop_state_ptr = 1; *stop_request_ptr = 1; *stop_pending_ptr = 0; *run_request_ptr = 0;
             *operation_configuration_ptr = 1; *status_message_shown_ptr = 0; *runtime_tick_ptr = 0; *runtime_current_minute_ptr = 0; *runtime_current_hour_ptr = 0;
             disp_string(DISPLAY_STATUS_OUTPUT_DISABLED, 3, 0xa, 0);
-          } else if (*ui_scan_stop_flag_ptr == 7 && *parameter_start_mode_ptr == 1 && *parameter_control_method_ptr != 0) {
+          } else if (*ui_scan_stop_flag_ptr == TERMINAL_EVENT_START && *parameter_start_mode_ptr == 1 && *parameter_control_method_ptr != 0) {
             *run_stop_state_ptr = 1; *stop_request_ptr = 1; *stop_pending_ptr = 0; *run_request_ptr = 0;
             *operation_configuration_ptr = 1; *status_message_shown_ptr = 0; *runtime_tick_ptr = 0; *runtime_current_minute_ptr = 0; *runtime_current_hour_ptr = 0;
             disp_string(DISPLAY_STATUS_OUTPUT_DISABLED, 3, 0xa, 0);
           }
         }
-        if (*output_fault_flags_ptr == 0 && *stop_pending_ptr == 0 && (key_code == KEY_STOP || *ui_scan_stop_flag_ptr == 8)) {
+        if (*output_fault_flags_ptr == 0 && *stop_pending_ptr == 0 && (key_code == KEY_STOP || *ui_scan_stop_flag_ptr == TERMINAL_EVENT_STOP)) {
           if (*parameter_start_mode_ptr == 0) {
             *run_stop_state_ptr = 0; *stop_pending_ptr = 1; *stop_request_ptr = 0; *operation_configuration_ptr = 0;
             disp_string(DISPLAY_STATUS_RUNNING, 3, 0xa, 0);
-          } else if (*ui_scan_stop_flag_ptr == 8 && *parameter_start_mode_ptr == 1 && *parameter_control_method_ptr != 0) {
+          } else if (*ui_scan_stop_flag_ptr == TERMINAL_EVENT_STOP && *parameter_start_mode_ptr == 1 && *parameter_control_method_ptr != 0) {
             *run_stop_state_ptr = 0; *stop_pending_ptr = 1; *stop_request_ptr = 0; *operation_configuration_ptr = 0;
             disp_string(DISPLAY_STATUS_RUNNING, 3, 0xa, 0);
           }
@@ -1711,8 +1712,8 @@ static void state_machine_page_authentication(KeyCode key_code)
     }
     if (*operation_configuration_ptr == 0 && *parameter_control_method_ptr != 0) *run_stop_state_ptr = 0;
     if (*output_fault_flags_ptr == 0 && *stop_request_ptr == 0) {
-      if (key_code == KEY_START || *ui_scan_stop_flag_ptr == 7) {
-        if (*parameter_start_mode_ptr == 0 || (*ui_scan_stop_flag_ptr == 7 && *parameter_start_mode_ptr == 1 && *parameter_control_method_ptr != 0)) {
+      if (key_code == KEY_START || *ui_scan_stop_flag_ptr == TERMINAL_EVENT_START) {
+        if (*parameter_start_mode_ptr == 0 || (*ui_scan_stop_flag_ptr == TERMINAL_EVENT_START && *parameter_start_mode_ptr == 1 && *parameter_control_method_ptr != 0)) {
           *run_stop_state_ptr = 1; *stop_request_ptr = 1; *stop_pending_ptr = 0; *run_request_ptr = 0; *operation_configuration_ptr = 1; *status_message_shown_ptr = 0;
           *runtime_tick_ptr = 0; *runtime_current_minute_ptr = 0; *runtime_current_hour_ptr = 0;
           disp_string(DISPLAY_STATUS_OUTPUT_DISABLED, 3, 0xa, 0);
@@ -1720,8 +1721,8 @@ static void state_machine_page_authentication(KeyCode key_code)
       }
     }
     if (*output_fault_flags_ptr == 0 && *stop_pending_ptr == 0) {
-      if (key_code == KEY_STOP || *ui_scan_stop_flag_ptr == 8) {
-        if (*parameter_start_mode_ptr == 0 || (*ui_scan_stop_flag_ptr == 8 && *parameter_start_mode_ptr == 1 && *parameter_control_method_ptr != 0)) {
+      if (key_code == KEY_STOP || *ui_scan_stop_flag_ptr == TERMINAL_EVENT_STOP) {
+        if (*parameter_start_mode_ptr == 0 || (*ui_scan_stop_flag_ptr == TERMINAL_EVENT_STOP && *parameter_start_mode_ptr == 1 && *parameter_control_method_ptr != 0)) {
           *run_stop_state_ptr = 0; *stop_pending_ptr = 1; *stop_request_ptr = 0; *operation_configuration_ptr = 0;
           disp_string(DISPLAY_STATUS_RUNNING, 3, 0xa, 0);
         }

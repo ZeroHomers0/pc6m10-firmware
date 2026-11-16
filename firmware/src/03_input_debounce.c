@@ -4,6 +4,7 @@
  * ========================================================================== */
 #include "inc/types.h"
 #include "inc/reg.h"
+#include "inc/input_events.h"
 #include "inc/firmware_types.h"
 #include "inc/firmware_api.h"
 #include "inc/firmware_state.h"
@@ -204,7 +205,7 @@ uint8_t scan_run_stop(void)
       *input_run_counter_ptr = *input_run_counter_ptr + 1;
       if (*counter_ptr == 0x32) {
         *counter_ptr = 0x32;
-        return KEY_START;
+        return TERMINAL_EVENT_START;
       }
       if (0x32 < *input_run_counter_ptr) {
         *input_run_counter_ptr = 0x32;
@@ -222,7 +223,7 @@ uint8_t scan_run_stop(void)
       *input_stop_counter_ptr = *input_stop_counter_ptr + 1;
       if (*counter_ptr == 0x32) {
         *counter_ptr = 0x32;
-        return KEY_STOP;
+        return TERMINAL_EVENT_STOP;
       }
       if (0x32 < *input_stop_counter_ptr) {
         *input_stop_counter_ptr = 0x32;
@@ -236,7 +237,7 @@ uint8_t scan_run_stop(void)
       *input_run_counter_ptr = *input_run_counter_ptr + 1;
       if (0x31 < *counter_ptr) {
         *counter_ptr = 0x32;
-        *input_run_stop_latch_ptr = 7;
+        *input_run_stop_latch_ptr = TERMINAL_EVENT_START;
       }
     }
     else {
@@ -250,7 +251,7 @@ uint8_t scan_run_stop(void)
       *input_stop_counter_ptr = *input_stop_counter_ptr + 1;
       if (0x31 < *counter_ptr) {
         *counter_ptr = 0x32;
-        *input_run_stop_latch_ptr = 8;
+        *input_run_stop_latch_ptr = TERMINAL_EVENT_STOP;
       }
     }
     event_code = *input_run_stop_latch_ptr;

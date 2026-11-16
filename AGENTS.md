@@ -9,7 +9,7 @@
 
 - GCC 可编译工程：`firmware/`，Arm GNU Toolchain 14.2.Rel1。
 - 当前构建：`text 59384 / data 0 / bss 2188`。
-- 当前 `firmware.bin` SHA-256：`7C8283EF94CFFF298CE7FC172F7A90F691461CBF66C68373B776587D9547BE47`。
+- 当前 `firmware.bin` SHA-256：`40CCF4F73DD8B11035D5E41DCDD8FA0B08CA18AD40FCD0A729C0A99EC1B2D181`。
 - 自编译固件已于 2026-08-26 完成 CRP 布局修复（`0x2FC` 显式保留 `0xFFFFFFFF`，见
   `firmware/lpc1765.ld`、`firmware/startup.s`、`firmware/build.sh`）并经 J-Link SWD 烧写入板、
   全镜像校验通过；过程见 `docs/w8/W8_POST_FLASH_2026-08-26.md`。
@@ -48,6 +48,8 @@
 - **2026-11-13 项目命名清理**（用户要求）：活动源码注释、工具脚本、项目/分析/历史说明及软件设计 Word 文档统一使用本项目名称；历史原厂型号引用改为省略标记，不修改原始证据内容。原始 BIN、备份及 `evidence/` 下提取/反编译资料保留原样。Word 仅替换一处适用固件字段；XML复查通过，因本机缺少LibreOffice未完成渲染。重新构建后BIN哈希与已烧写版完全一致，菜单与背光专项、原BIN A/B全套通过（`evidence/reverse/reports/naming_cleanup_ab_2026-11-13.log`），无需重复烧写。
 
 - **2026-11-14 菜单标题调整**：按用户要求在 `firmware-menu-display-2026-11-13` 分支将相位补偿改为同步校准，补齐同/步点阵并集中在显示模块。菜单专项及原BIN完整A/B验证通过（`evidence/reverse/reports/menu_sync_calibration_ab_2026-11-14.log`）；2026-11-14已通过仓库J-Link烧写，verifybin及整片读回核对通过，CRP=FFFFFFFF；备份和日志见 `backup/flash_2026-11-14_sync_calibration/`。尚待用户物理断电上电及显示确认。
+
+- **2026-11-16 端子启停事件码修复**：点动扫描曾错误返回面板键码5/6，修正为原BIN要求的端子事件7/8；新增 `firmware/inc/input_events.h` 明确事件契约，扫描与状态机共用。新增 `test/emulation/test_terminal_event_contract.py` 覆盖1176例扫描和88例去抖边界，修复后全部A/B一致，完整原BIN A/B及全量回归27/27通过，日志见 `evidence/reverse/reports/terminal_event_*_2026-11-16.log`。保留原版本地＋自锁门控；此次未烧写。本次修复前的全套测试未覆盖点动触发边界，历史PASS不构成本问题不存在的证明。
 
 ## 必须遵守
 
