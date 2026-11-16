@@ -75,3 +75,7 @@
 - 目录用途总览：`docs/README.md`、`tools/README.md`、`test/README.md`。
 
 - [2026-11-17 第二路闭环反馈复制修复及原BIN验证](docs/analysis/PC6M_FEEDBACK_FIX_2026-11-17.md)
+
+- **2026-11-17 烧写记录**：PC6M提交24cbbad（E843035C…9022B2）已通过J-Link烧写、整片备份及读回校验；CRP全FF。记录在 `backup/flash_2026-11-17_feedback_fix/manifest.json`（本地备份不上传）。待用户物理断电上电确认。
+
+- **2026-11-17 异常应答功能码 func+0x80**：异常应答功能码改为 8 位加法回绕，新增 `test/emulation/test_exception_func_code.py`；构建 text 59804（SHA `38B3EB17…C405F7`），未烧写。

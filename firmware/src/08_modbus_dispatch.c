@@ -38,7 +38,7 @@
  * 流程（对照 evidence/reverse/disassembly/08_modbus_dispatch_asm.txt）：
  *   1) 帧态门控：状态==1 → 只清计数返回；==5 → 继续；否则返回
  *   2) 从站地址匹配：帧[0]==本站地址？不匹配 → modbus_error_indicator_clear_register P4.29 + 清状态 + IER + 返回
- *   3) 功能码分发：非 0x03/0x06/0x10 → 异常响应 [地址,func|0x80,0x01]
+ *   3) 功能码分发：非 0x03/0x06/0x10 → 异常响应 [地址,func+0x80,0x01]（原厂 adds，>=0x80 回绕）
  *   4) CRC 校验：crc16(帧, len-2) vs 帧末两字节；不匹配 → 异常 [..,0x04]
  *   5) 0x06 写单：值=帧[4..5] → 值缓存 → 53 分支
  *   6) 0x10 写多：modbus_write_multi 循环 → 响应 [地址,0x10,0x10,起始reg,数量,CRC16]
@@ -92,9 +92,11 @@ void modbus_dispatch(int arg)
     return;
   }
 
-  /* 3) 功能码分发（非法功能码） */
+  /* 3) 功能码分发（非法功能码）
+   *    原 BIN 0xB6BC 为 `adds r0,#0x80`（加法，非 ORR）：func>=0x80 时结果按 8 位截断回绕
+   *    （0x83→0x03、0xFF→0x7F）。0xB752 的 CRC 异常帧同样是加法。 */
   if (rx_frame[1] != 0x03 && rx_frame[1] != 0x06 && rx_frame[1] != 0x10) {
-    tx_frame[0] = *slave_address; tx_frame[1] = rx_frame[1] | 0x80; tx_frame[2] = 0x01;
+    tx_frame[0] = *slave_address; tx_frame[1] = (uint8_t)(rx_frame[1] + 0x80); tx_frame[2] = 0x01;
     frame_crc = crc16((uint8_t *)tx_frame, 3); tx_frame[3] = frame_crc & 0xff; tx_frame[4] = frame_crc >> 8;
     uart3_tx_byte(5);
     return;
@@ -104,7 +106,7 @@ void modbus_dispatch(int arg)
   write_value = (uint32_t)*frame_length;
   frame_crc = crc16((uint8_t *)rx_frame, write_value - 2);
   if ((uint8_t)(frame_crc & 0xff) != rx_frame[write_value - 2] || (uint8_t)(frame_crc >> 8) != rx_frame[write_value - 1]) {
-    tx_frame[0] = *slave_address; tx_frame[1] = rx_frame[1] | 0x80; tx_frame[2] = 0x04;
+    tx_frame[0] = *slave_address; tx_frame[1] = (uint8_t)(rx_frame[1] + 0x80); tx_frame[2] = 0x04;
     frame_crc = crc16((uint8_t *)tx_frame, 3); tx_frame[3] = frame_crc & 0xff; tx_frame[4] = frame_crc >> 8;
     uart3_tx_byte(5);
     return;

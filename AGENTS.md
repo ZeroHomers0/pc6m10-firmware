@@ -8,8 +8,9 @@
 `LPC1765.bin`（262144 B）是所有等价验证的金标准。
 
 - GCC 可编译工程：`firmware/`，Arm GNU Toolchain 14.2.Rel1。
-- 当前构建：`text 59808 / data 0 / bss 2188`（2026-11-17 闭环反馈复制修复后）。
-- 当前 `firmware.bin` SHA-256：`E843035C88D1B5AE52A516072F09FC551BC90720CFF23EA4EEF6623FF19022B2`（60368 B）。
+- 当前构建：`text 59804 / data 0 / bss 2188`（2026-11-17 异常应答功能码修复后）。
+- 当前 `firmware.bin` SHA-256：`38B3EB172899A0E276E18B1CE3F904DCA6CD7560DB2B2AC3172ABB78A9C405F7`（60364 B）。
+- 板上已烧写镜像为上一版 `E843035C88D1B5AE52A516072F09FC551BC90720CFF23EA4EEF6623FF19022B2`（60368 B，text 59808，含闭环反馈复制修复；本次功能码修复未烧写）。
 - 自编译固件已于 2026-08-26 完成 CRP 布局修复（`0x2FC` 显式保留 `0xFFFFFFFF`，见
   `firmware/lpc1765.ld`、`firmware/startup.s`、`firmware/build.sh`）并经 J-Link SWD 烧写入板、
   全镜像校验通过；过程见 `docs/w8/W8_POST_FLASH_2026-08-26.md`。
@@ -60,6 +61,10 @@
 - **2026-11-17 最新两提交独立复核**：`7af6119`/`1a55f84`大部分修正有原BIN依据，但第二路闭环三处反馈复制仍误写为自赋值（`09_output_stage.c` 576/589/601行），可使PID反馈原版3000变为当前1。原第二路回归未满足ADC给定>=10的分支前提，无法覆盖该缺陷。现有30/30与完整A/B仍通过，新增实际入分支样本4例失败；临时副本补齐三处复制后消除。该复核时未修改业务源码；随后已按用户要求修复并补齐真实分支回归，见下条。详见 `docs/analysis/PC6M_LATEST_TWO_REVIEW_2026-11-17.md`。
 
 - **2026-11-17 闭环反馈复制修复**：三处恢复 `adc_field_output_scaled = adc_voltage_output_scaled`，对应原BIN 0xF450/0xF4B6/0xF50A。回归显式设置ADC给定100，三个复制路径各4例，断言原复制指令及PID调用确实发生，反馈3000、PID目标526及完整SRAM一致；通信/输出级测试增加正常返回检查。修复记录与最终验证日志见 `docs/analysis/PC6M_FEEDBACK_FIX_2026-11-17.md`。未烧写硬件。
+
+- **2026-11-17 已烧写闭环反馈修复版**：用户确认断开市电/门极/负载、仅限流控制电。使用仓库J-Link（609799999，SWD100kHz），完整256KiB备份及verifybin通过后，烧写隔离构建的提交 `24cbbad`，固件60368字节，SHA256 `E843035C88D1B5AE52A516072F09FC551BC90720CFF23EA4EEF6623FF19022B2`。烧后verifybin、整片读回逐字节核对通过，其余Flash全FF，CRP=FFFFFFFF。备份、脚本、日志与manifest在 `backup/flash_2026-11-17_feedback_fix/`，不上传。工作区并行通信改动未纳入；当前构建文件可能已被并行任务替换，以本次备份目录中固定固件与manifest为本次烧写证据。未驱动nRESET运行重启，尚待用户物理断电上电及实机冒烟确认。
+
+- **2026-11-17 异常应答功能码修复**：原 BIN 异常应答的功能码是 `adds r0,#0x80`（0xB42C / 0xB4C2），按 8 位回绕；源码用按位或，功能码 >=0x80（0x83/0x86/0xFF）时原机应答 0x03/0x06/0x7F、新固件仍回原值。已把两处（功能码非 0x03/0x06/0x10 与 CRC 错误）改为 `(uint8_t)(rx_frame[1] + 0x80)`，新增 `test/emulation/test_exception_func_code.py`（非法功能码 10 帧 + CRC 错误 3 帧，共 13/13 与原 BIN 一致）。构建 text 59804、回归 31/31、原 BIN A/B 全 PASS。未烧写。
 
 ## 必须遵守
 
