@@ -37,21 +37,37 @@ static void draw_basic_parameter_item(uint32_t item_index, uint32_t row, uint32_
     case 0:
       if (*parameter_control_mode_ptr == 0) { disp_string(DISPLAY_CONTROL_MODE_OPTION_1, row, 0xb, attr); fio1_pin20_ctrl(1); fio1_pin21_ctrl(0); }
       else if (*parameter_control_mode_ptr == 1) { disp_string(DISPLAY_CONTROL_MODE_OPTION_2, row, 0xb, attr); fio1_pin20_ctrl(0); fio1_pin21_ctrl(1); }
-      else { disp_string(DISPLAY_CONTROL_MODE_OPTION_3, row, 0xb, attr); fio1_pin20_ctrl(0); fio1_pin21_ctrl(0); }
+      else if (*parameter_control_mode_ptr == 2) { disp_string(DISPLAY_CONTROL_MODE_OPTION_3, row, 0xb, attr); fio1_pin20_ctrl(0); fio1_pin21_ctrl(0); }
       break;
     case 1: disp_uint4(*parameter_voltage_range_ptr, row, 0xb, attr); break;
     case 2: disp_uint4(*parameter_current_range_ptr, row, 0xb, attr); break;
     case 3: disp_uint4(*parameter_transformer_ratio_ptr, row, 0xb, attr); break;
-    case 4: disp_uint4(*parameter_voltage_limit_ptr, row, 0xb, attr); break;
-    case 5: disp_uint4(*parameter_current_limit_ptr, row, 0xb, attr); break;
-    case 6: disp_number3(*parameter_soft_start_time_ptr, row, 0xb, attr); break;
-    case 7: disp_number3(*parameter_soft_stop_time_ptr, row, 0xb, attr); break;
+    /* BIN 0x7606-0x7676 / 0x7684-0x76A0：范围≥限值时画限值(列0xb)再补单位(列0xf,attr=0)，
+     * 否则只画 DISPLAY_OPTION_DISABLED（0x6038），不画单位。 */
+    case 4:
+      if (*parameter_voltage_range_ptr >= *parameter_voltage_limit_ptr) {
+        disp_uint4(*parameter_voltage_limit_ptr, row, 0xb, attr);
+        disp_string(DISPLAY_UNIT_VOLT, row, 0xf, 0);
+      } else {
+        disp_string(DISPLAY_OPTION_DISABLED, row, 0xb, attr);
+      }
+      break;
+    case 5:
+      if (*parameter_current_range_ptr >= *parameter_current_limit_ptr) {
+        disp_uint4(*parameter_current_limit_ptr, row, 0xb, attr);
+        disp_string(DISPLAY_UNIT_AMPERE, row, 0xf, 0);
+      } else {
+        disp_string(DISPLAY_OPTION_DISABLED, row, 0xb, attr);
+      }
+      break;
+    case 6: disp_uint4(*parameter_soft_start_time_ptr, row, 0xb, attr); break;
+    case 7: disp_uint4(*parameter_soft_stop_time_ptr, row, 0xb, attr); break;
     case 8: disp_number3(*parameter_phase_limit_ptr, row, 0xb, attr); break;
     case 9: disp_signed_angle(*parameter_master_slave_offset_ptr, row, 0xb, attr); break;
     case 10:
       if (*parameter_control_method_ptr == 0) disp_string(DISPLAY_START_MODE_OPTION_1, row, 0xb, attr);
       else if (*parameter_control_method_ptr == 1) disp_string(DISPLAY_START_MODE_OPTION_2, row, 0xb, attr);
-      else disp_string(DISPLAY_START_MODE_OPTION_3, row, 0xb, attr);
+      else if (*parameter_control_method_ptr == 2) disp_string(DISPLAY_START_MODE_OPTION_3, row, 0xb, attr);
       break;
     case 11:
       if (*parameter_start_mode_ptr == 0) disp_string(DISPLAY_START_MODE_OPTION_4, row, 0xb, attr);
@@ -60,7 +76,7 @@ static void draw_basic_parameter_item(uint32_t item_index, uint32_t row, uint32_
     case 12:
       if (*parameter_emergency_stop_ptr == 0) disp_string(DISPLAY_EMERGENCY_STOP_OFF, row, 0xb, attr);
       else if (*parameter_emergency_stop_ptr == 1) disp_string(DISPLAY_EMERGENCY_STOP_ON, row, 0xb, attr);
-      else disp_string(DISPLAY_EMERGENCY_STOP_AUTO, row, 0xb, attr);
+      else if (*parameter_emergency_stop_ptr == 2) disp_string(DISPLAY_EMERGENCY_STOP_AUTO, row, 0xb, attr);
       break;
     case 13:
       if (*parameter_feedback_mode_ptr == 0) disp_string(DISPLAY_OPTION_DISABLED, row, 0xb, attr);
@@ -357,7 +373,7 @@ static void state_machine_page_main(KeyCode key_code)
       *ui_idle_refresh_ticks_ptr = 0;
       if (*parameter_control_method_ptr == 0) disp_fixed_1dec(*frequency_reference_ptr, 0, 9, 0);
       else if (*parameter_control_method_ptr == 1) disp_fixed_1dec(*output_reference_value_ptr, 0, 9, 0);
-      else disp_fixed_1dec(*manual_reference_value_ptr, 0, 9, 0);
+      else if (*parameter_control_method_ptr == 2) disp_fixed_1dec(*manual_reference_value_ptr, 0, 9, 0);
       disp_uint4(*adc_voltage_output_ptr, 1, 9, 0);
       disp_uint4(*adc_field_output_ptr, 2, 9, 0);
       if (*output_fault_flags_ptr != 0) { *ui_system_status_ptr = 0; disp_string(DISPLAY_STATUS_FAULT, 3, 0xa, 0); }
@@ -426,7 +442,7 @@ static void state_machine_page_main(KeyCode key_code)
         if (*parameter_auxiliary_mode_ptr != 2 && *parameter_emergency_stop_ptr != 2) *reset_output_state_ptr = 0;
         *ui_scan_stop_flag_ptr = scan_run_stop();
         if (*output_fault_flags_ptr == 0 && *stop_request_ptr == 0 && *run_stop_state_ptr == 1 && *parameter_control_method_ptr == 0) {
-          *run_stop_state_ptr = 1; *stop_request_ptr = 1; *stop_pending_ptr = 0; *run_request_ptr = 0;
+          *stop_request_ptr = 1; *stop_pending_ptr = 0; *run_request_ptr = 0;
           *operation_configuration_ptr = 1; *status_message_shown_ptr = 0; *runtime_tick_ptr = 0; *runtime_current_minute_ptr = 0; *runtime_current_hour_ptr = 0;
           disp_string(DISPLAY_STATUS_OUTPUT_DISABLED, 3, 0xa, 0);
         }
@@ -460,12 +476,13 @@ static void state_machine_page_main(KeyCode key_code)
        * 若放回 output_fault_flags_ptr==0 分支内，output_fault_flags_ptr=7(缺相)时首页第一行上下键将永远不执行。 */
       if (*parameter_control_method_ptr == 0) {
         *output_reference_value_ptr = *frequency_reference_ptr;
+        /* BIN 0x530C cbnz(mode0) / 0x5328 cmp #1;bne 0x5342：mode==2 不重算 target_amplitude */
         if (*parameter_control_mode_ptr == 0) *target_amplitude_ptr = (*frequency_reference_ptr * *parameter_voltage_range_ptr) / 1000;
-        else *target_amplitude_ptr = (*frequency_reference_ptr * *parameter_current_range_ptr) / 1000;
+        else if (*parameter_control_mode_ptr == 1) *target_amplitude_ptr = (*frequency_reference_ptr * *parameter_current_range_ptr) / 1000;
         *output_reference_average_ptr = *target_amplitude_ptr; *output_secondary_reference_ptr = *target_amplitude_ptr;
       } else if (*parameter_control_method_ptr == 1) {
         *output_reference_average_ptr = *output_secondary_reference_ptr;
-      } else {
+      } else if (*parameter_control_method_ptr == 2) {   /* BIN 0x5362 cmp #2;bne 0x542C：method>=3 直接跳过手动 ±1 */
         if (key_code == KEY_DOWN || key_code == KEY_FAST_UP) {
           (*manual_reference_value_ptr)++; if (*manual_reference_value_ptr > 0x3e8) *manual_reference_value_ptr = 0x3e8;
           if (*manual_reference_value_ptr < 0xa) *manual_reference_value_ptr = 0xa;
@@ -477,8 +494,9 @@ static void state_machine_page_main(KeyCode key_code)
           disp_fixed_1dec(*manual_reference_value_ptr, 0, 9, 0);
         }
         *output_reference_value_ptr = *manual_reference_value_ptr;
+        /* BIN 0x53E2 cbnz(mode0) / 0x53FE cmp #1;bne 0x5418：mode==2 不重算 manual_scaled_output */
         if (*parameter_control_mode_ptr == 0) *manual_scaled_output_ptr = (*manual_reference_value_ptr * *parameter_voltage_range_ptr) / 1000;
-        else *manual_scaled_output_ptr = (*manual_reference_value_ptr * *parameter_current_range_ptr) / 1000;
+        else if (*parameter_control_mode_ptr == 1) *manual_scaled_output_ptr = (*manual_reference_value_ptr * *parameter_current_range_ptr) / 1000;
         *output_reference_average_ptr = *manual_scaled_output_ptr;   /* 0x541A→0x541E：仅 parameter_control_method_ptr==2 覆盖；0/1 走 0x4C1C→0x541C 跳过 */
         *output_secondary_reference_ptr = *manual_scaled_output_ptr;
       }
@@ -674,7 +692,8 @@ static void state_machine_page_calibration_result(KeyCode key_code)
 
 static void state_machine_page_basic_parameters(KeyCode key_code)
 {
-    /* ---------- case2 主菜单页1 (0x6134-0x69D6)，ui_item_index_ptr=选项0-8 ---------- */
+    /* ---------- case2 主菜单页1 (0x6134-0x69D6)，ui_item_index_ptr=选项0-7 ----------
+       原 BIN 0x61xx 的 UP 钳位同样是 >7 归 7，item8（手动平衡入口）分支不可达。 */
     if (key_code == KEY_BACK) { *ui_idle_timeout_ticks_ptr = 0; *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return; }
     if (key_code == KEY_DOWN || key_code == KEY_UP) {
       *ui_idle_timeout_ticks_ptr = 0;
@@ -749,10 +768,10 @@ static void state_machine_page_basic_parameters(KeyCode key_code)
         *ui_screen_id_ptr = UI_SCREEN_PID_PARAMETERS; *ui_item_index_ptr = 0;
         disp_string(DISPLAY_BASIC_PID_GROUP_LABEL_01, 0, 0, 0); disp_string(DISPLAY_BASIC_PID_GROUP_LABEL_02, 1, 0, 0);
         disp_string(DISPLAY_BASIC_PID_GROUP_LABEL_03, 2, 0, 0); disp_string(DISPLAY_BASIC_PID_GROUP_LABEL_04, 3, 0, 0);
-        if (*parameter_pid_profile_ptr == 1) { disp_string(DISPLAY_PID_PROFILE_1, 0, 0xb, 1); disp_uint2(*parameter_profile1_gain_a_ptr, 1, 0xb, 0); disp_uint2(*parameter_profile1_gain_b_ptr, 2, 0xb, 0); }
-        if (*parameter_pid_profile_ptr == 2) { disp_string(DISPLAY_PID_PROFILE_2, 0, 0xb, 1); disp_uint2(*parameter_profile2_gain_a_ptr, 1, 0xb, 0); disp_uint2(*parameter_profile1_gain_b_ptr, 2, 0xb, 0); }
-        if (*parameter_pid_profile_ptr == 3) { disp_string(DISPLAY_PID_PROFILE_3, 0, 0xb, 1); disp_uint2(*parameter_profile3_gain_a_ptr, 1, 0xb, 0); disp_uint2(*parameter_profile3_gain_b_ptr, 2, 0xb, 0); }
-        if (*parameter_pid_profile_ptr == 4) { disp_string(DISPLAY_PID_PROFILE_4, 0, 0xb, 1); disp_uint2(*parameter_profile4_gain_a_ptr, 1, 0xb, 0); disp_uint2(*parameter_profile4_gain_b_ptr, 2, 0xb, 0); }
+        if (*parameter_pid_profile_ptr == 1) { disp_string(DISPLAY_PID_PROFILE_1, 0, 0xb, 1); disp_uint4(*parameter_profile1_gain_a_ptr, 1, 0xb, 0); disp_uint4(*parameter_profile1_gain_b_ptr, 2, 0xb, 0); }
+        if (*parameter_pid_profile_ptr == 2) { disp_string(DISPLAY_PID_PROFILE_2, 0, 0xb, 1); disp_uint4(*parameter_profile2_gain_a_ptr, 1, 0xb, 0); disp_uint4(*parameter_profile1_gain_b_ptr, 2, 0xb, 0); }
+        if (*parameter_pid_profile_ptr == 3) { disp_string(DISPLAY_PID_PROFILE_3, 0, 0xb, 1); disp_uint4(*parameter_profile3_gain_a_ptr, 1, 0xb, 0); disp_uint4(*parameter_profile3_gain_b_ptr, 2, 0xb, 0); }
+        if (*parameter_pid_profile_ptr == 4) { disp_string(DISPLAY_PID_PROFILE_4, 0, 0xb, 1); disp_uint4(*parameter_profile4_gain_a_ptr, 1, 0xb, 0); disp_uint4(*parameter_profile4_gain_b_ptr, 2, 0xb, 0); }
         *ui_statistics_timeout_ticks_ptr = 0xfa;
       }
       if (*ui_item_index_ptr == 5) {
@@ -909,7 +928,8 @@ static void state_machine_page_basic_parameter_edit(KeyCode key_code)
     if (*ui_statistics_timeout_ticks_ptr > 0x1f4) {
       *ui_statistics_timeout_ticks_ptr = 0;
       if (*ui_view_mode_ptr == 0) return;              /* 查看态：本帧提前返回(b.adjusted_value 0x4ba8=pop{r4})，跳过 ui_idle_timeout_ticks_ptr++ */
-      switch (item_index) {
+      /* BIN 0x7A4E..0x7BC2 每个 case 重新 ldr [ui_item_index_ptr]，不用入口缓存值 */
+      switch (*ui_item_index_ptr) {
         case 0:  disp_string(DISPLAY_BASIC_SHARED_LABEL, 0, 0xb, 0); break;
         case 1:  disp_string(DISPLAY_BASIC_EDIT_LABEL_13, 1, 0xb, 0); break;
         case 2:  disp_string(DISPLAY_BASIC_EDIT_LABEL_13, 2, 0xb, 0); break;
@@ -1333,6 +1353,8 @@ static void state_machine_page_status_monitor(KeyCode key_code)
       disp_string(DISPLAY_STATUS_MONITOR_TITLE, 0, 4, 0);
       if (*output_fault_flags_ptr == 0) {
         disp_string(DISPLAY_STATUS_MONITOR_LABEL, 2, 0, 0);
+        /* BIN 0xA09C movs r0,#0; 0xA09E b 0x999C：无故障重绘帧直接返回，跳过本帧 idle 计数 */
+        return;
       } else {
         if (*output_fault_flags_ptr & 0x4)   disp_string(DISPLAY_STATUS_MONITOR_FAULT_1, 2, 0, 0);
         if (*output_fault_flags_ptr & 0x2)   disp_string(DISPLAY_STATUS_MONITOR_FAULT_1, 2, 0, 0);
@@ -1819,6 +1841,14 @@ static void state_machine_dispatch_pages(KeyCode key_code)
     state_machine_page_authentication(key_code);
     return;
   default:
+    /* BIN 分派链末端 0xA2CE→0xA3CC→0xAA9A：非法屏号仍执行 idle 计数与 0x1388 超时回到主屏，
+     * 否则屏幕会永久停在该非法屏号。 */
+    (*ui_idle_timeout_ticks_ptr)++;
+    if (*ui_idle_timeout_ticks_ptr >= 0x1388) {
+      *ui_idle_timeout_ticks_ptr = 0;
+      *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU;
+      disp_splash_screen();
+    }
     return;
   }
 }

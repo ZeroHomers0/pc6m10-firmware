@@ -8,8 +8,8 @@
 `LPC1765.bin`（262144 B）是所有等价验证的金标准。
 
 - GCC 可编译工程：`firmware/`，Arm GNU Toolchain 14.2.Rel1。
-- 当前构建：`text 59676 / data 0 / bss 2188`。
-- 当前 `firmware.bin` SHA-256：`04B14EA3D0A2047EBEE42EC923FEDDCFBD9BB429E07DECE535AB824DC33BA7D2`。
+- 当前构建：`text 59808 / data 0 / bss 2188`（2026-11-16 第二轮修复后）。
+- 当前 `firmware.bin` SHA-256：`10AE976302470EB4B40D3BC43DF01D394946FF5DB7CC1FA09FCEC8F5B72ADB87`（60368 B）。
 - 自编译固件已于 2026-08-26 完成 CRP 布局修复（`0x2FC` 显式保留 `0xFFFFFFFF`，见
   `firmware/lpc1765.ld`、`firmware/startup.s`、`firmware/build.sh`）并经 J-Link SWD 烧写入板、
   全镜像校验通过；过程见 `docs/w8/W8_POST_FLASH_2026-08-26.md`。
@@ -54,6 +54,8 @@
 - **2026-11-16 菜单文案调整**：共享选项外控→模选、限相→解限；启动方式点动→瞬动、自锁→保持；菜单6相位参数校准→同步参数校准。编号/值列/参数逻辑不变；短标题补空格清除旧字形。新增瞬/解/均/选/持集中点阵；同/步沿用已扩展字形。菜单专项13项正反显通过。显示全执行A/B以原厂文字验证渲染行为，定制文字及字形另由菜单专项实际执行检查。本仓完整原BIN A/B及回归27/27通过，日志见 `evidence/reverse/reports/menu_wording_*_2026-11-16.log`。此次未提交、推送或烧写。
 
 - **2026-11-16 审计及修复**：全仓审计确认的8类行为差异已按原BIN修复，保留授权菜单、字体和20秒背光定制。历史发现见 `docs/analysis/PC6M_FULL_CODE_AUDIT_2026-11-16.md`，修复与验证见 `docs/analysis/PC6M_AUDIT_FIXES_2026-11-16.md`。新增 `test/emulation/test_audit_fixes.py` 强制断言通信/菜单扩展矩阵、密码错误外层及喂狗次数、复位命令应答/EEPROM顺序与非返回自跳。未烧写硬件；旧菜单烧写包EBC44BD6…5F46保留为历史，不作为本次修复产物。
+
+- **2026-11-16 第二轮逐模块精读修复**：逐模块精读源码并回查原BIN反汇编，又确认5类功能/状态差异与6类结构差异并全部修复：参数页电压/电流限值「未达限值画DISABLED、达限值补V/A单位」、软起/软停与PID增益改 disp_uint4、control_mode==2 不重算目标幅值/手动输出、枚举越界与 control_method>=3 不再多画/多算、擦除按当前项号、状态监视页无故障帧提前返回、非法屏号兜底超时。构建 text 59808/data 0/bss 2188；显示调用序列 640/640、参数菜单入口 54/54、状态终态 42/42、导航 18/18、回归 30/30、原BIN A/B 全 PASS。新增 test/emulation/test_display_call_equivalence.py（显示调用契约 152/152、控制量终态 12/12）与 test/emulation/test_audit_fixes_2.py。记录见 docs/analysis/PC6M_AUDIT_FIXES_2_2026-11-16.md。未烧写硬件。
 
 ## 必须遵守
 
