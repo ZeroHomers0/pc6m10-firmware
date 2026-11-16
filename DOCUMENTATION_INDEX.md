@@ -73,3 +73,5 @@
 - 原始反编译和反汇编：`evidence/README.md`。
 - 历史计划、项目全史和时间点审计：`docs/history/`；仅供追溯。
 - 目录用途总览：`docs/README.md`、`tools/README.md`、`test/README.md`。
+
+- [2026-11-17 第二路闭环反馈复制修复及原BIN验证](docs/analysis/PC6M_FEEDBACK_FIX_2026-11-17.md)

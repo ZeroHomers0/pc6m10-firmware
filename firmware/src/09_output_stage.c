@@ -573,7 +573,7 @@ void output_stage(void)
               *output_current_limited_ptr = 1;
             }
             *output_reference_average_ptr = *parameter_voltage_limit_ptr;
-            *adc_field_output_scaled_ptr = *adc_field_output_scaled_ptr;
+            *adc_field_output_scaled_ptr = *adc_voltage_output_scaled_ptr;
           }
           if (((*adc_field_output_scaled_ptr <= *output_reference_average_ptr) && (*parameter_voltage_limit_ptr <= *parameter_voltage_range_ptr)) &&
              ((*output_state_aux_a_ptr == 1 && (*parameter_voltage_range_ptr <= *parameter_current_range_ptr)))) {
@@ -586,7 +586,7 @@ void output_stage(void)
               *output_current_limited_ptr = 1;
             }
             *output_reference_average_ptr = *parameter_voltage_limit_ptr;
-            *adc_field_output_scaled_ptr = *adc_field_output_scaled_ptr;
+            *adc_field_output_scaled_ptr = *adc_voltage_output_scaled_ptr;
           }
           if (((*adc_field_output_ptr < 2) && (*parameter_voltage_limit_ptr <= *parameter_voltage_range_ptr)) && (*output_state_aux_a_ptr == 1)) {
             *pid_divisor_source_ptr = 1;
@@ -598,7 +598,7 @@ void output_stage(void)
               *output_current_limited_ptr = 1;
             }
             *output_reference_average_ptr = *parameter_voltage_limit_ptr;
-            *adc_field_output_scaled_ptr = *adc_field_output_scaled_ptr;
+            *adc_field_output_scaled_ptr = *adc_voltage_output_scaled_ptr;
           }
           working_value_ptr = output_feedback_delta_ptr;
           if (((*adc_field_output_raw_ptr < 5) && (*output_soft_start_state_ptr == '\x01')) && (*parameter_feedback_mode_ptr == '\x01')) {

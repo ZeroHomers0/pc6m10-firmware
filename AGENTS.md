@@ -8,8 +8,8 @@
 `LPC1765.bin`（262144 B）是所有等价验证的金标准。
 
 - GCC 可编译工程：`firmware/`，Arm GNU Toolchain 14.2.Rel1。
-- 当前构建：`text 59808 / data 0 / bss 2188`（2026-11-16 第二轮修复后）。
-- 当前 `firmware.bin` SHA-256：`10AE976302470EB4B40D3BC43DF01D394946FF5DB7CC1FA09FCEC8F5B72ADB87`（60368 B）。
+- 当前构建：`text 59808 / data 0 / bss 2188`（2026-11-17 闭环反馈复制修复后）。
+- 当前 `firmware.bin` SHA-256：`E843035C88D1B5AE52A516072F09FC551BC90720CFF23EA4EEF6623FF19022B2`（60368 B）。
 - 自编译固件已于 2026-08-26 完成 CRP 布局修复（`0x2FC` 显式保留 `0xFFFFFFFF`，见
   `firmware/lpc1765.ld`、`firmware/startup.s`、`firmware/build.sh`）并经 J-Link SWD 烧写入板、
   全镜像校验通过；过程见 `docs/w8/W8_POST_FLASH_2026-08-26.md`。
@@ -57,7 +57,9 @@
 
 - **2026-11-16 第二轮逐模块精读修复**：逐模块精读源码并回查原BIN反汇编，又确认5类功能/状态差异与6类结构差异并全部修复：参数页电压/电流限值「未达限值画DISABLED、达限值补V/A单位」、软起/软停与PID增益改 disp_uint4、control_mode==2 不重算目标幅值/手动输出、枚举越界与 control_method>=3 不再多画/多算、擦除按当前项号、状态监视页无故障帧提前返回、非法屏号兜底超时。构建 text 59808/data 0/bss 2188；显示调用序列 640/640、参数菜单入口 54/54、状态终态 42/42、导航 18/18、回归 30/30、原BIN A/B 全 PASS。新增 test/emulation/test_display_call_equivalence.py（显示调用契约 152/152、控制量终态 12/12）与 test/emulation/test_audit_fixes_2.py。记录见 docs/analysis/PC6M_AUDIT_FIXES_2_2026-11-16.md。未烧写硬件。
 
-- **2026-11-17 最新两提交独立复核**：`7af6119`/`1a55f84`大部分修正有原BIN依据，但第二路闭环三处反馈复制仍误写为自赋值（`09_output_stage.c` 576/589/601行），可使PID反馈原版3000变为当前1。原第二路回归未满足ADC给定>=10的分支前提，无法覆盖该缺陷。现有30/30与完整A/B仍通过，新增实际入分支样本4例失败；临时副本补齐三处复制后消除。当前业务源码未修改，问题仍待修复。详见 `docs/analysis/PC6M_LATEST_TWO_REVIEW_2026-11-17.md`。
+- **2026-11-17 最新两提交独立复核**：`7af6119`/`1a55f84`大部分修正有原BIN依据，但第二路闭环三处反馈复制仍误写为自赋值（`09_output_stage.c` 576/589/601行），可使PID反馈原版3000变为当前1。原第二路回归未满足ADC给定>=10的分支前提，无法覆盖该缺陷。现有30/30与完整A/B仍通过，新增实际入分支样本4例失败；临时副本补齐三处复制后消除。该复核时未修改业务源码；随后已按用户要求修复并补齐真实分支回归，见下条。详见 `docs/analysis/PC6M_LATEST_TWO_REVIEW_2026-11-17.md`。
+
+- **2026-11-17 闭环反馈复制修复**：三处恢复 `adc_field_output_scaled = adc_voltage_output_scaled`，对应原BIN 0xF450/0xF4B6/0xF50A。回归显式设置ADC给定100，三个复制路径各4例，断言原复制指令及PID调用确实发生，反馈3000、PID目标526及完整SRAM一致；通信/输出级测试增加正常返回检查。修复记录与最终验证日志见 `docs/analysis/PC6M_FEEDBACK_FIX_2026-11-17.md`。未烧写硬件。
 
 ## 必须遵守
 

@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'tools/verification'))
 import verify_firmware_equivalence as V
 from unicorn import UC_HOOK_CODE, UC_HOOK_MEM_WRITE
-from unicorn.arm_const import UC_ARM_REG_LR, UC_ARM_REG_PC, UC_ARM_REG_R0
+from unicorn.arm_const import UC_ARM_REG_LR, UC_ARM_REG_PC, UC_ARM_REG_R0, UC_ARM_REG_R1
 
 FIO_RANGES = ((0x2009C000, 0x2009CFFF), (0x40008000, 0x40008FFF),
               (0x40090000, 0x40090FFF), (0x400FC000, 0x400FDFFF))
@@ -44,6 +44,7 @@ def run_modbus(frame, seed=None):
                 m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR))
         uc.hook_add(UC_HOOK_CODE, hook)
         V.run(uc, V.SYMS['modbus_dispatch'] if new else 0xB642, max_insn=200000)
+        assert uc.reg_read(UC_ARM_REG_PC) == 0x3FF00, '通信路径未正常返回'
         results.append((sent[0] if sent else b'', bytes(uc.mem_read(0x100017A8, 1))))
     return results
 
@@ -61,6 +62,7 @@ def run_output_stage(seed):
         for begin, end in FIO_RANGES:
             uc.hook_add(UC_HOOK_MEM_WRITE, callback, begin=begin, end=end)
         V.run(uc, V.SYMS['output_stage'] if new else 0xE9AC, max_insn=3000000)
+        assert uc.reg_read(UC_ARM_REG_PC) == 0x3FF00, '输出级路径未正常返回'
         results.append((trace, bytes(uc.mem_read(0x10000000, 0x2200))))
     return results
 
@@ -137,8 +139,8 @@ def main():
     print('F4 恒压源分支写 0x1000202C、aux_b 保持初值，一致')
 
     # 第二路闭环：进入条件为 control_mode==1（原 BIN 0xF30C），计数用 aux_b(0x10002018)、
-    # 标志用 aux_a(0x10002020)；数据寄存器是 0x100015BC，不再读写 0x100015B8。
-    seed = [(0x10001628, b'\x01'), (0x10001634, b'\x01'), (0x100015CE, word(0)),
+    # 标志用 aux_a(0x10002020)；反馈寄存器是 0x100015BC，限幅时从 0x100015B8 复制且不覆盖源。
+    seed = [(0x100015A8, word(100)), (0x10001628, b'\x01'), (0x10001634, b'\x01'), (0x100015CE, word(0)),
             (0x10001660, word(90)), (0x10001650, word(0)), (0x10001782, b'\x00'),
             (0x10002000, word(5)), (0x1000203D, b'\x00'), (0x1000177D, b'\x00'),
             (0x1000203C, b'\x00'), (0x10002075, b'\x02'), (0x10002077, b'\x01'),
@@ -160,6 +162,44 @@ def main():
     assert aux_b <= 0x33, f'第二路闭环计数器越界 aux_b={aux_b}'
     assert voltage_scaled == 3000, f'第二路闭环误写 0x100015B8={voltage_scaled}'
     print(f'第二路闭环一致 aux_b={aux_b} aux_a={aux_a} 0x100015B8 未被改写')
+
+    # 实际进入第二路闭环，逐条证明三组跨反馈单元复制均执行。
+    scenarios = [
+        ('量程比较路径', {0x10001638: 4000, 0x10001594: 100, 0x100015D0: 1000}, 0xF450),
+        ('反馈比较路径', {0x1000163C: 5000, 0x10001594: 100, 0x100015D0: 4000}, 0xF4B6),
+        ('低反馈路径', {0x1000163C: 5000, 0x10001594: 1, 0x100015D0: 0}, 0xF50A),
+    ]
+    for label, extra, store_pc in scenarios:
+        for feedback in (1, 3001):
+            for counter in (0, 49):
+                initial = dict(seed)
+                initial.update({0x100015A8: word(100), 0x10002018: word(counter),
+                                0x10002020: word(1), 0x100015BC: word(feedback)})
+                initial.update({address: word(value) for address, value in extra.items()})
+                pair = []
+                for new in (False, True):
+                    uc = V.machine(new)
+                    for address, data in initial.items():
+                        uc.mem_write(address, data)
+                    uc.mem_write(0x10002078, b'\x0A')
+                    calls, stores = [], []
+                    pid = V.SYMS['closed_loop_wrapper'] if new else 0x10F0A
+                    def hook(m, address, size, user):
+                        if address == pid:
+                            calls.append((m.reg_read(UC_ARM_REG_R0), m.reg_read(UC_ARM_REG_R1)))
+                        if not new and address == store_pc:
+                            stores.append(address)
+                    uc.hook_add(UC_HOOK_CODE, hook)
+                    V.run(uc, V.SYMS['output_stage'] if new else 0xE9AC, max_insn=3000000)
+                    assert uc.reg_read(UC_ARM_REG_PC) == 0x3FF00
+                    assert calls, f'{label}未进入PID分支'
+                    if not new:
+                        assert stores, f'{label}原BIN未执行预期反馈复制'
+                    assert calls[-1] == (526, 3000), (label, calls)
+                    assert struct.unpack('<I', uc.mem_read(0x100015BC, 4))[0] == 3000
+                    pair.append((calls, bytes(uc.mem_read(0x10000000, 0x2200))))
+                assert pair[0] == pair[1], f'{label}反馈复制/PID/SRAM不同'
+        print(f'{label}：4例实际执行原BIN复制指令，反馈/PID/SRAM一致')
 
     print('AUDIT_FIXES_2: 全通过')
     return 0

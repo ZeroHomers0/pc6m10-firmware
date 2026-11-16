@@ -1,0 +1,6 @@
+{
+  "LPC1765.bin": "dd629eac0243a13cecc826b1fc2b4b54066f7647d8c1d09a62d5caf7b4f13f65",
+  "firmware/firmware.bin": "e843035c88d1b5ae52a516072f09fc551bc90720cff23ea4eef6623ff19022b2",
+  "firmware/src/09_output_stage.c": "c8bc216459d6047c056eed8c92dc82bd949f63ee37b09b4fd067bcb6c4b7a6be",
+  "test/emulation/test_audit_fixes_2.py": "6519cba9eb2bb04b9b3a521f004f550ac384746aabb92c209090a0deefcf960c"
+}
