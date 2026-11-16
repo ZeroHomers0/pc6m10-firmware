@@ -144,6 +144,8 @@ static void draw_protection_parameter_value(uint32_t item_index, uint32_t row, u
 /* 绘制当前项所在整页（10 项 = 页0:0-3, 页1:4-7, 页2:8-9），高亮当前项 */
 static void draw_protection_parameter_page(uint32_t item_index)
 {
+  /* BIN 0x84FC `cmp #8; blt 0x85C0` + 0x8504 `cmp #0xc; bge 0x85C0`：项号 >= 12 整段跳过 */
+  if (item_index >= 0xc) return;
   uint32_t page = item_index >> 2;
   uint32_t start = page << 2;
   uint32_t item_count = (page < 2) ? 4 : 2;
@@ -291,7 +293,8 @@ static void state_machine_update_entry(KeyCode key_code)
     if (*runtime_persist_counter_ptr == 0x78 && *parameter_sync_pending_ptr == 0) {
       *parameter_sync_pending_ptr = 1; *parameter_sync_retry_count_ptr = 0; param_sync_live_to_eeprom();
     }
-    if (*runtime_persist_counter_ptr == 0x12c && *parameter_sync_pending_ptr == 2) {
+    /* BIN 0x49D4 `ldr [0x4D1C]; cbnz 0x49EA`：retry 计数非 0 时整块跳过（0x4D1C=0x10001734） */
+    if (*runtime_persist_counter_ptr == 0x12c && *parameter_sync_pending_ptr == 2 && *parameter_sync_retry_count_ptr == 0) {
       *parameter_sync_pending_ptr = 0; *parameter_sync_retry_count_ptr = 1; param_sync_live_to_eeprom();
     }
   }
