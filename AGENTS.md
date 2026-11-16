@@ -8,8 +8,8 @@
 `LPC1765.bin`（262144 B）是所有等价验证的金标准。
 
 - GCC 可编译工程：`firmware/`，Arm GNU Toolchain 14.2.Rel1。
-- 当前构建：`text 59852 / data 0 / bss 2188`（2026-11-17 枚举越界绘制修复后；含并行会话尚未提交的 0x12c 同步重试条件）。
-- 当前 `firmware.bin` SHA-256：`0C7B6539070F0D249499B5D286C402709E312D69BFD0555BEFBAE2284AFBD8EA`（60412 B）。
+- 当前构建：`text 59892 / data 0 / bss 2188`（2026-11-17 校准结果页枚举越界修复后）。
+- 当前 `firmware.bin` SHA-256：`7AD41A4BA340B8663B03B460F4D1CAB43B1AAC488ACB72B68153D2E4664C744D`（60452 B）。
 - 板上已烧写镜像为上一版 `E843035C88D1B5AE52A516072F09FC551BC90720CFF23EA4EEF6623FF19022B2`（60368 B，text 59808，含闭环反馈复制修复；本次功能码修复未烧写）。
 - 自编译固件已于 2026-08-26 完成 CRP 布局修复（`0x2FC` 显式保留 `0xFFFFFFFF`，见
   `firmware/lpc1765.ld`、`firmware/startup.s`、`firmware/build.sh`）并经 J-Link SWD 烧写入板、
@@ -69,6 +69,10 @@
 - **2026-11-17 保护页第 3 页上界修复**：全屏显示调用矩阵（6936 例：屏号 0/1..9/0xB/0xC/0x14/0x1E/0x5A/0x62/0x63 × 项 0..16 × 12 键 × view 0/1）发现保护参数页（屏号 4）项号 12..16 仍画第 3 页；原 BIN 0x84FC `cmp #8; blt` + 0x8504 `cmp #0xc; bge`（跳 0x85C0）证明只有 8 <= 项号 < 12 才绘制、>=12 直接跳过（PC12M-2 同源缺陷已在 12p 侧修成 `else if (< 0xc)`）。修法：`draw_protection_parameter_page` 增加 `if (item_index >= 0xc) return;`，导航标题块末支 `else` 改 `else if (*ui_item_index_ptr < 0xc)`。另用全屏状态终态矩阵（同样 6936 例，比较 SRAM0 0..0x2200 + 六段外设终态）复核：除密码错误延时循环的 0x1000161C/0x10001620 残值（指令预算截断，400M 指令预算下两版完全一致）外全部相等。构建 text 59824 / data 0 / bss 2188，SHA-256 `E98F6B07…F6B727B`（60384 B）；新增 `test/emulation/test_menu_page_bounds.py`（72/72）、回归 32/32、原 BIN A/B 全 PASS。未烧写。
 
 - **2026-11-17 枚举参数越界绘制修复**：用户实测指出通信校验取 2、3 等越界值时原版不绘制选项，旧源码 `if (...) 开启 else 关闭` 会把任意非 1 值落成「关闭」。原 BIN 逐条确认：0x8a5c `cmp #3; bne` 只在 ==3 画 '1 ST0P'；0x8ad2 `cbnz` 只在 ==0 画 DISABLED、0x8ae4 `cmp #1; bne` 只在 ==1 画 ENABLED；基本参数页选项 3 入口块 0x8b6a 同理。三处 `else` 改为相等判断。新增 `test/emulation/test_enum_range_equivalence.py`（27 例，控制方式/控制手法/急停/校验位/通信校验越界逐值比较绘制序列）。验证：枚举越界扫描 730/730、显示调用契约 6936/6936、回归 33/33、原 BIN A/B 全 PASS。提交 `a6c1045`。未烧写。
+
+- **2026-11-17 双项目联合复核与验证门禁修复**：6M当前提交64b3e1f及已包含的周期同步retry门控、保护页项号与枚举越界、高位功能码回绕已按本项目原BIN核对。`verify_firmware_equivalence.py`现要求每个有界调用正常返回，防止预算耗尽时比较中途状态误判通过；新增`test_execution_completion.py`证明死循环/未就绪UART被拒绝、正常返回/就绪UART通过。回归35/35、完整原BIN A/B通过，日志与哈希在 `evidence/reverse/reports/joint_validation_2026-11-17/`。本轮仅修改验证工具与测试；最新固件未重新烧写。详见 `docs/analysis/JOINT_VALIDATION_2026-11-17.md`。
+
+- **2026-11-17 校准结果页枚举越界绘制修复**：把 `tmp/sm_matrix.py` 的参数档从 11 扩到 18（补入急停/辅助模式/反馈/输入模式/输出相位/控制方式的越界取值）后，校准结果页（屏 0x63）暴露出同类缺陷：急停或辅助模式取 ≥3 时，原 BIN `0x5D94 cmp #2; bne 0x5DE0` 与 `0x5E12 cmp #2; bne 0x5E60` 都不绘制任何选项，旧源码末支 `else` 会落成「限相」。两处改为 `else if (... == 2)`。同页反馈/输入模式/输出相位三项是原机真二分（`cbnz` 分支），不动。验证：扩展档位后状态机终态矩阵 `3,4,5,7` 13464、`8,9,a,63` 13464、`0,1,2,6,b,c,d,e` 26928、`f,10..1f,5a,62` 63954 全 bad=0；枚举越界专项 47/47、回归 35/35、原 BIN A/B 全 PASS。构建 text 59892 / data 0 / bss 2188，SHA-256 `7AD41A4B…664C744D`（60452 B）。提交 `f3e78df`。未烧写。
 
 ## 必须遵守
 

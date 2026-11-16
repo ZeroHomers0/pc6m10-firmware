@@ -81,3 +81,7 @@
 - **2026-11-17 烧写记录**：PC6M提交24cbbad（E843035C…9022B2）已通过J-Link烧写、整片备份及读回校验；CRP全FF。记录在 `backup/flash_2026-11-17_feedback_fix/manifest.json`（本地备份不上传）。待用户物理断电上电确认。
 
 - **2026-11-17 异常应答功能码 func+0x80**：异常应答功能码改为 8 位加法回绕，新增 `test/emulation/test_exception_func_code.py`；构建 text 59804（SHA `38B3EB17…C405F7`），未烧写。
+
+- [2026-11-17 最新提交联合复核与执行完成门禁](docs/analysis/JOINT_VALIDATION_2026-11-17.md)
+
+- **2026-11-17 校准结果页枚举越界绘制修复**：屏 0x63 急停/辅助模式取 ≥3 时原 BIN 不绘制选项（`0x5D94`/`0x5E12` 的 `cmp #2; bne`），源码末支 `else` 改为 `else if (... == 2)`；状态机参数档扩到 18 档后全屏矩阵 117810 例 bad=0，枚举越界专项 47/47、回归 35/35、原 BIN A/B 全 PASS。构建 text 59892（SHA `7AD41A4B…664C744D`，60452 B），提交 `f3e78df`，未烧写。
