@@ -524,27 +524,27 @@ void output_stage(void)
         if (*output_run_state_ptr == 5) {
           /* —— 第二路闭环运行（0x1000F70C..F740）—— */
           *output_fault_state_ptr = 0;
-          working_value_ptr = output_state_aux_a_ptr;
+          working_value_ptr = output_state_aux_b_ptr;
           if ((*adc_voltage_output_ptr < *parameter_voltage_limit_ptr) || (*output_reference_average_ptr <= *adc_field_output_ptr)) {
-            *output_state_aux_a_ptr = *output_state_aux_a_ptr + 1;
+            *output_state_aux_b_ptr = *output_state_aux_b_ptr + 1;
             if (0x32 < *working_value_ptr) {
               *working_value_ptr = 0;
-              *output_state_aux_b_ptr = 2;
-              *adc_voltage_output_scaled_ptr = *adc_voltage_output_scaled_ptr;
+              *output_state_aux_a_ptr = 2;
+              *adc_field_output_scaled_ptr = *adc_field_output_scaled_ptr;
               *output_phase_mode_ptr = '\0';
             }
           }
           else {
-            *output_state_aux_b_ptr = 1;
-            *output_state_aux_a_ptr = 0;
+            *output_state_aux_a_ptr = 1;
+            *output_state_aux_b_ptr = 0;
           }
           working_value_ptr = output_state_aux_c_ptr;
           if (*output_reference_average_ptr < *output_current_limited_ptr) {
             *output_state_aux_c_ptr = *output_state_aux_c_ptr + 1;
             if (10 < *working_value_ptr) {
               *working_value_ptr = 0;
-              *output_state_aux_b_ptr = 0;
-              *adc_voltage_output_scaled_ptr = *adc_voltage_output_scaled_ptr;
+              *output_state_aux_a_ptr = 0;
+              *adc_field_output_scaled_ptr = *adc_field_output_scaled_ptr;
               *output_phase_mode_ptr = '\0';
             }
           }
@@ -552,53 +552,53 @@ void output_stage(void)
             *output_state_aux_c_ptr = 0;
           }
           if (((*output_current_limited_ptr <= *output_reference_average_ptr) && (*parameter_voltage_limit_ptr <= *parameter_voltage_range_ptr)) &&
-             (*output_state_aux_b_ptr == 2)) {
+             (*output_state_aux_a_ptr == 2)) {
             *output_reference_average_ptr = *output_current_limited_ptr;
             working_value_ptr = output_current_limited_ptr;
             *output_current_limited_ptr = *output_current_limited_ptr + 1;
             if (6000 < *working_value_ptr) {
               *output_current_limited_ptr = 6000;
             }
-            *adc_voltage_output_scaled_ptr = *adc_voltage_output_scaled_ptr;
+            *adc_field_output_scaled_ptr = *adc_field_output_scaled_ptr;
             *output_phase_mode_ptr = '\0';
           }
-          if (((*parameter_voltage_limit_ptr <= *parameter_voltage_range_ptr) && (*output_state_aux_b_ptr == 1)) &&
+          if (((*parameter_voltage_limit_ptr <= *parameter_voltage_range_ptr) && (*output_state_aux_a_ptr == 1)) &&
              (*parameter_current_range_ptr < *parameter_voltage_range_ptr)) {
             *pid_divisor_source_ptr = 1;
             if (*output_phase_mode_ptr != '\x01') {
               *output_phase_mode_ptr = '\x01';
-              *output_current_limited_ptr = *adc_voltage_output_scaled_ptr;
+              *output_current_limited_ptr = *adc_field_output_scaled_ptr;
             }
             if (*output_current_limited_ptr < 2) {
               *output_current_limited_ptr = 1;
             }
             *output_reference_average_ptr = *parameter_voltage_limit_ptr;
-            *adc_voltage_output_scaled_ptr = *adc_voltage_output_scaled_ptr;
+            *adc_field_output_scaled_ptr = *adc_field_output_scaled_ptr;
           }
-          if (((*adc_voltage_output_scaled_ptr <= *output_reference_average_ptr) && (*parameter_voltage_limit_ptr <= *parameter_voltage_range_ptr)) &&
-             ((*output_state_aux_b_ptr == 1 && (*parameter_voltage_range_ptr <= *parameter_current_range_ptr)))) {
+          if (((*adc_field_output_scaled_ptr <= *output_reference_average_ptr) && (*parameter_voltage_limit_ptr <= *parameter_voltage_range_ptr)) &&
+             ((*output_state_aux_a_ptr == 1 && (*parameter_voltage_range_ptr <= *parameter_current_range_ptr)))) {
             *pid_divisor_source_ptr = 1;
             if (*output_phase_mode_ptr != '\x01') {
               *output_phase_mode_ptr = '\x01';
-              *output_current_limited_ptr = *adc_voltage_output_scaled_ptr;
+              *output_current_limited_ptr = *adc_field_output_scaled_ptr;
             }
             if (*output_current_limited_ptr < 2) {
               *output_current_limited_ptr = 1;
             }
             *output_reference_average_ptr = *parameter_voltage_limit_ptr;
-            *adc_voltage_output_scaled_ptr = *adc_voltage_output_scaled_ptr;
+            *adc_field_output_scaled_ptr = *adc_field_output_scaled_ptr;
           }
-          if (((*adc_field_output_ptr < 2) && (*parameter_voltage_limit_ptr <= *parameter_voltage_range_ptr)) && (*output_state_aux_b_ptr == 1)) {
+          if (((*adc_field_output_ptr < 2) && (*parameter_voltage_limit_ptr <= *parameter_voltage_range_ptr)) && (*output_state_aux_a_ptr == 1)) {
             *pid_divisor_source_ptr = 1;
             if (*output_phase_mode_ptr != '\x01') {
               *output_phase_mode_ptr = '\x01';
-              *output_current_limited_ptr = *adc_voltage_output_scaled_ptr;
+              *output_current_limited_ptr = *adc_field_output_scaled_ptr;
             }
             if (*output_current_limited_ptr < 2) {
               *output_current_limited_ptr = 1;
             }
             *output_reference_average_ptr = *parameter_voltage_limit_ptr;
-            *adc_voltage_output_scaled_ptr = *adc_voltage_output_scaled_ptr;
+            *adc_field_output_scaled_ptr = *adc_field_output_scaled_ptr;
           }
           working_value_ptr = output_feedback_delta_ptr;
           if (((*adc_field_output_raw_ptr < 5) && (*output_soft_start_state_ptr == '\x01')) && (*parameter_feedback_mode_ptr == '\x01')) {
@@ -610,7 +610,7 @@ void output_stage(void)
           else {
             *output_feedback_delta_ptr = 0;
           }
-          closed_loop_output = closed_loop_wrapper(*output_reference_average_ptr,*adc_voltage_output_scaled_ptr,*parameter_active_gain_a_ptr,*parameter_active_gain_b_ptr);
+          closed_loop_output = closed_loop_wrapper(*output_reference_average_ptr,*adc_field_output_scaled_ptr,*parameter_active_gain_a_ptr,*parameter_active_gain_b_ptr);
           *output_setpoint_ptr = closed_loop_output;
         }
         if (((uint32_t)(*output_upper_limit_ptr * ANGLE_SCALE) < *output_setpoint_ptr ||
@@ -621,10 +621,10 @@ void output_stage(void)
           *output_setpoint_ptr = *output_lower_limit_ptr * ANGLE_SCALE;
         }
       }
-      working_value_ptr = output_state_aux_b_ptr;
+      working_value_ptr = output_state_aux_e_ptr;
       if (*parameter_control_mode_ptr == '\x02') {
         /* —— 恒压源模式（0x1000F774..F794）—— */
-        *output_state_aux_b_ptr = *adc_output_reference_ptr;
+        *output_state_aux_e_ptr = *adc_output_reference_ptr;
         constant_voltage_output_ptr = output_current_difference_ptr;
         *output_current_difference_ptr = *working_value_ptr % 10000;
         if (1000 < *constant_voltage_output_ptr) {
@@ -679,8 +679,9 @@ void output_stage(void)
       }
     }
     if (((*parameter_output_mode_ptr == '\0') && (*(volatile int *)output_run_state_ptr != 0)) &&
-       (*output_fault_state_ptr == '\x01')) {
+       (*run_request_ptr == '\x01')) {
       /* —— 运行联锁解除：全部输出复位 —— */
+      /* 原 BIN 0xF7CE..0xF806：第三条件读 0x1000177D(run_request)，不是 fault_state(0x1000203D) */
       gpio_outputs_set();
       *(volatile uint32_t *)output_ramp_counter_ptr = 0;
       *(volatile uint32_t *)output_ramp_value_ptr = 0;

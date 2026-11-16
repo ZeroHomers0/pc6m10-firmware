@@ -400,6 +400,9 @@
 #define output_state_aux_a_ptr      ((volatile uint32_t *)0x10002020u)
 #define output_state_aux_b_ptr      ((volatile uint32_t *)0x10002018u)
 #define output_state_aux_c_ptr      ((volatile uint32_t *)0x1000201Cu)
+/* 0x1000202C：恒压源模式（control_mode==2）专用暂存，原 BIN 0xF5B6/0xF5BE 使用，
+ * 与 aux_b(0x10002018) 不是同一单元（aux_b 另有软起计数用途）。 */
+#define output_state_aux_e_ptr      ((volatile uint32_t *)0x1000202Cu)
 #define output_reference_average_ptr ((volatile uint32_t *)0x100015D0u)
 #define output_ramp_table_ptr       ((volatile uint32_t *)0x100017F8u)
 #define output_debounce_counter_ptr ((volatile uint8_t *)0x10001FFAu)

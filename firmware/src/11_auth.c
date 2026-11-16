@@ -76,7 +76,9 @@ void auth_challenge(void)
     }
     if (bit_index == 8) {
       /* 挑战组 B（bit8-15）：3 个板上参数求和 +0xc；期望应答低位 exp_resp_lo */
-      challenge_byte = (uint32_t)*parameter_current_limit_ptr + (uint32_t)*parameter_master_slave_offset_ptr + *parameter_phase_limit_ptr + 0xc;
+      /* 原 BIN 0x10700/0x10702：`ldr r7,=0x10001644; ldrb r7,[r7]` —— 只取低字节，
+       * 源码此处必须按 uint8_t 读（firmware/README.md #A1 记录过同一修复）。 */
+      challenge_byte = (uint32_t)*(volatile uint8_t *)parameter_current_limit_ptr + (uint32_t)*parameter_master_slave_offset_ptr + *parameter_phase_limit_ptr + 0xc;
       exp_resp_lo = ((challenge_byte ^ 0x3f) + (challenge_byte | 0xa9) + (challenge_byte & 0xbc)) & 0xff;
     }
     if (bit_index == 0x10) {

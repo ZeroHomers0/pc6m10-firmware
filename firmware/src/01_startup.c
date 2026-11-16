@@ -226,7 +226,10 @@ void main(void)
   eint1_init();
   eint2_init();
   eint3_init();
-  uart3_init(0);
+  /* 原 BIN 0x614 `bl 0xac24` 前不设 r0：r0 = eint3_init 尾部 nvic_enable_irq(0x15) 留下的
+   * 0x15（0x10628 只改 r1/r2/r3）。该值仅在波特率索引非法（>7，EEPROM 损坏）时作为
+   * 分频器 fallback 使用；传 0x15 与原厂残留值一致。 */
+  uart3_init(0x15);
   long_delay();
   if ((system_auth_enabled == '\0') && (system_auth_retry_count < 3)) {
     auth_challenge();

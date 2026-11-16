@@ -111,7 +111,9 @@ void modbus_dispatch(int arg)
   }
 
   /* ================= 5) 0x06 写单寄存器（53 分支） ================= */
-  if (rx_frame[1] == 0x06 && rx_frame[2] == 0x10) {
+  if (rx_frame[1] == 0x06) {
+    /* 原 BIN 的 53 个分支各自重查 frame[2]==0x10，任一不符即落 0xE16A → [地址,0x86,0x02] */
+    if (rx_frame[2] != 0x10) { goto invalid_register_address; }
     write_value = ((uint32_t)rx_frame[4] << 8) | (uint32_t)rx_frame[5];   /* 原 BIN 0xB798: rx_frame[4]<<8|rx_frame[5] 大端 */
     *write_value_cache = write_value;
     switch (rx_frame[3]) {
@@ -413,7 +415,13 @@ void modbus_dispatch(int arg)
   }
 
   /* ================= 6) 0x10 写多寄存器 ================= */
-  if (rx_frame[1] == 0x10 && rx_frame[2] == 0x10) {
+  if (rx_frame[1] == 0x10) {
+    if (rx_frame[2] != 0x10) {                     /* 原 BIN 0xE33A：非法地址 → [地址,0x90,0x02] */
+      tx_frame[0] = *slave_address; tx_frame[1] = 0x90; tx_frame[2] = 0x02;
+      frame_crc = crc16((uint8_t *)tx_frame, 3); tx_frame[3] = frame_crc & 0xff; tx_frame[4] = frame_crc >> 8;
+      uart3_tx_byte(5);
+      return;
+    }
     register_address = (uint32_t)rx_frame[3];
     register_count = ((uint32_t)rx_frame[4] << 8) | (uint32_t)rx_frame[5];   /* 原 BIN 0xE202: rx_frame[4]<<8|rx_frame[5] 大端 */
     if (register_address == 0 || register_address > 0x3E) {
@@ -442,7 +450,13 @@ void modbus_dispatch(int arg)
   }
 
   /* ================= 7) 0x03 读保持寄存器 ================= */
-  if (rx_frame[1] == 0x03 && rx_frame[2] == 0x10) {
+  if (rx_frame[1] == 0x03) {
+    if (rx_frame[2] != 0x10) {                     /* 原 BIN 0xE51A：非法地址 → [地址,0x83,0x02] */
+      tx_frame[0] = *slave_address; tx_frame[1] = 0x83; tx_frame[2] = 0x02;
+      frame_crc = crc16((uint8_t *)tx_frame, 3); tx_frame[3] = frame_crc & 0xff; tx_frame[4] = frame_crc >> 8;
+      uart3_tx_byte(5);
+      return;
+    }
     register_address = (uint32_t)rx_frame[3];
     register_count = ((uint32_t)rx_frame[4] << 8) | (uint32_t)rx_frame[5];   /* 原 BIN 0xE408: rx_frame[4]<<8|rx_frame[5] 大端 */
     if (register_address == 0 || register_address > 0x3F) {
@@ -458,13 +472,18 @@ void modbus_dispatch(int arg)
       return;
     }
     tx_frame[0] = *slave_address; tx_frame[1] = 0x03; tx_frame[2] = (uint8_t)(register_count << 1);
-    for (index = 0; index < register_count; index++) {
+    /* 原 BIN 0xE470..0xE4DE：循环条件是「tx 字节偏移(0x100017B4) < 2*count+3」且偏移
+     * 步长 2，故实际迭代 count+2 次（多读 2 个寄存器，数据被随后的 CRC 覆盖，仅残留
+     * 0x100017A8 末值 = start+count+1 与多余两次 modbus_read_reg 调用）。
+     * 寄存器号从 start-1 起、每次读后 +1（0xE4CA），故最后一次读的是 start+count。 */
+    for (index = 0; index < register_count + 2; index++) {
       /* modbus_read_reg 把数据写入 *out_val(0x100017A4)，返回值恒为 0。
        * 原机码 bl 后用 ldrh r0,[rx] 回读 *out_val 取数据，不用返回值。 */
       modbus_read_reg((uint32_t *)modbus_register_value_ptr, register_address - 1 + index);  /* 内部表 0 基 */
       write_value = (uint32_t)*(uint16_t *)modbus_register_value_ptr;
       tx_frame[3 + index * 2] = (uint8_t)(write_value >> 8);
       tx_frame[4 + index * 2] = (uint8_t)(write_value & 0xff);
+      *modbus_register_index_ptr = *modbus_register_index_ptr + 1;  /* 原 BIN 0xE4CA：读后寄存器号自增 */
     }
     frame_crc = crc16((uint8_t *)tx_frame, 3 + register_count * 2);
     tx_frame[3 + register_count * 2] = frame_crc & 0xff;
