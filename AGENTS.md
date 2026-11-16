@@ -8,8 +8,8 @@
 `LPC1765.bin`（262144 B）是所有等价验证的金标准。
 
 - GCC 可编译工程：`firmware/`，Arm GNU Toolchain 14.2.Rel1。
-- 当前构建：`text 59804 / data 0 / bss 2188`（2026-11-17 异常应答功能码修复后）。
-- 当前 `firmware.bin` SHA-256：`38B3EB172899A0E276E18B1CE3F904DCA6CD7560DB2B2AC3172ABB78A9C405F7`（60364 B）。
+- 当前构建：`text 59828 / data 0 / bss 2188`（2026-11-17 保护页第 3 页上界修复后）。
+- 当前 `firmware.bin` SHA-256：`9645957143A24C1656E9B62B796E5150F2461341E98094E0EFCC2F35F65015B7`（60380 B）。
 - 板上已烧写镜像为上一版 `E843035C88D1B5AE52A516072F09FC551BC90720CFF23EA4EEF6623FF19022B2`（60368 B，text 59808，含闭环反馈复制修复；本次功能码修复未烧写）。
 - 自编译固件已于 2026-08-26 完成 CRP 布局修复（`0x2FC` 显式保留 `0xFFFFFFFF`，见
   `firmware/lpc1765.ld`、`firmware/startup.s`、`firmware/build.sh`）并经 J-Link SWD 烧写入板、
@@ -65,6 +65,8 @@
 - **2026-11-17 已烧写闭环反馈修复版**：用户确认断开市电/门极/负载、仅限流控制电。使用仓库J-Link（609799999，SWD100kHz），完整256KiB备份及verifybin通过后，烧写隔离构建的提交 `24cbbad`，固件60368字节，SHA256 `E843035C88D1B5AE52A516072F09FC551BC90720CFF23EA4EEF6623FF19022B2`。烧后verifybin、整片读回逐字节核对通过，其余Flash全FF，CRP=FFFFFFFF。备份、脚本、日志与manifest在 `backup/flash_2026-11-17_feedback_fix/`，不上传。工作区并行通信改动未纳入；当前构建文件可能已被并行任务替换，以本次备份目录中固定固件与manifest为本次烧写证据。未驱动nRESET运行重启，尚待用户物理断电上电及实机冒烟确认。
 
 - **2026-11-17 异常应答功能码修复**：原 BIN 异常应答的功能码是 `adds r0,#0x80`（0xB42C / 0xB4C2），按 8 位回绕；源码用按位或，功能码 >=0x80（0x83/0x86/0xFF）时原机应答 0x03/0x06/0x7F、新固件仍回原值。已把两处（功能码非 0x03/0x06/0x10 与 CRC 错误）改为 `(uint8_t)(rx_frame[1] + 0x80)`，新增 `test/emulation/test_exception_func_code.py`（非法功能码 10 帧 + CRC 错误 3 帧，共 13/13 与原 BIN 一致）。构建 text 59804、回归 31/31、原 BIN A/B 全 PASS。未烧写。
+
+- **2026-11-17 保护页第 3 页上界修复**：全屏显示调用矩阵（6936 例：屏号 0/1..9/0xB/0xC/0x14/0x1E/0x5A/0x62/0x63 × 项 0..16 × 12 键 × view 0/1）发现保护参数页（屏号 4）项号 12..16 仍画第 3 页；原 BIN 0x84FC `cmp #8; blt` + 0x8504 `cmp #0xc; bge`（跳 0x85C0）证明只有 8 <= 项号 < 12 才绘制、>=12 直接跳过（PC12M-2 同源缺陷已在 12p 侧修成 `else if (< 0xc)`）。修法：`draw_protection_parameter_page` 增加 `if (item_index >= 0xc) return;`，导航标题块末支 `else` 改 `else if (*ui_item_index_ptr < 0xc)`。另用全屏状态终态矩阵（同样 6936 例，比较 SRAM0 0..0x2200 + 六段外设终态）复核：除密码错误延时循环的 0x1000161C/0x10001620 残值（指令预算截断，400M 指令预算下两版完全一致）外全部相等。构建 text 59828 / data 0 / bss 2188，SHA-256 `96459571…F65015B7`（60380 B）；新增 `test/emulation/test_menu_page_bounds.py`（72/72）、回归 32/32、原 BIN A/B 全 PASS。未烧写。
 
 ## 必须遵守
 

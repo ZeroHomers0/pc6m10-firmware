@@ -994,7 +994,8 @@ static void state_machine_page_protection(KeyCode key_code)
       } else if (*ui_item_index_ptr < 8) {
         disp_string(DISPLAY_PROTECTION_LABEL_01,0,0,0); disp_string(DISPLAY_PROTECTION_LABEL_02,1,0,0);
         disp_string(DISPLAY_PROTECTION_LABEL_03,2,0,0); disp_string(DISPLAY_PROTECTION_LABEL_04,3,0,0);
-      } else {
+      } else if (*ui_item_index_ptr < 0xc) {
+        /* BIN 0x7D7A: cmp #8 blt 0x7DBA / 0x7D86: cmp #0xc bge 0x7DBA —— 仅 8<=项号<12 画第 3 页 */
         disp_string(DISPLAY_PROTECTION_LABEL_05,0,0,0); disp_string(DISPLAY_PROTECTION_LABEL_06,1,0,0);
         disp_string(DISPLAY_CALIBRATION_RESULT_VALUE_4,2,0,0); disp_string(DISPLAY_CALIBRATION_RESULT_VALUE_4,3,0,0);
       }
