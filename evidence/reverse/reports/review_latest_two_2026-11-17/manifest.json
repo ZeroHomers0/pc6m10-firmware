@@ -1,0 +1,6 @@
+{
+  "LPC1765.bin": "dd629eac0243a13cecc826b1fc2b4b54066f7647d8c1d09a62d5caf7b4f13f65",
+  "firmware/firmware.bin": "10ae976302470eb4b40d3bc43df01d394946ff5db7cc1fa09fcec8f5b72adb87",
+  "tmp/review_latest_two/before/firmware/firmware.bin": "04b14ea3d0a2047ebee42ec923feddcfbd9bb429e07dece535ab824dc33ba7d2",
+  "tmp/review_latest_two/candidate/firmware/firmware.bin": "e843035c88d1b5ae52a516072f09fc551bc90720cff23ea4eef6623ff19022b2"
+}

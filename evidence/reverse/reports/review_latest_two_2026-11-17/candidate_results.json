@@ -1,0 +1,16 @@
+{
+  "candidate": {
+    "total": {
+      "protocol": 209,
+      "output": 28,
+      "display": 220,
+      "state": 48
+    },
+    "bad": {
+      "protocol": [],
+      "output": [],
+      "display": [],
+      "state": []
+    }
+  }
+}

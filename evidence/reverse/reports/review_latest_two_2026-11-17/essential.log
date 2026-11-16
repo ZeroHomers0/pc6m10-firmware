@@ -1,0 +1,20 @@
+F1 0x06 非 0x10 页异常响应一致 018602c3a1
+F1 0x10 非 0x10 页异常响应一致 019002cdc1
+F1 0x03 非 0x10 页异常响应一致 018302c0f1
+F2 0x03 start=1 count=1 响应与末次索引一致
+F2 0x03 start=13 count=3 响应与末次索引一致
+F2 0x03 start=62 count=1 响应与末次索引一致
+F2b 0x03 读矩阵 start=1..0x3F 全部一致
+F3 run_request=0 写数=14 一致
+F3 run_request=1 写数=28 一致
+F4 恒压源分支写 0x1000202C、aux_b 保持初值，一致
+第二路闭环一致 aux_b=50 aux_a=2 0x100015B8 未被改写
+AUDIT_FIXES_2: 全通过
+PID_INPUT original [(526, 3000)] field_feedback 3000
+PID_INPUT latest [(526, 1)] field_feedback 1
+PID_INPUT candidate [(526, 3000)] field_feedback 3000
+ORIGINAL_EINT3_RETURN_R0 0x15
+UART_FALLBACK 0 MATCH
+UART_FALLBACK 7 MATCH
+UART_FALLBACK 8 MATCH
+UART_FALLBACK 255 MATCH
