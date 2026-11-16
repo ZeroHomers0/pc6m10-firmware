@@ -24,6 +24,7 @@ COM_CHK = 0x10001705
 CONTROL_MODE = 0x10001634
 CONTROL_METHOD = 0x10001655
 ESTOP = 0x10001657
+AUX_MODE = 0x10001658
 
 
 def cases():
@@ -46,6 +47,15 @@ def cases():
             params = dict(BASE)
             params[address] = value
             out.append(("enum 0x%X=%d item=%d" % (address, value, item), 3, item, 0, 0xFA, params))
+    # 校准结果页（屏 0x63）的三值枚举急停/辅助模式：原 BIN 0x5D94 / 0x5E12 均
+    # `cmp #2; bne 不画`，>=3 不绘制任何选项。旧源码 else 兜底会画成「限相」。
+    for value in range(4):
+        for address, item, view in ((ESTOP, 5, 1), (ESTOP, 7, 1), (AUX_MODE, 6, 1),
+                                    (ESTOP, 5, 0), (AUX_MODE, 6, 0)):
+            params = dict(BASE)
+            params[address] = value
+            out.append(("result-page 0x%X=%d item=%d view=%d" % (address, value, item, view),
+                        0x63, item, view, 0xFA, params))
     return out
 
 

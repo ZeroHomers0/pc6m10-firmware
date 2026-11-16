@@ -645,14 +645,16 @@ static void state_machine_page_calibration_result(KeyCode key_code)
       } else if (*ui_item_index_ptr < 8) {
         /* item4=输出电压数值 row0 */
         disp_uint4(*parameter_voltage_calibration_ptr, 0, 0xb, (*ui_item_index_ptr == 4) ? 1 : 0);
-        /* item5=parameter_emergency_stop_ptr row1：0=急停/1=外控/2=限相 */
+        /* item5=parameter_emergency_stop_ptr row1：0=急停/1=外控/2=限相
+         * BIN 0x5D94 `cmp #2; bne 0x5DE0`：只有 0/1/2 画，>=3 不画 */
         if (*parameter_emergency_stop_ptr == 0) disp_string(DISPLAY_EMERGENCY_STOP_OFF, 1, 0xb, (*ui_item_index_ptr == 5) ? 1 : 0);
         else if (*parameter_emergency_stop_ptr == 1) disp_string(DISPLAY_EMERGENCY_STOP_ON, 1, 0xb, (*ui_item_index_ptr == 5) ? 1 : 0);
-        else disp_string(DISPLAY_EMERGENCY_STOP_AUTO, 1, 0xb, (*ui_item_index_ptr == 5) ? 1 : 0);
-        /* item6=parameter_auxiliary_mode_ptr row2：0=复位/1=外控/2=限相 */
+        else if (*parameter_emergency_stop_ptr == 2) disp_string(DISPLAY_EMERGENCY_STOP_AUTO, 1, 0xb, (*ui_item_index_ptr == 5) ? 1 : 0);
+        /* item6=parameter_auxiliary_mode_ptr row2：0=复位/1=外控/2=限相
+         * BIN 0x5E12 `cmp #2; bne 0x5E60`：只有 0/1/2 画，>=3 不画 */
         if (*parameter_auxiliary_mode_ptr == 0) disp_string(DISPLAY_AUXILIARY_MODE_OFF, 2, 0xb, (*ui_item_index_ptr == 6) ? 1 : 0);
         else if (*parameter_auxiliary_mode_ptr == 1) disp_string(DISPLAY_EMERGENCY_STOP_ON, 2, 0xb, (*ui_item_index_ptr == 6) ? 1 : 0);
-        else disp_string(DISPLAY_EMERGENCY_STOP_AUTO, 2, 0xb, (*ui_item_index_ptr == 6) ? 1 : 0);
+        else if (*parameter_auxiliary_mode_ptr == 2) disp_string(DISPLAY_EMERGENCY_STOP_AUTO, 2, 0xb, (*ui_item_index_ptr == 6) ? 1 : 0);
         /* item7=parameter_feedback_mode_ptr row3：==0→关闭(0x6038)；!=0→检测(0x6040) */
         if (*parameter_feedback_mode_ptr == 0) disp_string(DISPLAY_OPTION_DISABLED, 3, 0xb, (*ui_item_index_ptr == 7) ? 1 : 0);
         else disp_string(DISPLAY_FEEDBACK_ON, 3, 0xb, (*ui_item_index_ptr == 7) ? 1 : 0);
