@@ -166,11 +166,11 @@ static void draw_communication_parameter_value(uint32_t item_index, uint32_t att
       if (*communication_parity_ptr == 0) disp_string(DISPLAY_PARITY_EVEN, 2, 0xa, attr);
       else if (*communication_parity_ptr == 1) disp_string(DISPLAY_PARITY_ODD, 2, 0xa, attr);
       else if (*communication_parity_ptr == 2) disp_string(DISPLAY_PARITY_NONE, 2, 0xa, attr);
-      else disp_string(DISPLAY_PARITY_STOP, 2, 0xa, attr);   /* '1 ST0P' 校验名 */
+      else if (*communication_parity_ptr == 3) disp_string(DISPLAY_PARITY_STOP, 2, 0xa, attr);
       break;
     case 3:
-      if (*communication_check_ptr) disp_string(DISPLAY_OPTION_ENABLED, 3, 0xb, attr);
-      else disp_string(DISPLAY_OPTION_DISABLED, 3, 0xb, attr);
+      if (*communication_check_ptr == 0) disp_string(DISPLAY_OPTION_DISABLED, 3, 0xb, attr);
+      else if (*communication_check_ptr == 1) disp_string(DISPLAY_OPTION_ENABLED, 3, 0xb, attr);
       break;
   }
 }
@@ -755,7 +755,7 @@ static void state_machine_page_basic_parameters(KeyCode key_code)
         if (*communication_parity_ptr == 1) disp_string(DISPLAY_PARITY_ODD, 2, 0xa, 0);
         if (*communication_parity_ptr == 2) disp_string(DISPLAY_PARITY_NONE, 2, 0xa, 0);
         if (*communication_check_ptr == 0) disp_string(DISPLAY_OPTION_DISABLED, 3, 0xb, 0);
-        else disp_string(DISPLAY_OPTION_ENABLED, 3, 0xb, 0);
+        else if (*communication_check_ptr == 1) disp_string(DISPLAY_OPTION_ENABLED, 3, 0xb, 0);
         *ui_statistics_timeout_ticks_ptr = 0xfa;
       }
       if (*ui_item_index_ptr == 3) {
