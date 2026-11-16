@@ -1,0 +1,6 @@
+audit_modbus_single_write.py 原 BIN 差分无差异；双侧未返回 2
+audit_all_menu_states.py 原 BIN 差分无差异；双侧未返回 24
+密码错误页 0xa 原 BIN/ELF 外层10000、内层1000、喂狗10000一致
+密码错误页 0x62 原 BIN/ELF 外层10000、内层1000、喂狗10000一致
+复位命令 0x25 响应/EEPROM顺序/自跳等待与原 BIN 一致
+复位命令 0x26 响应/EEPROM顺序/自跳等待与原 BIN 一致

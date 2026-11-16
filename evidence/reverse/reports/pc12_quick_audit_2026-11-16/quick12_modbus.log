@@ -1,0 +1,6 @@
+progress 468 bad 0 incomplete 2
+REG_GROUPS {}
+PER_REG_EXAMPLE []
+TOTAL 468 BAD 0 INCOMPLETE 2
+DIFFS []
+INCOMPLETE_CASES [(37, 0, False, False), (38, 0, False, False)]

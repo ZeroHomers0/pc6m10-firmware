@@ -1,0 +1,8 @@
+menu/key/edit/full 1 14 0 False old/new (page,calibration,(countdown,idle,refresh),blink) [(98, 4000, (60, 0, 0), 0), (98, 4000, (60, 0, 0), 0)]
+menu/key/edit/full 1 14 0 True old/new (page,calibration,(countdown,idle,refresh),blink) [(98, 4000, (60, 0, 0), 0), (98, 4000, (60, 0, 0), 0)]
+menu/key/edit/full 99 22 1 False old/new (page,calibration,(countdown,idle,refresh),blink) [(99, 4001, (27, 1, 73), 251), (99, 4001, (27, 1, 73), 251)]
+menu/key/edit/full 99 22 1 True old/new (page,calibration,(countdown,idle,refresh),blink) [(99, 4001, (27, 1, 73), 251), (99, 4001, (27, 1, 73), 251)]
+menu/key/edit/full 99 33 1 False old/new (page,calibration,(countdown,idle,refresh),blink) [(99, 3999, (27, 1, 73), 251), (99, 3999, (27, 1, 73), 251)]
+menu/key/edit/full 99 33 1 True old/new (page,calibration,(countdown,idle,refresh),blink) [(99, 3999, (27, 1, 73), 251), (99, 3999, (27, 1, 73), 251)]
+menu/key/edit/full 99 4 0 False old/new (page,calibration,(countdown,idle,refresh),blink) [(1, 4000, (27, 1, 73), 1), (1, 4000, (27, 1, 73), 1)]
+menu/key/edit/full 99 4 0 True old/new (page,calibration,(countdown,idle,refresh),blink) [(1, 4000, (27, 1, 73), 1), (1, 4000, (27, 1, 73), 1)]

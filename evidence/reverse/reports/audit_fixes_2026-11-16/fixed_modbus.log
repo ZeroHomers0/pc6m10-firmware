@@ -1,0 +1,13 @@
+progress 288 bad 0 incomplete 0
+progress 576 bad 0 incomplete 0
+progress 864 bad 0 incomplete 0
+progress 1152 bad 0 incomplete 0
+progress 1440 bad 0 incomplete 2
+progress 1728 bad 0 incomplete 2
+progress 2016 bad 0 incomplete 2
+progress 2304 bad 0 incomplete 2
+REG_GROUPS {}
+PER_REG_EXAMPLE []
+TOTAL 2304 BAD 0 INCOMPLETE 2
+DIFFS []
+INCOMPLETE_CASES [(37, 0, False, False), (38, 0, False, False)]

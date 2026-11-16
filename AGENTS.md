@@ -8,8 +8,8 @@
 `LPC1765.bin`（262144 B）是所有等价验证的金标准。
 
 - GCC 可编译工程：`firmware/`，Arm GNU Toolchain 14.2.Rel1。
-- 当前构建：`text 59384 / data 0 / bss 2188`。
-- 当前 `firmware.bin` SHA-256：`40CCF4F73DD8B11035D5E41DCDD8FA0B08CA18AD40FCD0A729C0A99EC1B2D181`。
+- 当前构建：`text 59676 / data 0 / bss 2188`。
+- 当前 `firmware.bin` SHA-256：`04B14EA3D0A2047EBEE42EC923FEDDCFBD9BB429E07DECE535AB824DC33BA7D2`。
 - 自编译固件已于 2026-08-26 完成 CRP 布局修复（`0x2FC` 显式保留 `0xFFFFFFFF`，见
   `firmware/lpc1765.ld`、`firmware/startup.s`、`firmware/build.sh`）并经 J-Link SWD 烧写入板、
   全镜像校验通过；过程见 `docs/w8/W8_POST_FLASH_2026-08-26.md`。
@@ -50,6 +50,10 @@
 - **2026-11-14 菜单标题调整**：按用户要求在 `firmware-menu-display-2026-11-13` 分支将相位补偿改为同步校准，补齐同/步点阵并集中在显示模块。菜单专项及原BIN完整A/B验证通过（`evidence/reverse/reports/menu_sync_calibration_ab_2026-11-14.log`）；2026-11-14已通过仓库J-Link烧写，verifybin及整片读回核对通过，CRP=FFFFFFFF；备份和日志见 `backup/flash_2026-11-14_sync_calibration/`。尚待用户物理断电上电及显示确认。
 
 - **2026-11-16 端子启停事件码修复**：点动扫描曾错误返回面板键码5/6，修正为原BIN要求的端子事件7/8；新增 `firmware/inc/input_events.h` 明确事件契约，扫描与状态机共用。新增 `test/emulation/test_terminal_event_contract.py` 覆盖1176例扫描和88例去抖边界，修复后全部A/B一致，完整原BIN A/B及全量回归27/27通过，日志见 `evidence/reverse/reports/terminal_event_*_2026-11-16.log`。保留原版本地＋自锁门控；此次未烧写。本次修复前的全套测试未覆盖点动触发边界，历史PASS不构成本问题不存在的证明。
+
+- **2026-11-16 菜单文案调整**：共享选项外控→模选、限相→解限；启动方式点动→瞬动、自锁→保持；菜单6相位参数校准→同步参数校准。编号/值列/参数逻辑不变；短标题补空格清除旧字形。新增瞬/解/均/选/持集中点阵；同/步沿用已扩展字形。菜单专项13项正反显通过。显示全执行A/B以原厂文字验证渲染行为，定制文字及字形另由菜单专项实际执行检查。本仓完整原BIN A/B及回归27/27通过，日志见 `evidence/reverse/reports/menu_wording_*_2026-11-16.log`。此次未提交、推送或烧写。
+
+- **2026-11-16 审计及修复**：全仓审计确认的8类行为差异已按原BIN修复，保留授权菜单、字体和20秒背光定制。历史发现见 `docs/analysis/PC6M_FULL_CODE_AUDIT_2026-11-16.md`，修复与验证见 `docs/analysis/PC6M_AUDIT_FIXES_2026-11-16.md`。新增 `test/emulation/test_audit_fixes.py` 强制断言通信/菜单扩展矩阵、密码错误外层及喂狗次数、复位命令应答/EEPROM顺序与非返回自跳。未烧写硬件；旧菜单烧写包EBC44BD6…5F46保留为历史，不作为本次修复产物。
 
 ## 必须遵守
 

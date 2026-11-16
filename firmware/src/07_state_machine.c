@@ -344,7 +344,8 @@ static void state_machine_page_main(KeyCode key_code)
       disp_clear();
       disp_string(DISPLAY_MAIN_RESET_LABEL, 0, 0, 0);
       disp_string(DISPLAY_MAIN_RESTART_LABEL, 1, 0, 0);
-      disp_string(DISPLAY_MAIN_CALIBRATION_VALUE, 3, 7, 0); return;
+      disp_string(DISPLAY_MAIN_CALIBRATION_VALUE, 3, 7, 0);
+      *ui_calibration_timeout_ticks_ptr = 0x3c; *ui_idle_refresh_ticks_ptr = 0; return;
     }
     if (key_code == KEY_BACK && *operation_configuration_ptr == 0 && *output_fault_flags_ptr != 0) {
       *ui_screen_id_ptr = UI_SCREEN_STATUS_MONITOR; *ui_statistics_timeout_ticks_ptr = 0x1f4;
@@ -487,7 +488,6 @@ static void state_machine_page_main(KeyCode key_code)
 
 static void state_machine_page_calibration_menu(KeyCode key_code)
 {
-  uint32_t delay_iteration;
     /* ---------- caseA 参数密码屏 (0x541C-0x5572) ---------- */
     if (key_code == KEY_CONFIRM) {
       *ui_item_index_ptr = 0;
@@ -495,9 +495,7 @@ static void state_machine_page_calibration_menu(KeyCode key_code)
         if (password_input_buffer_ptr[*ui_item_index_ptr] != password_part_a_ptr[*ui_item_index_ptr]) {
           disp_clear();
           disp_string(DISPLAY_PASSWORD_ERROR, 1, 4, 0);
-          /* 密码错延时：delay_iteration 计 0x3e8 次，循环体喂狗(wd_feed)并累加 watchdog_delay_outer_ticks_ptr；外层至 0x2710 */
-          *watchdog_delay_inner_ticks_ptr = 0;
-          for (delay_iteration = 0; delay_iteration < 0x3e8; delay_iteration++) { wd_feed(); (*watchdog_delay_outer_ticks_ptr)++; }
+          delay_for_password_feedback();
           *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return;
         }
         password_input_buffer_ptr[*ui_item_index_ptr] = 0; (*ui_item_index_ptr)++;
@@ -521,7 +519,6 @@ static void state_machine_page_calibration_menu(KeyCode key_code)
 
 static void state_machine_page_calibration_active(KeyCode key_code)
 {
-  uint32_t delay_iteration;
     /* ---------- case62 初始密码屏 (0x5572-0x5748) ---------- */
     if (key_code == KEY_CONFIRM) {
       *ui_item_index_ptr = 0;
@@ -529,9 +526,7 @@ static void state_machine_page_calibration_active(KeyCode key_code)
         if (password_input_buffer_ptr[*ui_item_index_ptr] != password_part_c_ptr[*ui_item_index_ptr]) {
           disp_clear();
           disp_string(DISPLAY_PASSWORD_ERROR, 1, 4, 0);
-          /* 密码错延时（同 caseA）：delay_iteration 计 0x3e8 次，喂狗 + watchdog_delay_outer_ticks_ptr++ */
-          *watchdog_delay_inner_ticks_ptr = 0;
-          for (delay_iteration = 0; delay_iteration < 0x3e8; delay_iteration++) { wd_feed(); (*watchdog_delay_outer_ticks_ptr)++; }
+          delay_for_password_feedback();
           *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return;
         }
         password_input_buffer_ptr[*ui_item_index_ptr] = 0; (*ui_item_index_ptr)++;
@@ -561,10 +556,11 @@ static void state_machine_page_calibration_result(KeyCode key_code)
       if (*ui_view_mode_ptr == 0) *ui_statistics_timeout_ticks_ptr = 0xfa; else *ui_statistics_timeout_ticks_ptr = 0x1f4;
     }
     if (key_code == KEY_BACK) {
-      *ui_idle_timeout_ticks_ptr = 0; param_sync_live_to_eeprom(); *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return;
+      *ui_idle_timeout_ticks_ptr = 0; param_sync_live_to_eeprom(); *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen();
     }
-    if (key_code == KEY_DOWN || key_code == KEY_UP) {
-      if (*ui_view_mode_ptr == 0) {
+    if (key_code == KEY_DOWN || key_code == KEY_UP ||
+        key_code == KEY_FAST_UP || key_code == KEY_FAST_DOWN) {
+      if (*ui_view_mode_ptr == 0 && (key_code == KEY_DOWN || key_code == KEY_UP)) {
         *ui_idle_timeout_ticks_ptr = 0;
         if (key_code == KEY_UP) { (*ui_item_index_ptr)++; if (*ui_item_index_ptr > 0xa) *ui_item_index_ptr = 0xa; }
         if (key_code == KEY_DOWN) { if (*ui_item_index_ptr > 0) (*ui_item_index_ptr)--; }
@@ -581,7 +577,7 @@ static void state_machine_page_calibration_result(KeyCode key_code)
           disp_string(DISPLAY_CALIBRATION_RESULT_VALUE_3, 2, 0, 0); disp_string(DISPLAY_CALIBRATION_RESULT_VALUE_4, 3, 0, 0);
         }
         *ui_statistics_timeout_ticks_ptr = 0xfa;
-      } else {
+      } else if (*ui_view_mode_ptr != 0) {
         if (key_code == KEY_DOWN || key_code == KEY_FAST_UP) {
           *ui_idle_timeout_ticks_ptr = 0;
           if (*ui_item_index_ptr == 0) { (*parameter_current_calibration_a_ptr)++; if (*parameter_current_calibration_a_ptr > 0x1194) *parameter_current_calibration_a_ptr = 0x1194; }

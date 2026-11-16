@@ -1,0 +1,44 @@
+wdt_init done
+wd_feed done
+timer0_init done
+lcd_ctrl_line done
+lcd_data_byte done
+disp_cmd done
+disp_data done
+gpio_inputs_dir_init done
+i2c_gpio_init done
+i2c_start done
+i2c_stop done
+i2c_write_byte done
+i2c_read_byte done
+adc_init done
+adc0_start done
+gpio_outputs_set done
+timer1_init done
+timer2_init done
+eint1_init done
+eint2_init done
+eint3_init done
+fio1_pin22_ctrl done
+fio0_pin22_ctrl done
+out_relay_p020 done
+out_relay_p021 done
+fio1_pin20_ctrl done
+fio1_pin21_ctrl done
+fio1_pin23_ctrl done
+gpio2_init done
+gpio0_input_init done
+read_input_p02 done
+chk_p02_p03 done
+nvic_enable_irq done
+LEAF_DIFFS []
+NUMBER disp_digit bad []
+NUMBER disp_number3 bad []
+NUMBER disp_uint4 bad []
+NUMBER disp_uint5 bad []
+NUMBER disp_number bad []
+NUMBER disp_signed_angle bad []
+NUMBER disp_offset bad []
+NUMBER disp_uint2 bad []
+NUMBER disp_fixed_1dec bad []
+NUMBER disp_decimal1 bad []

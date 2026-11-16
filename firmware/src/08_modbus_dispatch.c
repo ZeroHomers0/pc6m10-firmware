@@ -24,7 +24,7 @@
  *   值缓存 store → 范围校验 → 参数槽 store（word 或 uint8_t）→ param_sync →
  *   8 字节响应 [地址,0x06,0x10,register_address,val_hi,val_lo,CRC16]。
  *   特殊分支：0x1001 控制方式(uint8_t 0x10001634,值<3)、0x1017 控制方式+增益组复制、
- *   0x1018/0x1019 第4组增益(控制方式==4 即时同步)、0x1021-0x1024 仅允许写 0、
+ *   0x1018/0x1019 第4组增益(重装当前组两个活动增益)、0x1021-0x1024 仅允许写 0、
  *   0x1025/0x1026 无 param_sync 特殊命令、0x102F 从站地址、0x103D 远程使能。
  * ========================================================================== */
 #include "inc/types.h"
@@ -46,6 +46,19 @@
  *   8) 兜底帧尾：modbus_error_indicator_clear_register P4.29 + 清状态 + UART3 IER
  *   入口参数 arg：保留未用（主循环调用传 0；帧数据全部读自全局 SRAM，见 #define 数据指针）。
  * ========================================================================== */
+/* 按原 BIN 重装当前 PID 组的两个活动增益。 */
+static void reload_active_pid_gains(void)
+{
+      if (*parameter_pid_profile_ptr == 1) { *parameter_active_gain_a_ptr = *parameter_profile1_gain_a_ptr;
+                    *parameter_active_gain_b_ptr = *parameter_profile1_gain_b_ptr; }
+      if (*parameter_pid_profile_ptr == 2) { *parameter_active_gain_a_ptr = *parameter_profile2_gain_a_ptr;
+                    *parameter_active_gain_b_ptr = *parameter_profile2_gain_b_ptr; }
+      if (*parameter_pid_profile_ptr == 3) { *parameter_active_gain_a_ptr = *parameter_profile3_gain_a_ptr;
+                    *parameter_active_gain_b_ptr = *parameter_profile3_gain_b_ptr; }
+      if (*parameter_pid_profile_ptr == 4) { *parameter_active_gain_a_ptr = *parameter_profile4_gain_a_ptr;
+                    *parameter_active_gain_b_ptr = *parameter_profile4_gain_b_ptr; }
+}
+
 void modbus_dispatch(int arg)
 {
   volatile uint8_t *const frame_state = modbus_frame_state_ptr;
@@ -215,30 +228,19 @@ void modbus_dispatch(int arg)
     case 0x17:                    /* 0x1017 控制方式（1..4）+ 对应增益组复制到活动槽 */
       if (write_value >= 5 || write_value == 0) { goto invalid_register_value; }
       *parameter_pid_profile_ptr = (uint8_t)write_value;
-      if (write_value == 1) { *parameter_active_gain_a_ptr = *parameter_profile1_gain_a_ptr;
-                    *parameter_active_gain_b_ptr = *parameter_profile1_gain_b_ptr; }
-      if (write_value == 2) { *parameter_active_gain_a_ptr = *parameter_profile2_gain_a_ptr;
-                    *parameter_active_gain_b_ptr = *parameter_profile2_gain_b_ptr; }
-      if (write_value == 3) { *parameter_active_gain_a_ptr = *parameter_profile3_gain_a_ptr;
-                    *parameter_active_gain_b_ptr = *parameter_profile3_gain_b_ptr; }
-      if (write_value == 4) { *parameter_active_gain_a_ptr = *parameter_profile4_gain_a_ptr;
-                    *parameter_active_gain_b_ptr = *parameter_profile4_gain_b_ptr; }
+      reload_active_pid_gains();
       param_sync_live_to_eeprom();
       break;
-    case 0x18:                    /* 0x1018 第4组增益1（1..128）；控制方式==4 即时同步 */
+    case 0x18:                    /* 0x1018 第4组增益1（1..128）；重装当前组两个活动增益 */
       if (write_value >= 129 || write_value == 0) { goto invalid_register_value; }
       *parameter_profile4_gain_a_ptr = (uint8_t)write_value;
-      if (*parameter_pid_profile_ptr == 4) {
-        *parameter_active_gain_a_ptr = *parameter_profile4_gain_a_ptr;
-      }
+      reload_active_pid_gains();
       param_sync_live_to_eeprom();
       break;
-    case 0x19:                    /* 0x1019 第4组增益2（1..128）；控制方式==4 即时同步 */
+    case 0x19:                    /* 0x1019 第4组增益2（1..128）；重装当前组两个活动增益 */
       if (write_value >= 129 || write_value == 0) { goto invalid_register_value; }
       *parameter_profile4_gain_b_ptr = (uint8_t)write_value;
-      if (*parameter_pid_profile_ptr == 4) {
-        *parameter_active_gain_b_ptr = *parameter_profile4_gain_b_ptr;
-      }
+      reload_active_pid_gains();
       param_sync_live_to_eeprom();
       break;
     case 0x1A:                    /* 0x101A uint8_t 2..199 → 0x10001694（cmp 0xc8;bcs 上限 0xC8） */
@@ -246,18 +248,18 @@ void modbus_dispatch(int arg)
       *parameter_phase_calib_ptr = (uint8_t)write_value;
       param_sync_live_to_eeprom();
       break;
-    case 0x1B:                    /* 0x101B word 值<4501 → 0x10001698 */
-      if (write_value >= 4501) { goto invalid_register_value; }
+    case 0x1B:                    /* 0x101B word 3500..4500 → 0x10001698 */
+      if (write_value >= 4501 || write_value <= 3499) { goto invalid_register_value; }
       *parameter_current_calibration_a_ptr = write_value;
       param_sync_live_to_eeprom();
       break;
-    case 0x1C:                    /* 0x101C word 值<4501 → 0x100016A0 */
-      if (write_value >= 4501) { goto invalid_register_value; }
+    case 0x1C:                    /* 0x101C word 3500..4500 → 0x100016A0 */
+      if (write_value >= 4501 || write_value <= 3499) { goto invalid_register_value; }
       *parameter_current_calibration_b_ptr = write_value;
       param_sync_live_to_eeprom();
       break;
-    case 0x1D:                    /* 0x101D word 值<4501 → 0x100016A8 */
-      if (write_value >= 4501) { goto invalid_register_value; }
+    case 0x1D:                    /* 0x101D word 3500..4500 → 0x100016A8 */
+      if (write_value >= 4501 || write_value <= 3499) { goto invalid_register_value; }
       *parameter_current_calibration_c_ptr = write_value;
       param_sync_live_to_eeprom();
       break;
@@ -287,15 +289,14 @@ void modbus_dispatch(int arg)
       break;
     case 0x26:                    /* 0x1026 特殊：仅允许写 0 → i2c_write_reg(0,5/6)（无 param_sync） */
       if (write_value != 0) { goto invalid_register_value; }
-      i2c_write_reg(0, 5);
-      i2c_write_reg(0, 6);
-      break;
+      break; /* 原 BIN：先发送应答，再清 EEPROM，最后等待看门狗。 */
     case 0x27:                    /* 0x1027 uint8_t 值<2 → 0x10001785 */
       if (write_value >= 2) { goto invalid_register_value; }
       *run_stop_state_ptr = (uint8_t)write_value;
       param_sync_live_to_eeprom();
       break;
-    case 0x28:                    /* 0x1028 word 无范围 → 0x10001788 */
+    case 0x28:                    /* 0x1028 word 0..1000 → 0x10001788 */
+      if (write_value > 1000) { goto invalid_register_value; }
       *frequency_reference_ptr = write_value;
       param_sync_live_to_eeprom();
       break;
@@ -319,28 +320,28 @@ void modbus_dispatch(int arg)
       *communication_detection_ptr = (uint8_t)write_value;
       param_sync_live_to_eeprom();
       break;
-    case 0x33:                    /* 0x1033 word 值<4501 → 0x10001698（同 0x101B 槽） */
-      if (write_value >= 4501) { goto invalid_register_value; }
+    case 0x33:                    /* 0x1033 word 3500..4500 → 0x10001698（同 0x101B 槽） */
+      if (write_value >= 4501 || write_value <= 3499) { goto invalid_register_value; }
       *parameter_current_calibration_a_ptr = write_value;
       param_sync_live_to_eeprom();
       break;
     case 0x34:                    /* 0x1034 → 0x100016A0 */
-      if (write_value >= 4501) { goto invalid_register_value; }
+      if (write_value >= 4501 || write_value <= 3499) { goto invalid_register_value; }
       *parameter_current_calibration_b_ptr = write_value;
       param_sync_live_to_eeprom();
       break;
     case 0x35:                    /* 0x1035 → 0x100016A8 */
-      if (write_value >= 4501) { goto invalid_register_value; }
+      if (write_value >= 4501 || write_value <= 3499) { goto invalid_register_value; }
       *parameter_current_calibration_c_ptr = write_value;
       param_sync_live_to_eeprom();
       break;
     case 0x36:                    /* 0x1036 → 0x100016B0 */
-      if (write_value >= 4501) { goto invalid_register_value; }
+      if (write_value >= 4501 || write_value <= 3499) { goto invalid_register_value; }
       *parameter_field_calibration_ptr = write_value;
       param_sync_live_to_eeprom();
       break;
     case 0x37:                    /* 0x1037 → 0x100016B8 */
-      if (write_value >= 4501) { goto invalid_register_value; }
+      if (write_value >= 4501 || write_value <= 3499) { goto invalid_register_value; }
       *parameter_voltage_calibration_ptr = write_value;
       param_sync_live_to_eeprom();
       break;
@@ -389,6 +390,13 @@ void modbus_dispatch(int arg)
     tx_frame[4] = (uint8_t)(write_value >> 8); tx_frame[5] = (uint8_t)(write_value & 0xff);
     frame_crc = crc16((uint8_t *)tx_frame, 6); tx_frame[6] = frame_crc & 0xff; tx_frame[7] = frame_crc >> 8;
     uart3_tx_byte(8);
+    if (rx_frame[3] == 0x26) {
+      i2c_write_reg(0, 5);
+      i2c_write_reg(0, 6);
+    }
+    if (rx_frame[3] == 0x25 || rx_frame[3] == 0x26) {
+      for (;;) { } /* 原 BIN 0xD2B8/0xD388：停止喂狗，等待复位。 */
+    }
     return;
 
   invalid_register_address:                    /* 非法寄存器地址 → 异常响应 [地址,0x86,0x02] */

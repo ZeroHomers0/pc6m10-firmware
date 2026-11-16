@@ -1,0 +1,6 @@
+ORIGINAL 97 BUSINESS 87 RUNTIME_REPLACED 10 ['0xcc', '0x180', '0x184', '0x188', '0x19a', '0x1c4', '0x2ee', '0x10fd4', '0x11020', '0x11028']
+CALLGRAPH_REVIEW main old_only ['startup_idle_hook'] new_only []
+CALLGRAPH_REVIEW state_machine old_only [] new_only ['state_machine']
+CALLGRAPH_REVIEW run_stop_preset old_only ['fio0_pin22_ctrl', 'fio1_pin22_ctrl'] new_only []
+CALLGRAPH_REVIEW auth_retry old_only ['auth_set_timeout'] new_only []
+CALLGRAPH_REVIEW output_stage old_only ['fio0_pin22_ctrl', 'fio1_pin22_ctrl'] new_only ['output_stage']

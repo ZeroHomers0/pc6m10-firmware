@@ -1,0 +1,437 @@
+{
+  "0x200": {
+    "name": "wdt_init",
+    "source": "01_startup.c",
+    "old_bytes": 56
+  },
+  "0x238": {
+    "name": "wd_feed",
+    "source": "01_startup.c",
+    "old_bytes": 12
+  },
+  "0x248": {
+    "name": "timer0_init",
+    "source": "01_startup.c",
+    "old_bytes": 82
+  },
+  "0x440": {
+    "name": "SystemInit",
+    "source": "01_startup.c",
+    "old_bytes": 262
+  },
+  "0x598": {
+    "name": "long_delay",
+    "source": "01_startup.c",
+    "old_bytes": 50
+  },
+  "0x5cc": {
+    "name": "main",
+    "source": "01_startup.c",
+    "old_bytes": 374
+  },
+  "0x7a8": {
+    "name": "Delay",
+    "source": "01_startup.c",
+    "old_bytes": 14
+  },
+  "0x7b6": {
+    "name": "lcd_ctrl_line",
+    "source": "02_lcd_display.c",
+    "old_bytes": 32
+  },
+  "0x7d6": {
+    "name": "lcd_data_byte",
+    "source": "02_lcd_display.c",
+    "old_bytes": 286
+  },
+  "0x8f4": {
+    "name": "disp_data",
+    "source": "02_lcd_display.c",
+    "old_bytes": 86
+  },
+  "0x94a": {
+    "name": "disp_cmd",
+    "source": "02_lcd_display.c",
+    "old_bytes": 72
+  },
+  "0x992": {
+    "name": "disp_clear",
+    "source": "02_lcd_display.c",
+    "old_bytes": 158
+  },
+  "0xa30": {
+    "name": "gpio1_init",
+    "source": "02_lcd_display.c",
+    "old_bytes": 276
+  },
+  "0xb44": {
+    "name": "disp_render_char8",
+    "source": "02_lcd_display.c",
+    "old_bytes": 236
+  },
+  "0xc3a": {
+    "name": "disp_render_char16",
+    "source": "02_lcd_display.c",
+    "old_bytes": 258
+  },
+  "0xd3c": {
+    "name": "disp_string",
+    "source": "02_lcd_display.c",
+    "old_bytes": 88
+  },
+  "0xd94": {
+    "name": "disp_digit",
+    "source": "02_lcd_display.c",
+    "old_bytes": 164
+  },
+  "0xe42": {
+    "name": "disp_number3",
+    "source": "02_lcd_display.c",
+    "old_bytes": 142
+  },
+  "0xed0": {
+    "name": "disp_uint4",
+    "source": "02_lcd_display.c",
+    "old_bytes": 188
+  },
+  "0xf8c": {
+    "name": "disp_uint5",
+    "source": "02_lcd_display.c",
+    "old_bytes": 244
+  },
+  "0x1092": {
+    "name": "disp_number",
+    "source": "02_lcd_display.c",
+    "old_bytes": 298
+  },
+  "0x11bc": {
+    "name": "disp_signed_angle",
+    "source": "02_lcd_display.c",
+    "old_bytes": 244
+  },
+  "0x12b0": {
+    "name": "disp_offset",
+    "source": "02_lcd_display.c",
+    "old_bytes": 312
+  },
+  "0x13e8": {
+    "name": "disp_uint2",
+    "source": "02_lcd_display.c",
+    "old_bytes": 84
+  },
+  "0x143c": {
+    "name": "disp_fixed_1dec",
+    "source": "02_lcd_display.c",
+    "old_bytes": 182
+  },
+  "0x14f6": {
+    "name": "disp_decimal1",
+    "source": "02_lcd_display.c",
+    "old_bytes": 128
+  },
+  "0x1578": {
+    "name": "gpio_inputs_dir_init",
+    "source": "03_input_debounce.c",
+    "old_bytes": 134
+  },
+  "0x15fe": {
+    "name": "input_scan_state",
+    "source": "03_input_debounce.c",
+    "old_bytes": 952
+  },
+  "0x19c6": {
+    "name": "scan_run_stop",
+    "source": "03_input_debounce.c",
+    "old_bytes": 242
+  },
+  "0x1ab8": {
+    "name": "debounce_p09",
+    "source": "03_input_debounce.c",
+    "old_bytes": 46
+  },
+  "0x1ae6": {
+    "name": "debounce_p116",
+    "source": "03_input_debounce.c",
+    "old_bytes": 88
+  },
+  "0x1b3e": {
+    "name": "debounce_p117",
+    "source": "03_input_debounce.c",
+    "old_bytes": 88
+  },
+  "0x1b96": {
+    "name": "debounce_p06",
+    "source": "03_input_debounce.c",
+    "old_bytes": 88
+  },
+  "0x1bee": {
+    "name": "chk_p02_p03",
+    "source": "03_input_debounce.c",
+    "old_bytes": 28
+  },
+  "0x1c40": {
+    "name": "i2c_gpio_init",
+    "source": "04_i2c.c",
+    "old_bytes": 44
+  },
+  "0x1c6c": {
+    "name": "i2c_delay_short",
+    "source": "04_i2c.c",
+    "old_bytes": 22
+  },
+  "0x1c82": {
+    "name": "i2c_delay",
+    "source": "04_i2c.c",
+    "old_bytes": 44
+  },
+  "0x1cae": {
+    "name": "i2c_start",
+    "source": "04_i2c.c",
+    "old_bytes": 80
+  },
+  "0x1cfe": {
+    "name": "i2c_stop",
+    "source": "04_i2c.c",
+    "old_bytes": 62
+  },
+  "0x1d3c": {
+    "name": "i2c_write_byte",
+    "source": "04_i2c.c",
+    "old_bytes": 190
+  },
+  "0x1dfa": {
+    "name": "i2c_read_byte",
+    "source": "04_i2c.c",
+    "old_bytes": 142
+  },
+  "0x1e88": {
+    "name": "i2c_write_reg",
+    "source": "04_i2c.c",
+    "old_bytes": 52
+  },
+  "0x1ebc": {
+    "name": "i2c_read_reg",
+    "source": "04_i2c.c",
+    "old_bytes": 64
+  },
+  "0x1f04": {
+    "name": "adc_init",
+    "source": "05_adc.c",
+    "old_bytes": 124
+  },
+  "0x1f80": {
+    "name": "adc0_start",
+    "source": "05_adc.c",
+    "old_bytes": 24
+  },
+  "0x1fa6": {
+    "name": "adc0_wait_done",
+    "source": "05_adc.c",
+    "old_bytes": 22
+  },
+  "0x1fbc": {
+    "name": "adc0_scan_channels",
+    "source": "05_adc.c",
+    "old_bytes": 1344
+  },
+  "0x25dc": {
+    "name": "load_config",
+    "source": "06_param_system.c",
+    "old_bytes": 3538
+  },
+  "0x427c": {
+    "name": "disp_splash_screen",
+    "source": "02_lcd_display.c",
+    "old_bytes": 264
+  },
+  "0x448a": {
+    "name": "disp_screen_static",
+    "source": "02_lcd_display.c",
+    "old_bytes": 56
+  },
+  "0x44c2": {
+    "name": "disp_screen_calib",
+    "source": "02_lcd_display.c",
+    "old_bytes": 202
+  },
+  "0x458c": {
+    "name": "state_machine",
+    "source": "07_state_machine.c",
+    "old_bytes": 21948
+  },
+  "0xac24": {
+    "name": "uart3_init",
+    "source": "08_uart3_modbus.c",
+    "old_bytes": 488
+  },
+  "0xae0c": {
+    "name": "uart3_tx_byte",
+    "source": "08_uart3_modbus.c",
+    "old_bytes": 50
+  },
+  "0xae50": {
+    "name": "uart3_rx_timeout_monitor",
+    "source": "08_uart3_modbus.c",
+    "old_bytes": 128
+  },
+  "0xaf64": {
+    "name": "crc16",
+    "source": "08_uart3_modbus.c",
+    "old_bytes": 48
+  },
+  "0xb642": {
+    "name": "modbus_dispatch",
+    "source": "08_modbus_dispatch.c",
+    "old_bytes": 11484
+  },
+  "0xe5a8": {
+    "name": "pin_config",
+    "source": "09_output_stage.c",
+    "old_bytes": 498
+  },
+  "0xe79a": {
+    "name": "gpio_outputs_set",
+    "source": "09_output_stage.c",
+    "old_bytes": 124
+  },
+  "0xe816": {
+    "name": "timer1_init",
+    "source": "09_output_stage.c",
+    "old_bytes": 34
+  },
+  "0xe838": {
+    "name": "timer2_init",
+    "source": "09_output_stage.c",
+    "old_bytes": 54
+  },
+  "0xe86e": {
+    "name": "eint1_init",
+    "source": "09_output_stage.c",
+    "old_bytes": 92
+  },
+  "0xe8ca": {
+    "name": "eint2_init",
+    "source": "09_output_stage.c",
+    "old_bytes": 62
+  },
+  "0xe908": {
+    "name": "eint3_init",
+    "source": "09_output_stage.c",
+    "old_bytes": 62
+  },
+  "0xe946": {
+    "name": "fio1_pin22_ctrl",
+    "source": "09_output_stage.c",
+    "old_bytes": 32
+  },
+  "0xe966": {
+    "name": "fio0_pin22_ctrl",
+    "source": "09_output_stage.c",
+    "old_bytes": 32
+  },
+  "0xf9aa": {
+    "name": "run_stop_preset",
+    "source": "09_output_stage.c",
+    "old_bytes": 62
+  },
+  "0x10588": {
+    "name": "out_relay_p020",
+    "source": "10_relay_led.c",
+    "old_bytes": 32
+  },
+  "0x105a8": {
+    "name": "out_relay_p021",
+    "source": "10_relay_led.c",
+    "old_bytes": 32
+  },
+  "0x105c8": {
+    "name": "fio1_pin20_ctrl",
+    "source": "10_relay_led.c",
+    "old_bytes": 32
+  },
+  "0x105e8": {
+    "name": "fio1_pin21_ctrl",
+    "source": "10_relay_led.c",
+    "old_bytes": 32
+  },
+  "0x10608": {
+    "name": "fio1_pin23_ctrl",
+    "source": "10_relay_led.c",
+    "old_bytes": 32
+  },
+  "0x10628": {
+    "name": "nvic_enable_irq",
+    "source": "13_gpio_init.c",
+    "old_bytes": 24
+  },
+  "0x1064c": {
+    "name": "gpio2_init",
+    "source": "13_gpio_init.c",
+    "old_bytes": 74
+  },
+  "0x10696": {
+    "name": "auth_set_timeout",
+    "source": "11_auth.c",
+    "old_bytes": 10
+  },
+  "0x106a0": {
+    "name": "auth_challenge",
+    "source": "11_auth.c",
+    "old_bytes": 384
+  },
+  "0x10820": {
+    "name": "auth_retry",
+    "source": "11_auth.c",
+    "old_bytes": 90
+  },
+  "0x108b0": {
+    "name": "closed_loop_integral",
+    "source": "12_closed_loop.c",
+    "old_bytes": 1544
+  },
+  "0x10f0a": {
+    "name": "closed_loop_wrapper",
+    "source": "12_closed_loop.c",
+    "old_bytes": 52
+  },
+  "0x10f8c": {
+    "name": "gpio0_input_init",
+    "source": "03_input_debounce.c",
+    "old_bytes": 34
+  },
+  "0x10fae": {
+    "name": "read_input_p02",
+    "source": "03_input_debounce.c",
+    "old_bytes": 28
+  },
+  "0x5ca": {
+    "name": "startup_idle_hook",
+    "source": "01_startup.c",
+    "old_bytes": 2
+  },
+  "0x35f2": {
+    "name": "param_sync_live_to_eeprom",
+    "source": "06_param_system.c",
+    "old_bytes": 2624
+  },
+  "0xab48": {
+    "name": "freq_adjust_sync",
+    "source": "06_frequency_adjust.c",
+    "old_bytes": 196
+  },
+  "0xaf94": {
+    "name": "modbus_read_reg",
+    "source": "08_uart3_modbus.c",
+    "old_bytes": 636
+  },
+  "0xb2e0": {
+    "name": "modbus_write_multi",
+    "source": "08_uart3_modbus.c",
+    "old_bytes": 568
+  },
+  "0xe9ac": {
+    "name": "output_stage",
+    "source": "09_output_stage.c",
+    "old_bytes": 3590
+  }
+}

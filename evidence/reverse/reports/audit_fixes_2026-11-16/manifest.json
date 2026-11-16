@@ -1,0 +1,26 @@
+{
+  "LPC1765.bin": {
+    "bytes": 262144,
+    "sha256": "dd629eac0243a13cecc826b1fc2b4b54066f7647d8c1d09a62d5caf7b4f13f65"
+  },
+  "firmware/firmware.bin": {
+    "bytes": 60236,
+    "sha256": "04b14ea3d0a2047ebee42ec923feddcfbd9bb429e07dece535ab824dc33ba7d2"
+  },
+  "firmware/firmware.elf": {
+    "bytes": 224600,
+    "sha256": "00edb2cb1b4d02426dc3a972f6a2e782e17e2a215202c74f8c9836463cd3b36e"
+  },
+  "firmware/src/07_state_machine.c": {
+    "bytes": 119094,
+    "sha256": "21ac4b1ce8c1f05d8580227c137688b44987471fe1043c9b840ffb33b2af576e"
+  },
+  "firmware/src/08_modbus_dispatch.c": {
+    "bytes": 25722,
+    "sha256": "bf450a84f31354416d7b31e8ae0c695c2f4bf774c114764a344769aeac468d69"
+  },
+  "test/emulation/test_audit_fixes.py": {
+    "bytes": 5164,
+    "sha256": "a7da8b7b44cea14c23bc23be78c0d4567db9f4d5d00537d2c6a052225263d0b6"
+  }
+}

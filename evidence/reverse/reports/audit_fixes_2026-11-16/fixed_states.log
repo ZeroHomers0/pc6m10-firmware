@@ -1,0 +1,20 @@
+menu 0x1 cases 72 failed 0 unfinished 0
+menu 0x2 cases 144 failed 0 unfinished 0
+menu 0x3 cases 216 failed 0 unfinished 0
+menu 0x4 cases 288 failed 0 unfinished 0
+menu 0x5 cases 360 failed 0 unfinished 0
+menu 0x6 cases 432 failed 0 unfinished 12
+menu 0x7 cases 504 failed 0 unfinished 12
+menu 0x8 cases 576 failed 0 unfinished 12
+menu 0x9 cases 648 failed 0 unfinished 12
+menu 0xa cases 720 failed 0 unfinished 18
+menu 0xb cases 792 failed 0 unfinished 18
+menu 0xc cases 864 failed 0 unfinished 18
+menu 0x14 cases 936 failed 0 unfinished 18
+menu 0x1e cases 1008 failed 0 unfinished 18
+menu 0x5a cases 1080 failed 0 unfinished 18
+menu 0x62 cases 1152 failed 0 unfinished 24
+menu 0x63 cases 1224 failed 0 unfinished 24
+TOTAL 1224 FAIL 0 UNFINISHED 24
+DIFFS []
+UNFINISHED_CASES [(6, 0, 0, 1, False, False), (6, 0, 0, 14, False, False), (6, 0, 1, 1, False, False), (6, 0, 1, 14, False, False), (6, 1, 0, 1, False, False), (6, 1, 0, 14, False, False), (6, 1, 1, 1, False, False), (6, 1, 1, 14, False, False), (6, 3, 0, 1, False, False), (6, 3, 0, 14, False, False), (6, 3, 1, 1, False, False), (6, 3, 1, 14, False, False), (10, 0, 0, 1, False, False), (10, 0, 1, 1, False, False), (10, 1, 0, 1, False, False), (10, 1, 1, 1, False, False), (10, 3, 0, 1, False, False), (10, 3, 1, 1, False, False), (98, 0, 0, 1, False, False), (98, 0, 1, 1, False, False), (98, 1, 0, 1, False, False), (98, 1, 1, 1, False, False), (98, 3, 0, 1, False, False), (98, 3, 1, 1, False, False)]

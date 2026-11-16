@@ -1,0 +1,8 @@
+original=97 mapped=81 missing_source=15 missing_elf=1
+missing_source: 0x000000CC 0x00000180 0x00000184 0x00000188 0x0000019A 0x000001C4 0x000002EE 0x000005CA 0x000035F2 0x0000AB48 0x0000AF94 0x0000B2E0 0x00010FD4 0x00011020 0x00011028
+expected_IAR_runtime_replaced=10 unexpected_missing=5
+missing_elf: 0x0000E9AC output_check_overvoltage 09_output_stage.c
+
+compiled functions <=4 bytes while original >4 bytes:
+clusters=20 mapped_bytes=2567 blob_bytes=2567 mismatches=0
+constant_disp_calls=0 unmapped=0
