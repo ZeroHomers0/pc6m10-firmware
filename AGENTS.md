@@ -8,8 +8,8 @@
 `LPC1765.bin`（262144 B）是所有等价验证的金标准。
 
 - GCC 可编译工程：`firmware/`，Arm GNU Toolchain 14.2.Rel1。
-- 当前构建：`text 59892 / data 0 / bss 2188`（2026-11-17 校准结果页枚举越界修复后）。
-- 当前 `firmware.bin` SHA-256：`7AD41A4BA340B8663B03B460F4D1CAB43B1AAC488ACB72B68153D2E4664C744D`（60452 B）。
+- 当前构建：`text 59900 / data 0 / bss 2188`（2026-11-17 寄存器命名与 Modbus 索引订正后）。
+- 当前 `firmware.bin` SHA-256：`B20C67A1994AED331C59CE096DF4903B9B3391676D10CCB051ADA94095FBA92B`（60460 B）。
 - 板上已烧写镜像为上一版 `E843035C88D1B5AE52A516072F09FC551BC90720CFF23EA4EEF6623FF19022B2`（60368 B，text 59808，含闭环反馈复制修复；本次功能码修复未烧写）。
 - 自编译固件已于 2026-08-26 完成 CRP 布局修复（`0x2FC` 显式保留 `0xFFFFFFFF`，见
   `firmware/lpc1765.ld`、`firmware/startup.s`、`firmware/build.sh`）并经 J-Link SWD 烧写入板、
@@ -73,6 +73,8 @@
 - **2026-11-17 双项目联合复核与验证门禁修复**：6M当前提交64b3e1f及已包含的周期同步retry门控、保护页项号与枚举越界、高位功能码回绕已按本项目原BIN核对。`verify_firmware_equivalence.py`现要求每个有界调用正常返回，防止预算耗尽时比较中途状态误判通过；新增`test_execution_completion.py`证明死循环/未就绪UART被拒绝、正常返回/就绪UART通过。回归35/35、完整原BIN A/B通过，日志与哈希在 `evidence/reverse/reports/joint_validation_2026-11-17/`。本轮仅修改验证工具与测试；最新固件未重新烧写。详见 `docs/analysis/JOINT_VALIDATION_2026-11-17.md`。
 
 - **2026-11-17 校准结果页枚举越界绘制修复**：把 `tmp/sm_matrix.py` 的参数档从 11 扩到 18（补入急停/辅助模式/反馈/输入模式/输出相位/控制方式的越界取值）后，校准结果页（屏 0x63）暴露出同类缺陷：急停或辅助模式取 ≥3 时，原 BIN `0x5D94 cmp #2; bne 0x5DE0` 与 `0x5E12 cmp #2; bne 0x5E60` 都不绘制任何选项，旧源码末支 `else` 会落成「限相」。两处改为 `else if (... == 2)`。同页反馈/输入模式/输出相位三项是原机真二分（`cbnz` 分支），不动。验证：扩展档位后状态机终态矩阵 `3,4,5,7` 13464、`8,9,a,63` 13464、`0,1,2,6,b,c,d,e` 26928、`f,10..1f,5a,62` 63954 全 bad=0；枚举越界专项 47/47、回归 35/35、原 BIN A/B 全 PASS。构建 text 59892 / data 0 / bss 2188，SHA-256 `7AD41A4B…664C744D`（60452 B）。提交 `f3e78df`。未烧写。
+
+- **2026-11-17 寄存器命名与 Modbus 索引订正**：`rev-init3`/`rev-modbus3` 审完 01_startup/13_gpio_init/10_relay_led/11_auth 与 Modbus 全模块，均无高/中差异。据此订正注释与命名：`0x400FC1A0` 实为 SCS（bit5=OSCEN、bit6=OSCSTAT）而非 PLL1 锁相，`0x400FC1C8` 实为 CLKOUTCFG（原机写 0 关 CLKOUT）而非 PCLKSEL1 别名；`crc16` 两表字节角色、`uart3` 多处把字面量池槽当数据地址、`gpio0_input_init` 位号（实为 P0.2/P0.28/P0.27）、`timer0_init` 中断号（ISER0=2 即 IRQ1）一并订正；`09_output_stage.c` bit5 欠压误标「过流」改回。另 `modbus_read_reg`/`modbus_write_multi` 按原机 `ldrb` 低 8 位截断后索引（`0xB004`/`0xB2F0`）。构建 text 59900 / data 0 / bss 2188，SHA-256 `B20C67A1…5FBA92B`（60460 B），提交 `b5f6868`；回归 35/35、原 BIN A/B 全 PASS、状态机双视图矩阵 6732 bad=0。未烧写。
 
 ## 必须遵守
 
