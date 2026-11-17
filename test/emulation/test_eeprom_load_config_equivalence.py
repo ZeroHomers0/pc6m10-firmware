@@ -67,6 +67,28 @@ def main():
     bad_both[5] = bad_both[6] = bad_both[7] = bad_both[8] = 0
     cases.append(("双银行无效：依次回写两组默认值", bad_both))
 
+    # 只一侧魔数命中（'U'/'f' 只出现在 lo 或只出现在 hi）—— 原机用 `==` 逐字节或，
+    # 只有两个魔数都错才走默认回写，边界在这里。
+    only_a_lo = bytearray(bad_both)
+    only_a_lo[5] = 0x55
+    cases.append(("仅银行A lo=0x55：A读取、B回写默认", only_a_lo))
+    only_a_hi = bytearray(bad_both)
+    only_a_hi[6] = 0x55
+    cases.append(("仅银行A hi=0x55：A读取、B回写默认", only_a_hi))
+    only_b_hi = bytearray(bad_both)
+    only_b_hi[8] = 0x66
+    cases.append(("仅银行B hi=0x66：A回写默认、B读取", only_b_hi))
+    wrong_magic = bytearray(valid)
+    wrong_magic[5] = wrong_magic[6] = 0x54      # 'T' 而非 'U'
+    cases.append(("银行A魔数近似值0x54：仍应回写默认", wrong_magic))
+
+    # 随机内容 * 有效魔数：覆盖全部 16 位参数的拼合方向与每一条 live 槽。
+    for seed in range(1, 15):
+        rnd = bytearray(((i * 1103515245 + seed * 12345) >> 7) & 0xFF for i in range(256))
+        rnd[5] = rnd[6] = 0x55
+        rnd[7] = rnd[8] = 0x66
+        cases.append((f"随机内容 seed={seed}：双银行有效", rnd))
+
     failed = 0
     for name, image in cases:
         old_ram, old_writes = run(load_original, ORIG_LOAD, ORIG_READ, ORIG_WRITE, image)

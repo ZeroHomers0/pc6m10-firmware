@@ -69,6 +69,8 @@ def run(uc, entry, writes=None, max_insn=2_000_000):
                     lambda machine, access, address, size, value, user: writes.append((address, size, value)),
                     begin=0x2009C000, end=0x2009CFFF)
     uc.emu_start(entry | 1, 0, count=max_insn)
+    assert uc.reg_read(UC_ARM_REG_PC) == 0x3FF00, (
+        f"execution incomplete: entry=0x{entry:x}, pc=0x{uc.reg_read(UC_ARM_REG_PC):x}, budget={max_insn}")
 
 
 def verify_uart_rx():

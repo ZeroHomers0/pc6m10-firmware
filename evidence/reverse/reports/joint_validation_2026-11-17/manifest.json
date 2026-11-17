@@ -1,0 +1,10 @@
+{
+  "base_commit": "64b3e1fbfdc9925b2580277fd857aa0050f02472",
+  "sha256": {
+    "LPC1765.bin": "dd629eac0243a13cecc826b1fc2b4b54066f7647d8c1d09a62d5caf7b4f13f65",
+    "firmware/firmware.bin": "0c7b6539070f0d249499b5d286c402709e312d69bfd0555befbae2284afbd8ea",
+    "firmware/src/07_state_machine.c": "1cff8b651e642aaa708e5f2a9077fc33665045638cf675be0cd72350d876c51c",
+    "tools/verification/verify_firmware_equivalence.py": "8c23bb4c4d134ef536e2b7214979e7f067679e641e2f97324db0e30344bca80e",
+    "test/emulation/test_execution_completion.py": "4c70ca0057cd05b9a584a179da8ec6c6c99bcac2e9adfbc2eb5c89b977180bf7"
+  }
+}
