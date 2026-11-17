@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "D:\code\LPC1765FBD100\PC6M-10\test\emulation\test_modbus_sram_contract.py", line 22, in <module>
+    if __name__=='__main__':raise SystemExit(main())
+                                             ~~~~^^
+  File "D:\code\LPC1765FBD100\PC6M-10\test\emulation\test_modbus_sram_contract.py", line 19, in main
+    assert a==b,(label,diff[:20],a[1],b[1])
+           ^^^^
+AssertionError: ('unsupported-register', [('0x100017f0', 0, 19), ('0x100017f4', 204, 0), ('0x100017f5', 199, 0), ('0x1000275a', 204, 0), ('0x1000275b', 199, 0)], [b'\x01\x86\x02\xc3\xa1'], [b'\x01\x86\x02\xc3\xa1'])

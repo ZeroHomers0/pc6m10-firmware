@@ -1,0 +1,229 @@
+{
+  "baseline_firmware_sha256": "0d78c63565741ad9cc5b81c7f396fbf6d7b02d107d8f527de24d07415f974e91",
+  "cases": [
+    {
+      "case": "unsupported-register",
+      "wire": "010610000013ccc7",
+      "sram_differences": [
+        {
+          "address": "0x100017f0",
+          "original": 0,
+          "baseline": 19
+        },
+        {
+          "address": "0x100017f4",
+          "original": 204,
+          "baseline": 0
+        },
+        {
+          "address": "0x100017f5",
+          "original": 199,
+          "baseline": 0
+        },
+        {
+          "address": "0x1000275a",
+          "original": 204,
+          "baseline": 0
+        },
+        {
+          "address": "0x1000275b",
+          "original": 199,
+          "baseline": 0
+        }
+      ],
+      "response_equal": true,
+      "persistent_medium_equal": true
+    },
+    {
+      "case": "invalid-value",
+      "wire": "0106100100039ccb",
+      "sram_differences": [
+        {
+          "address": "0x100017f4",
+          "original": 156,
+          "baseline": 0
+        },
+        {
+          "address": "0x100017f5",
+          "original": 203,
+          "baseline": 0
+        },
+        {
+          "address": "0x1000275a",
+          "original": 156,
+          "baseline": 0
+        },
+        {
+          "address": "0x1000275b",
+          "original": 203,
+          "baseline": 0
+        }
+      ],
+      "response_equal": true,
+      "persistent_medium_equal": true
+    },
+    {
+      "case": "valid-write",
+      "wire": "0106100100011d0a",
+      "sram_differences": [
+        {
+          "address": "0x100017f4",
+          "original": 29,
+          "baseline": 0
+        },
+        {
+          "address": "0x100017f5",
+          "original": 10,
+          "baseline": 0
+        },
+        {
+          "address": "0x1000275a",
+          "original": 29,
+          "baseline": 0
+        },
+        {
+          "address": "0x1000275b",
+          "original": 10,
+          "baseline": 0
+        }
+      ],
+      "response_equal": true,
+      "persistent_medium_equal": true
+    },
+    {
+      "case": "read",
+      "wire": "010310010001d10a",
+      "sram_differences": [
+        {
+          "address": "0x10001798",
+          "original": 1,
+          "baseline": 0
+        },
+        {
+          "address": "0x1000179c",
+          "original": 5,
+          "baseline": 0
+        },
+        {
+          "address": "0x100017a0",
+          "original": 1,
+          "baseline": 0
+        },
+        {
+          "address": "0x100017b0",
+          "original": 1,
+          "baseline": 0
+        },
+        {
+          "address": "0x100017b4",
+          "original": 6,
+          "baseline": 0
+        },
+        {
+          "address": "0x100017f4",
+          "original": 209,
+          "baseline": 0
+        },
+        {
+          "address": "0x100017f5",
+          "original": 10,
+          "baseline": 0
+        },
+        {
+          "address": "0x1000275a",
+          "original": 209,
+          "baseline": 0
+        },
+        {
+          "address": "0x1000275b",
+          "original": 10,
+          "baseline": 0
+        }
+      ],
+      "response_equal": true,
+      "persistent_medium_equal": true
+    },
+    {
+      "case": "multi",
+      "wire": "0110100100010200017780",
+      "sram_differences": [
+        {
+          "address": "0x1000179c",
+          "original": 2,
+          "baseline": 0
+        },
+        {
+          "address": "0x100017a0",
+          "original": 1,
+          "baseline": 0
+        },
+        {
+          "address": "0x100017a8",
+          "original": 1,
+          "baseline": 0
+        },
+        {
+          "address": "0x100017b0",
+          "original": 1,
+          "baseline": 0
+        },
+        {
+          "address": "0x100017b4",
+          "original": 1,
+          "baseline": 0
+        },
+        {
+          "address": "0x100017f4",
+          "original": 119,
+          "baseline": 0
+        },
+        {
+          "address": "0x100017f5",
+          "original": 128,
+          "baseline": 0
+        },
+        {
+          "address": "0x1000275d",
+          "original": 119,
+          "baseline": 0
+        },
+        {
+          "address": "0x1000275e",
+          "original": 128,
+          "baseline": 0
+        }
+      ],
+      "response_equal": true,
+      "persistent_medium_equal": true
+    },
+    {
+      "case": "bad-crc",
+      "wire": "010310010001d1f5",
+      "sram_differences": [
+        {
+          "address": "0x100017f4",
+          "original": 209,
+          "baseline": 0
+        },
+        {
+          "address": "0x100017f5",
+          "original": 10,
+          "baseline": 0
+        },
+        {
+          "address": "0x1000275a",
+          "original": 209,
+          "baseline": 0
+        },
+        {
+          "address": "0x1000275b",
+          "original": 10,
+          "baseline": 0
+        }
+      ],
+      "response_equal": true,
+      "persistent_medium_equal": true
+    }
+  ],
+  "result": "FAIL_DIFF_ALL_6; responses and medium equal; no observed external functional failure"
+}

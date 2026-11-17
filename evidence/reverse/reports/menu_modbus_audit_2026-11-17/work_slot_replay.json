@@ -1,0 +1,26 @@
+{
+  "project": "PC6M-10",
+  "cases": 60,
+  "result": "PASS_EQ",
+  "patterns": [
+    85,
+    170
+  ],
+  "slots": [
+    "0x100017f0",
+    "0x100017f4",
+    "0x100017a4",
+    "0x100017b0",
+    "0x100017a8",
+    "0x100017a0",
+    "0x10001798",
+    "0x1000179c",
+    "0x100017b4"
+  ],
+  "crc_copy": [
+    "0x10002754",
+    256
+  ],
+  "firmware_sha256": "3a5c87633f7bc2a5d96007efe7a6a62e31ed236a806b793e79d3852f6d458580",
+  "original_sha256": "dd629eac0243a13cecc826b1fc2b4b54066f7647d8c1d09a62d5caf7b4f13f65"
+}
