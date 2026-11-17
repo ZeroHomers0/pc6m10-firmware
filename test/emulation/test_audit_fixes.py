@@ -14,19 +14,60 @@ import verify_firmware_equivalence as V
 from unicorn import UC_HOOK_CODE
 from unicorn.arm_const import UC_ARM_REG_PC, UC_ARM_REG_LR, UC_ARM_REG_R0, UC_ARM_REG_R1, UC_ARM_REG_R3
 
+_PASSWORD_INNER_SITES={}
+
+def completed_menu_machine(base_machine, new):
+    """只加速密码延时内层；保留10000轮外层、真实喂狗与最终计数。"""
+    from capstone import Cs, CS_ARCH_ARM, CS_MODE_THUMB
+    u = base_machine(new)
+    if new in _PASSWORD_INNER_SITES:
+        sites=_PASSWORD_INNER_SITES[new]
+    elif new:
+        dis = subprocess.check_output([V.OBJDUMP, '-d', ROOT/'firmware/firmware.elf'], text=True)
+        block = dis.split('<delay_for_password_feedback>:', 1)[1].split('\n\n', 1)[0]
+        match = re.search(r'^\s*([0-9a-f]+):.*cmp\.w\s+r3, #1000', block, re.M)
+        assert match, '密码延时编译布局变化'
+        sites = {int(match[1],16)}
+    else:
+        sites = {a-0x18 for a in (0x549e,0x55e0,0x8c88,0x8d40,0x8d8a,0x8dd4,0x8e56,0x8f0c,0x8fda,0x9026)}
+        cs = Cs(CS_ARCH_ARM,CS_MODE_THUMB)
+        for a in sites:
+            ins = next(cs.disasm(V.ORIGINAL[a:a+4],a))
+            assert ins.mnemonic.startswith('cmp') and ins.op_str in ('r0, r1','r0, #0x3e8'), ('原机内层比较点变化',hex(a),ins.mnemonic,ins.op_str)
+    _PASSWORD_INNER_SITES[new]=sites
+    def inner(m,a,n,user):
+        if a in sites:
+            m.mem_write(0x10001620,struct.pack('<I',1000))
+            m.reg_write(UC_ARM_REG_R3 if new else UC_ARM_REG_R0,1000)
+    u.hook_add(UC_HOOK_CODE,inner)
+    start = u.emu_start
+    def bounded(*args,**kwargs):
+        kwargs['count'] = max(kwargs.get('count',0),2_000_000)
+        return start(*args,**kwargs)
+    u.emu_start = bounded
+    return u
+
 
 def main():
     audit = ROOT / 'tools/audit/full_review_2026-11-16'
     # 把审计器的结果转为真正的断言，非返回命令单独验证。
     for script, bad, pending in [('audit_modbus_single_write.py', 'bad', 2),
-                                 ('audit_all_menu_states.py', 'failed', 24)]:
+                                 ('audit_all_menu_states.py', 'failed', 0)]:
+        base_machine=V.machine
+        if script=='audit_all_menu_states.py':
+            V.machine=lambda new: completed_menu_machine(base_machine,new)
         with contextlib.redirect_stdout(io.StringIO()):
-            result = runpy.run_path(str(audit / script))
+            try: result = runpy.run_path(str(audit / script))
+            finally: V.machine=base_machine
         assert not result[bad], result[bad][:5]
         incomplete = result.get('incomplete', result.get('unfinished'))
         assert len(incomplete) == pending, incomplete
         assert all(x[-2:] == (False, False) for x in incomplete), incomplete
-        print(script, '原 BIN 差分无差异；双侧未返回', pending)
+        if pending:
+            assert all(x[0] in (0x25,0x26) and x[1]==0 for x in incomplete),incomplete
+            print(script, 'PASS_EQ正常返回；EXPECTED_NONRETURN复位命令', pending)
+        else:
+            print(script, '所有有界菜单实际返回；原 BIN 差分无差异')
 
     # 只加速纯空转内层，外层10000次和每次喂狗仍真实执行。
     dis = subprocess.check_output([V.OBJDUMP, '-d', ROOT/'firmware/firmware.elf'], text=True)

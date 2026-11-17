@@ -1,0 +1,934 @@
+{
+  "project": "PC6M-10",
+  "summary": {
+    "hook_add": 63,
+    "PC_OVERRIDE": 33,
+    "RETURN_OR_INPUT_R0": 24,
+    "emu_start": 18,
+    "MASK_OR_SKIP_HELPER": 7,
+    "emu_stop": 6,
+    "context_save": 1,
+    "context_restore": 1
+  },
+  "status": "MECHANISM_INVENTORY_NOT_AUTOMATIC_APPROVAL",
+  "entries": [
+    {
+      "source": "test/emulation/test_adc_scan_sequence_equivalence.py",
+      "line": 42,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, start_hook, begin=start, end=start + 1)"
+    },
+    {
+      "source": "test/emulation/test_adc_scan_sequence_equivalence.py",
+      "line": 43,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, wait_hook, begin=wait, end=wait + 1)"
+    },
+    {
+      "source": "test/emulation/test_adc_scan_sequence_equivalence.py",
+      "line": 34,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "machine.reg_write(UC_ARM_REG_PC, machine.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_adc_scan_sequence_equivalence.py",
+      "line": 39,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "machine.reg_write(UC_ARM_REG_R0, value)"
+    },
+    {
+      "source": "test/emulation/test_adc_scan_sequence_equivalence.py",
+      "line": 40,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "machine.reg_write(UC_ARM_REG_PC, machine.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_adc_scan_sequence_equivalence.py",
+      "line": 46,
+      "mechanism": "emu_start",
+      "expression": "uc.emu_start(scan | 1, RETURN, count=1000000)"
+    },
+    {
+      "source": "test/emulation/test_audit_fixes.py",
+      "line": 42,
+      "mechanism": "hook_add",
+      "expression": "u.hook_add(UC_HOOK_CODE, inner)"
+    },
+    {
+      "source": "test/emulation/test_audit_fixes.py",
+      "line": 41,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "m.reg_write(UC_ARM_REG_R3 if new else UC_ARM_REG_R0, 1000)"
+    },
+    {
+      "source": "test/emulation/test_audit_fixes.py",
+      "line": 96,
+      "mechanism": "hook_add",
+      "expression": "u.hook_add(UC_HOOK_CODE, hook)"
+    },
+    {
+      "source": "test/emulation/test_audit_fixes.py",
+      "line": 97,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "u.reg_write(UC_ARM_REG_R0, 1)"
+    },
+    {
+      "source": "test/emulation/test_audit_fixes.py",
+      "line": 98,
+      "mechanism": "emu_start",
+      "expression": "u.emu_start((V.SYMS['state_machine'] if new else 17804) | 1, 261888, count=2000000)"
+    },
+    {
+      "source": "test/emulation/test_audit_fixes.py",
+      "line": 129,
+      "mechanism": "hook_add",
+      "expression": "u.hook_add(UC_HOOK_CODE, hook)"
+    },
+    {
+      "source": "test/emulation/test_audit_fixes.py",
+      "line": 130,
+      "mechanism": "emu_start",
+      "expression": "u.emu_start((V.SYMS['modbus_dispatch'] if new else 46658) | 1, 261888, count=10000)"
+    },
+    {
+      "source": "test/emulation/test_audit_fixes.py",
+      "line": 91,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "m.reg_write(UC_ARM_REG_R3 if new else UC_ARM_REG_R0, 1000)"
+    },
+    {
+      "source": "test/emulation/test_audit_fixes.py",
+      "line": 95,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_audit_fixes.py",
+      "line": 128,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_audit_fixes_2.py",
+      "line": 45,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, hook)"
+    },
+    {
+      "source": "test/emulation/test_audit_fixes_2.py",
+      "line": 63,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_MEM_WRITE, callback, begin=begin, end=end)"
+    },
+    {
+      "source": "test/emulation/test_audit_fixes_2.py",
+      "line": 44,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_audit_fixes_2.py",
+      "line": 192,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, hook)"
+    },
+    {
+      "source": "test/emulation/test_case3_edit_equivalence.py",
+      "line": 60,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "uc.reg_write(V.UC_ARM_REG_R0, key)"
+    },
+    {
+      "source": "test/emulation/test_case3_edit_equivalence.py",
+      "line": 65,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, lambda m, a, n, u: m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR)), begin=delay_entry, end=delay_entry + 1)"
+    },
+    {
+      "source": "test/emulation/test_case3_edit_equivalence.py",
+      "line": 66,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_clock_polling_contract.py",
+      "line": 19,
+      "mechanism": "hook_add",
+      "expression": "u.hook_add(UC_HOOK_MEM_READ, read, begin=1074774016, end=1074774527)"
+    },
+    {
+      "source": "test/emulation/test_control_multitick_equivalence.py",
+      "line": 31,
+      "mechanism": "MASK_OR_SKIP_HELPER",
+      "expression": "skip"
+    },
+    {
+      "source": "test/emulation/test_control_multitick_equivalence.py",
+      "line": 32,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "machine_.reg_write(UC_ARM_REG_PC, machine_.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_control_multitick_equivalence.py",
+      "line": 35,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, skip, begin=address, end=address + 1)"
+    },
+    {
+      "source": "test/emulation/test_control_multitick_equivalence.py",
+      "line": 53,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "uc.reg_write(UC_ARM_REG_R0, key)"
+    },
+    {
+      "source": "test/emulation/test_delay_loop_structure.py",
+      "line": 25,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, lambda machine_, address, size, user: count.__setitem__(0, count[0] + 1))"
+    },
+    {
+      "source": "test/emulation/test_delay_loop_structure.py",
+      "line": 26,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "uc.reg_write(UC_ARM_REG_R0, arg)"
+    },
+    {
+      "source": "test/emulation/test_direct_execution_completion.py",
+      "line": 13,
+      "mechanism": "hook_add",
+      "expression": "u.hook_add(UC_HOOK_CODE, lambda m, a, n, unused: m.emu_stop())"
+    },
+    {
+      "source": "test/emulation/test_direct_execution_completion.py",
+      "line": 13,
+      "mechanism": "emu_stop",
+      "expression": "m.emu_stop()"
+    },
+    {
+      "source": "test/emulation/test_display_call_equivalence.py",
+      "line": 49,
+      "mechanism": "MASK_OR_SKIP_HELPER",
+      "expression": "skip_hooks"
+    },
+    {
+      "source": "test/emulation/test_display_call_equivalence.py",
+      "line": 50,
+      "mechanism": "MASK_OR_SKIP_HELPER",
+      "expression": "skip"
+    },
+    {
+      "source": "test/emulation/test_display_call_equivalence.py",
+      "line": 92,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "uc.reg_write(UC_ARM_REG_R0, key)"
+    },
+    {
+      "source": "test/emulation/test_display_call_equivalence.py",
+      "line": 109,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "uc.reg_write(UC_ARM_REG_R0, key)"
+    },
+    {
+      "source": "test/emulation/test_display_call_equivalence.py",
+      "line": 51,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_display_call_equivalence.py",
+      "line": 53,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, skip, begin=address, end=address + 1)"
+    },
+    {
+      "source": "test/emulation/test_display_call_equivalence.py",
+      "line": 81,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_display_call_equivalence.py",
+      "line": 84,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, hook, begin=address, end=address + 1)"
+    },
+    {
+      "source": "test/emulation/test_eeprom_load_config_equivalence.py",
+      "line": 43,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, read_hook, begin=read_addr, end=read_addr + 1)"
+    },
+    {
+      "source": "test/emulation/test_eeprom_load_config_equivalence.py",
+      "line": 44,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, write_hook, begin=write_addr, end=write_addr + 1)"
+    },
+    {
+      "source": "test/emulation/test_eeprom_load_config_equivalence.py",
+      "line": 46,
+      "mechanism": "emu_start",
+      "expression": "uc.emu_start(load_addr | 1, RETURN, count=2000000)"
+    },
+    {
+      "source": "test/emulation/test_eeprom_load_config_equivalence.py",
+      "line": 35,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "machine.reg_write(UC_ARM_REG_PC, machine.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_eeprom_load_config_equivalence.py",
+      "line": 41,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "machine.reg_write(UC_ARM_REG_PC, machine.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_eeprom_sync_matrix_equivalence.py",
+      "line": 36,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, write_hook, begin=write, end=write + 1)"
+    },
+    {
+      "source": "test/emulation/test_eeprom_sync_matrix_equivalence.py",
+      "line": 38,
+      "mechanism": "emu_start",
+      "expression": "uc.emu_start(sync | 1, RETURN, count=2000000)"
+    },
+    {
+      "source": "test/emulation/test_eeprom_sync_matrix_equivalence.py",
+      "line": 34,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "machine.reg_write(UC_ARM_REG_PC, machine.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_exception_func_code.py",
+      "line": 47,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, hook)"
+    },
+    {
+      "source": "test/emulation/test_exception_func_code.py",
+      "line": 45,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_i2c_bit_contract.py",
+      "line": 23,
+      "mechanism": "hook_add",
+      "expression": "u.hook_add(UC_HOOK_MEM_READ, read, begin=537509908, end=537509911)"
+    },
+    {
+      "source": "test/emulation/test_i2c_bit_contract.py",
+      "line": 25,
+      "mechanism": "hook_add",
+      "expression": "u.hook_add(UC_HOOK_CODE, short, begin=address(new, 'i2c_delay_short'), end=address(new, 'i2c_delay_short'))"
+    },
+    {
+      "source": "test/emulation/test_i2c_bit_contract.py",
+      "line": 24,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_init_trace.py",
+      "line": 154,
+      "mechanism": "MASK_OR_SKIP_HELPER",
+      "expression": "_skip_set"
+    },
+    {
+      "source": "test/emulation/test_init_trace.py",
+      "line": 177,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_MEM_WRITE, mem_hook)"
+    },
+    {
+      "source": "test/emulation/test_init_trace.py",
+      "line": 178,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, code_hook)"
+    },
+    {
+      "source": "test/emulation/test_init_trace.py",
+      "line": 215,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, code_hook)"
+    },
+    {
+      "source": "test/emulation/test_init_trace.py",
+      "line": 296,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, code_hook)"
+    },
+    {
+      "source": "test/emulation/test_init_trace.py",
+      "line": 189,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "uc.reg_write(UC_ARM_REG_R0, args[0])"
+    },
+    {
+      "source": "test/emulation/test_init_trace.py",
+      "line": 214,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_MEM_WRITE, mem_hook, begin=base, end=base + size - 1)"
+    },
+    {
+      "source": "test/emulation/test_init_trace.py",
+      "line": 206,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_init_trace.py",
+      "line": 291,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_init_trace.py",
+      "line": 294,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_init_trace.py",
+      "line": 286,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_interrupt_preemption_contract.py",
+      "line": 37,
+      "mechanism": "hook_add",
+      "expression": "u.hook_add(UC_HOOK_CODE, next_instruction)"
+    },
+    {
+      "source": "test/emulation/test_interrupt_preemption_contract.py",
+      "line": 41,
+      "mechanism": "emu_start",
+      "expression": "u.emu_start(tentry | 1, 261888, count=300000)"
+    },
+    {
+      "source": "test/emulation/test_interrupt_preemption_contract.py",
+      "line": 43,
+      "mechanism": "context_save",
+      "expression": "u.context_save()"
+    },
+    {
+      "source": "test/emulation/test_interrupt_preemption_contract.py",
+      "line": 46,
+      "mechanism": "emu_start",
+      "expression": "u.emu_start(ientry | 1, 261888, count=300000)"
+    },
+    {
+      "source": "test/emulation/test_interrupt_preemption_contract.py",
+      "line": 49,
+      "mechanism": "context_restore",
+      "expression": "u.context_restore(context)"
+    },
+    {
+      "source": "test/emulation/test_interrupt_preemption_contract.py",
+      "line": 50,
+      "mechanism": "emu_start",
+      "expression": "u.emu_start(pc | 1, 261888, count=300000)"
+    },
+    {
+      "source": "test/emulation/test_interrupt_preemption_contract.py",
+      "line": 35,
+      "mechanism": "emu_stop",
+      "expression": "m.emu_stop()"
+    },
+    {
+      "source": "test/emulation/test_interrupt_preemption_contract.py",
+      "line": 32,
+      "mechanism": "emu_stop",
+      "expression": "m.emu_stop()"
+    },
+    {
+      "source": "test/emulation/test_interrupt_sequence_equivalence.py",
+      "line": 48,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_MEM_WRITE, callback, begin=begin, end=end)"
+    },
+    {
+      "source": "test/emulation/test_main_software_chain.py",
+      "line": 85,
+      "mechanism": "hook_add",
+      "expression": "u.hook_add(UC_HOOK_CODE, code)"
+    },
+    {
+      "source": "test/emulation/test_main_software_chain.py",
+      "line": 97,
+      "mechanism": "hook_add",
+      "expression": "u.hook_add(UC_HOOK_MEM_READ, read, begin=a, end=a + 3)"
+    },
+    {
+      "source": "test/emulation/test_main_software_chain.py",
+      "line": 98,
+      "mechanism": "emu_start",
+      "expression": "u.emu_start((V.SYMS['main'] if new else 1484) | 1, 0, count=5000000)"
+    },
+    {
+      "source": "test/emulation/test_main_software_chain.py",
+      "line": 83,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_main_software_chain.py",
+      "line": 84,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_main_software_chain.py",
+      "line": 89,
+      "mechanism": "emu_stop",
+      "expression": "m.emu_stop()"
+    },
+    {
+      "source": "test/emulation/test_menu_persistent_workflow.py",
+      "line": 21,
+      "mechanism": "hook_add",
+      "expression": "u.hook_add(UC_HOOK_CODE, display)"
+    },
+    {
+      "source": "test/emulation/test_menu_persistent_workflow.py",
+      "line": 20,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_modbus_dispatch_execution.py",
+      "line": 64,
+      "mechanism": "hook_add",
+      "expression": "e.hook_add(UC_HOOK_CODE, hook_tx, begin=tx_addr, end=tx_addr + 1)"
+    },
+    {
+      "source": "test/emulation/test_modbus_dispatch_execution.py",
+      "line": 72,
+      "mechanism": "emu_start",
+      "expression": "e.emu_start(dispatch_addr | 1, 4278190080, count=2000000)"
+    },
+    {
+      "source": "test/emulation/test_modbus_dispatch_execution.py",
+      "line": 63,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "uc.reg_write(UC_ARM_REG_PC, uc.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_output_persistent_replay.py",
+      "line": 39,
+      "mechanism": "hook_add",
+      "expression": "u.hook_add(UC_HOOK_CODE, lambda m, a, n, user: calls.append(a), begin=pid, end=pid)"
+    },
+    {
+      "source": "test/emulation/test_parameter_sync_execution.py",
+      "line": 73,
+      "mechanism": "hook_add",
+      "expression": "e.hook_add(UC_HOOK_CODE, hook_write_reg, begin=FUNC_i2c_write_reg, end=FUNC_i2c_write_reg + 1)"
+    },
+    {
+      "source": "test/emulation/test_parameter_sync_execution.py",
+      "line": 68,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "uc.reg_write(UC_ARM_REG_R0, 0)"
+    },
+    {
+      "source": "test/emulation/test_parameter_sync_execution.py",
+      "line": 72,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "uc.reg_write(UC_ARM_REG_PC, lr)"
+    },
+    {
+      "source": "test/emulation/test_parameter_sync_retry_gate.py",
+      "line": 63,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, hook_sync, begin=sync_entry, end=sync_entry + 1)"
+    },
+    {
+      "source": "test/emulation/test_parameter_sync_retry_gate.py",
+      "line": 73,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "uc.reg_write(UC_ARM_REG_R0, 0)"
+    },
+    {
+      "source": "test/emulation/test_parameter_sync_retry_gate.py",
+      "line": 55,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, lambda m, a, s, u: m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR)), begin=address, end=address + 1)"
+    },
+    {
+      "source": "test/emulation/test_parameter_sync_retry_gate.py",
+      "line": 62,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_parameter_sync_retry_gate.py",
+      "line": 56,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_peripheral_leaf_trace_equivalence.py",
+      "line": 50,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "uc.reg_write(UC_ARM_REG_R0, arg)"
+    },
+    {
+      "source": "test/emulation/test_peripheral_leaf_trace_equivalence.py",
+      "line": 49,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_MEM_WRITE, callback, begin=begin, end=end)"
+    },
+    {
+      "source": "test/emulation/test_peripheral_polling.py",
+      "line": 22,
+      "mechanism": "hook_add",
+      "expression": "u.hook_add(UC_HOOK_MEM_READ, hook, begin=port, end=port + 3)"
+    },
+    {
+      "source": "test/emulation/test_pid_signed_boundaries.py",
+      "line": 44,
+      "mechanism": "hook_add",
+      "expression": "u.hook_add(UC_HOOK_CODE, hook)"
+    },
+    {
+      "source": "test/emulation/test_reset_initialization_contract.py",
+      "line": 25,
+      "mechanism": "hook_add",
+      "expression": "u.hook_add(UC_HOOK_MEM_READ, clock_ready, begin=1074774016, end=1074774527)"
+    },
+    {
+      "source": "test/emulation/test_reset_initialization_contract.py",
+      "line": 29,
+      "mechanism": "hook_add",
+      "expression": "u.hook_add(UC_HOOK_CODE, code)"
+    },
+    {
+      "source": "test/emulation/test_reset_initialization_contract.py",
+      "line": 30,
+      "mechanism": "emu_start",
+      "expression": "u.emu_start(reset, main, count=2000000)"
+    },
+    {
+      "source": "test/emulation/test_state_machine_call_trace_equivalence.py",
+      "line": 38,
+      "mechanism": "MASK_OR_SKIP_HELPER",
+      "expression": "skip"
+    },
+    {
+      "source": "test/emulation/test_state_machine_call_trace_equivalence.py",
+      "line": 39,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "machine_.reg_write(UC_ARM_REG_PC, machine_.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_state_machine_call_trace_equivalence.py",
+      "line": 48,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, skip, begin=address, end=address + 1)"
+    },
+    {
+      "source": "test/emulation/test_state_machine_call_trace_equivalence.py",
+      "line": 50,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, record(name), begin=address, end=address + 1)"
+    },
+    {
+      "source": "test/emulation/test_state_machine_call_trace_equivalence.py",
+      "line": 62,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "uc.reg_write(UC_ARM_REG_R0, 0)"
+    },
+    {
+      "source": "test/emulation/test_state_machine_multitick_matrix_equivalence.py",
+      "line": 30,
+      "mechanism": "MASK_OR_SKIP_HELPER",
+      "expression": "skip"
+    },
+    {
+      "source": "test/emulation/test_state_machine_multitick_matrix_equivalence.py",
+      "line": 31,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "machine_.reg_write(UC_ARM_REG_PC, machine_.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/emulation/test_state_machine_multitick_matrix_equivalence.py",
+      "line": 34,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, skip, begin=address, end=address + 1)"
+    },
+    {
+      "source": "test/emulation/test_state_machine_multitick_matrix_equivalence.py",
+      "line": 48,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "uc.reg_write(UC_ARM_REG_R0, 0)"
+    },
+    {
+      "source": "test/emulation/test_uart_rx_sequence_equivalence.py",
+      "line": 44,
+      "mechanism": "emu_start",
+      "expression": "uc.emu_start(entry | 1, RETURN, count=10000)"
+    },
+    {
+      "source": "test/emulation/test_uart_wire_chain.py",
+      "line": 18,
+      "mechanism": "hook_add",
+      "expression": "u.hook_add(UC_HOOK_MEM_READ, lsr, begin=1074380820, end=1074380823)"
+    },
+    {
+      "source": "test/support/mmio_code_trace.py",
+      "line": 15,
+      "mechanism": "hook_add",
+      "expression": "u.hook_add(UC_HOOK_CODE, self.code)"
+    },
+    {
+      "source": "test/support/software_ab_support.py",
+      "line": 107,
+      "mechanism": "hook_add",
+      "expression": "u.hook_add(UC_HOOK_CODE, tx, begin=address(new, 'uart3_tx_byte'), end=address(new, 'uart3_tx_byte'))"
+    },
+    {
+      "source": "test/support/software_ab_support.py",
+      "line": 93,
+      "mechanism": "hook_add",
+      "expression": "u.hook_add(UC_HOOK_CODE, hook)"
+    },
+    {
+      "source": "test/support/software_ab_support.py",
+      "line": 106,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/support/software_ab_support.py",
+      "line": 92,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "test/support/software_ab_support.py",
+      "line": 85,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "m.reg_write(UC_ARM_REG_R0, int(nack))"
+    },
+    {
+      "source": "test/support/software_ab_support.py",
+      "line": 88,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "m.reg_write(UC_ARM_REG_R0, val)"
+    },
+    {
+      "source": "test/support/unicorn_harness.py",
+      "line": 111,
+      "mechanism": "emu_start",
+      "expression": "e.emu_start(func_addr | 1, STOP, count=max_insn)"
+    },
+    {
+      "source": "test/support/unicorn_harness.py",
+      "line": 154,
+      "mechanism": "emu_start",
+      "expression": "e.emu_start(fn | 1, 4278190080, count=2000000)"
+    },
+    {
+      "source": "tools/verification/scan_state_machine_audit.py",
+      "line": 84,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, hk)"
+    },
+    {
+      "source": "tools/verification/scan_state_machine_audit.py",
+      "line": 85,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "uc.reg_write(UC_ARM_REG_R0, key)"
+    },
+    {
+      "source": "tools/verification/verify_backlight_timeout.py",
+      "line": 15,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, hook)"
+    },
+    {
+      "source": "tools/verification/verify_backlight_timeout.py",
+      "line": 16,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "uc.reg_write(UC_ARM_REG_R0, key)"
+    },
+    {
+      "source": "tools/verification/verify_firmware_equivalence.py",
+      "line": 356,
+      "mechanism": "MASK_OR_SKIP_HELPER",
+      "expression": "_mask_fio1_p23"
+    },
+    {
+      "source": "tools/verification/verify_firmware_equivalence.py",
+      "line": 66,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, stop_at_return)"
+    },
+    {
+      "source": "tools/verification/verify_firmware_equivalence.py",
+      "line": 71,
+      "mechanism": "emu_start",
+      "expression": "uc.emu_start(entry | 1, 0, count=max_insn)"
+    },
+    {
+      "source": "tools/verification/verify_firmware_equivalence.py",
+      "line": 68,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_MEM_WRITE, lambda machine, access, address, size, value, user: writes.append((address, size, value)), begin=537509888, end=537513983)"
+    },
+    {
+      "source": "tools/verification/verify_firmware_equivalence.py",
+      "line": 482,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_MEM_WRITE, cb, begin=537509888, end=537513983)"
+    },
+    {
+      "source": "tools/verification/verify_firmware_equivalence.py",
+      "line": 483,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "uc.reg_write(UC_ARM_REG_R0, ch)"
+    },
+    {
+      "source": "tools/verification/verify_firmware_equivalence.py",
+      "line": 65,
+      "mechanism": "emu_stop",
+      "expression": "machine.emu_stop()"
+    },
+    {
+      "source": "tools/verification/verify_firmware_equivalence.py",
+      "line": 114,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_MEM_WRITE, callback, begin=begin, end=end)"
+    },
+    {
+      "source": "tools/verification/verify_firmware_equivalence.py",
+      "line": 266,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, lambda m, a, n, u: m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR)), begin=delay_entry, end=delay_entry + 1)"
+    },
+    {
+      "source": "tools/verification/verify_firmware_equivalence.py",
+      "line": 269,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "uc.reg_write(UC_ARM_REG_R0, key)"
+    },
+    {
+      "source": "tools/verification/verify_firmware_equivalence.py",
+      "line": 406,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, lambda machine, address, size, user, values=commands: values.append(machine.reg_read(UC_ARM_REG_R0) & 255), begin=command_entry, end=command_entry + 1)"
+    },
+    {
+      "source": "tools/verification/verify_firmware_equivalence.py",
+      "line": 413,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, lambda machine, address, size, user, values=data_bytes: values.append((machine.reg_read(UC_ARM_REG_R0) & 255, machine.reg_read(UC_ARM_REG_R1) & 255)), begin=data_entry, end=data_entry + 1)"
+    },
+    {
+      "source": "tools/verification/verify_firmware_equivalence.py",
+      "line": 346,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, hook, begin=addr, end=addr + 1)"
+    },
+    {
+      "source": "tools/verification/verify_firmware_equivalence.py",
+      "line": 397,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, original_option_text, begin=SYMS['strpool_map'], end=SYMS['strpool_map'] + 1)"
+    },
+    {
+      "source": "tools/verification/verify_firmware_equivalence.py",
+      "line": 450,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_MEM_WRITE, cb, begin=537509888, end=537513983)"
+    },
+    {
+      "source": "tools/verification/verify_firmware_equivalence.py",
+      "line": 451,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "uc.reg_write(UC_ARM_REG_R0, level)"
+    },
+    {
+      "source": "tools/verification/verify_firmware_equivalence.py",
+      "line": 452,
+      "mechanism": "emu_start",
+      "expression": "uc.emu_start(entry | 1, 261888, count=500)"
+    },
+    {
+      "source": "tools/verification/verify_firmware_equivalence.py",
+      "line": 267,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "tools/verification/verify_firmware_equivalence.py",
+      "line": 345,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "uc.reg_write(UC_ARM_REG_PC, uc.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "tools/verification/verify_firmware_equivalence.py",
+      "line": 395,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "m.reg_write(UC_ARM_REG_R0, 268460032)"
+    },
+    {
+      "source": "tools/verification/verify_firmware_equivalence.py",
+      "line": 396,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "tools/verification/verify_firmware_equivalence.py",
+      "line": 230,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_MEM_WRITE, callback, begin=begin, end=end)"
+    },
+    {
+      "source": "tools/verification/verify_menu_text.py",
+      "line": 29,
+      "mechanism": "hook_add",
+      "expression": "uc.hook_add(UC_HOOK_CODE, hook)"
+    },
+    {
+      "source": "tools/verification/verify_menu_text.py",
+      "line": 38,
+      "mechanism": "RETURN_OR_INPUT_R0",
+      "expression": "uc.reg_write(UC_ARM_REG_R0, addr)"
+    },
+    {
+      "source": "tools/verification/verify_menu_text.py",
+      "line": 24,
+      "mechanism": "PC_OVERRIDE",
+      "expression": "m.reg_write(UC_ARM_REG_PC, m.reg_read(UC_ARM_REG_LR))"
+    },
+    {
+      "source": "tools/verification/verify_startup_adaptation_contract.py",
+      "line": 21,
+      "mechanism": "hook_add",
+      "expression": "u.hook_add(UC_HOOK_CODE, stop)"
+    },
+    {
+      "source": "tools/verification/verify_startup_adaptation_contract.py",
+      "line": 22,
+      "mechanism": "emu_start",
+      "expression": "u.emu_start(start | 1, 261888, count=10)"
+    },
+    {
+      "source": "tools/verification/verify_startup_adaptation_contract.py",
+      "line": 32,
+      "mechanism": "emu_start",
+      "expression": "u.emu_start(fallback.address | 1, 261888, count=10)"
+    },
+    {
+      "source": "tools/verification/verify_startup_adaptation_contract.py",
+      "line": 20,
+      "mechanism": "emu_stop",
+      "expression": "m.emu_stop()"
+    }
+  ]
+}

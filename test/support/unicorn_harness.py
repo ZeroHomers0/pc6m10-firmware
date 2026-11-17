@@ -99,7 +99,7 @@ def load_firmware(elf_path=FW):
     e.reg_write(UC_ARM_REG_LR, 0x03000000)  # 哨兵返回地址（LR 指向内存外部 → EmulationStop）
     return e
 
-def call(e, func_addr, args=None, ret_spec='r0'):
+def call(e, func_addr, args=None, ret_spec='r0', max_insn=2_000_000):
     """按 AAPCS 调 func_addr（Thumb '|1'），传 args（r0,r1,r2..），返回 ret_spec 指定寄存器值。
     函数用 bx lr 返回，LR 设哨兵地址 → emu_start 停在该址即返回。"""
     STOP = 0xFF000000
@@ -108,7 +108,7 @@ def call(e, func_addr, args=None, ret_spec='r0'):
         for i, v in enumerate(args[:4]):
             e.reg_write(regs[i], v)
     e.reg_write(UC_ARM_REG_LR, STOP)
-    e.emu_start(func_addr | 1, STOP)
+    e.emu_start(func_addr | 1, STOP, count=max_insn)
     assert e.reg_read(UC_ARM_REG_PC) == STOP, '函数未正常返回，禁止比较中途状态'
     if ret_spec == 'r1':
         return e.reg_read(UC_ARM_REG_R1)
@@ -151,7 +151,7 @@ def differential(func_orig, func_new, args, seed, region=(0x10001000, 0x10003F00
             for i, v in enumerate(args[:4]):
                 e.reg_write(regs[i], v)
         e.reg_write(UC_ARM_REG_LR, 0xFF000000)
-        e.emu_start(fn | 1, 0xFF000000)        # Cortex-M3 = Thumb；起始地址|1 进入 Thumb 真执行
+        e.emu_start(fn | 1, 0xFF000000, count=2_000_000)  # 有界执行，耗尽预算必须由返回检查拒绝
         assert e.reg_read(UC_ARM_REG_PC) == 0xFF000000, '差分函数未正常返回'
         ret = e.reg_read(UC_ARM_REG_R0)
         post = bytes(e.mem_read(lo, hi - lo))

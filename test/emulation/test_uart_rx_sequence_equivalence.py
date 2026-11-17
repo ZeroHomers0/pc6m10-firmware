@@ -41,7 +41,7 @@ def run(load_fn, entry, initial, data):
     for value in data:
         uc.mem_write(UART3_RBR, bytes([value]))
         uc.reg_write(UC_ARM_REG_LR, RETURN)
-        uc.emu_start(entry | 1, RETURN)
+        uc.emu_start(entry | 1, RETURN, count=10000)
         assert uc.reg_read(UC_ARM_REG_PC) == RETURN, 'UART 接收未正常返回'
     return bytes(uc.mem_read(STATE, 3)), bytes(uc.mem_read(FRAME, 256))
 

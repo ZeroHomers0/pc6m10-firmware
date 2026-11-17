@@ -1,0 +1,537 @@
+
+=== test_emulation_test_adc_scan_sequence_equivalence ===
+  [PASS] 零值连续12拍  conversions=72
+  [PASS] 六通道固定梯度连续12拍  conversions=72
+  [PASS] 边界与交错样本连续24拍  conversions=144
+  [PASS] cfg=0/gain_sel=0  conversions=108
+  [PASS] cfg=0/gain_sel=1  conversions=108
+  [PASS] cfg=0/gain_sel=2  conversions=108
+  [PASS] cfg=1/gain_sel=0  conversions=108
+  [PASS] cfg=1/gain_sel=1  conversions=108
+  [PASS] cfg=1/gain_sel=2  conversions=108
+  [PASS] 标定除数边界0x1  conversions=108
+  [PASS] 标定除数边界0xA  conversions=108
+  [PASS] 标定除数边界0xFFFF  conversions=108
+  [PASS] 标定除数边界0xFFFFFFFF  conversions=108
+
+  通过 13/13
+[run_tests] test_emulation_test_adc_scan_sequence_equivalence: OK
+
+=== test_emulation_test_adc_wait_done_equivalence ===
+  [PASS] 编译版符号已解析  0x1ef8
+  [PASS] DONE+0xABC/0xDEF A/B 等价  期望=0xABC 原始=0xABC 编译=0xABC
+  [PASS] DONE+0x000/0xFFF A/B 等价  期望=0x000 原始=0x000 编译=0x000
+  [PASS] DONE+0xFFF/0x001 A/B 等价  期望=0xFFF 原始=0xFFF 编译=0xFFF
+  [PASS] DONE+0x555/0x2AA A/B 等价  期望=0x555 原始=0x555 编译=0x555
+
+  通过 5/5
+[run_tests] test_emulation_test_adc_wait_done_equivalence: OK
+
+=== test_emulation_test_audit_fixes ===
+audit_modbus_single_write.py PASS_EQ正常返回；EXPECTED_NONRETURN复位命令 2
+audit_all_menu_states.py 所有有界菜单实际返回；原 BIN 差分无差异
+密码错误页 0xa 原 BIN/ELF 外层10000、内层1000、喂狗10000一致
+密码错误页 0x62 原 BIN/ELF 外层10000、内层1000、喂狗10000一致
+复位命令 0x25 响应/EEPROM顺序/自跳等待与原 BIN 一致
+复位命令 0x26 响应/EEPROM顺序/自跳等待与原 BIN 一致
+[run_tests] test_emulation_test_audit_fixes: OK
+
+=== test_emulation_test_audit_fixes_2 ===
+F1 0x06 非 0x10 页异常响应一致 018602c3a1
+F1 0x10 非 0x10 页异常响应一致 019002cdc1
+F1 0x03 非 0x10 页异常响应一致 018302c0f1
+F2 0x03 start=1 count=1 响应与末次索引一致
+F2 0x03 start=13 count=3 响应与末次索引一致
+F2 0x03 start=62 count=1 响应与末次索引一致
+F2b 0x03 读矩阵 start=1..0x3F 全部一致
+F3 run_request=0 写数=14 一致
+F3 run_request=1 写数=28 一致
+F4 恒压源分支写 0x1000202C、aux_b 保持初值，一致
+第二路闭环一致 aux_b=0 aux_a=2 0x100015B8 未被改写
+量程比较路径：4例实际执行原BIN复制指令，反馈/PID/SRAM一致
+反馈比较路径：4例实际执行原BIN复制指令，反馈/PID/SRAM一致
+低反馈路径：4例实际执行原BIN复制指令，反馈/PID/SRAM一致
+AUDIT_FIXES_2: 全通过
+[run_tests] test_emulation_test_audit_fixes_2: OK
+
+=== test_emulation_test_case3_edit_equivalence ===
+
+  case3 编辑 A/B：256/256 通过
+[run_tests] test_emulation_test_case3_edit_equivalence: OK
+
+=== test_emulation_test_clock_polling_contract ===
+CLOCK_POLLING cases=15 delayed-ready+WAIT_PERIPHERAL PASS
+[run_tests] test_emulation_test_clock_polling_contract: OK
+
+=== test_emulation_test_closed_loop_equivalence ===
+  [PASS] 编译版符号已解析  0xab90
+  [PASS] (1000,800,5,3,gsel=0) A/B 等价  ch1 err=200 正路径, 死区上界→big, 除数<0xdc→8 | ret_o=0x0005CC60h ret_n=0x0005CC60h
+  [PASS] (100,100,5,3,gsel=0) A/B 等价  ch1 err=0 →small, 除数 0xdb..0x226→15 | ret_o=0x0005CC60h ret_n=0x0005CC60h
+  [PASS] (100,500,7,2,gsel=0) A/B 等价  ch1 err=400 负路径, 上界→big, 除数 3999..5000→0x96 | ret_o=0x0005CC60h ret_n=0x0005CC60h
+  [PASS] (500,200,3,1,gsel=1) A/B 等价  ch2 err=300, 除数 gain_b<0xdc→8 | ret_o=0x0005CC60h ret_n=0x0005CC60h
+  [PASS] (50,20,2,4,gsel=1) A/B 等价  ch2 err=30, 除数 0x226..1000→0x1e | ret_o=0x0005CC60h ret_n=0x0005CC60h
+  [PASS] (900,100,9,5,gsel=2) A/B 等价  ch2 固定除数 0x46 (gain_sel==2) | ret_o=0x0005CC60h ret_n=0x0005CC60h
+  [PASS] (100,55,1,1,gsel=0) A/B 等价  ch1 err=45 mid(10<45<120), 除数 0x9c4..3000→100 | ret_o=0x0005CC60h ret_n=0x0005CC60h
+  [PASS] (3000,0,5,5,gsel=0) A/B 等价  ch1 err=3000 落两钳位之间, 除数<0xdc→8, 测公式 | ret_o=0x000E4E1Ch ret_n=0x000E4E1Ch
+  [PASS] (4500,0,5,5,gsel=0) A/B 等价  ch1 err=4500 超上限→钳 0x116520 (上钳), 测上限 | ret_o=0x00116520h ret_n=0x00116520h
+
+  通过 10/10
+[run_tests] test_emulation_test_closed_loop_equivalence: OK
+
+=== test_emulation_test_closed_loop_wrapper_equivalence ===
+  [PASS] 编译版符号已解析  0xb29c
+  [PASS] (1000,800,5,3,cnt=0x0) A/B 等价  cnt=0 → ++=1 非零 → 重算并缓存 | ret_o=0x00116520h ret_n=0x00116520h
+  [PASS] (2000,0,5,5,cnt=0x5) A/B 等价  cnt=5 → ++=6 非零 → 重算并缓存 | ret_o=0x00116520h ret_n=0x00116520h
+  [PASS] (1000,800,5,3,cnt=0xFFFFFFFF) A/B 等价  cnt=0xFFFFFFFF → ++回绕0 → 不重算返回缓存 | ret_o=0x1000212Ch ret_n=0x1000212Ch
+
+  通过 4/4
+[run_tests] test_emulation_test_closed_loop_wrapper_equivalence: OK
+
+=== test_emulation_test_contract_mutation_detection ===
+MUTATION_DETECTED i2c_write_byte 0x1ce6 imm 8 -> 7 PASS
+MUTATION_DETECTED TIMER1_IRQHandler 0xa664 imm 54 -> 55 PASS
+[run_tests] test_emulation_test_contract_mutation_detection: OK
+
+=== test_emulation_test_control_multitick_equivalence ===
+  [PASS] 空闲连续30拍  ticks=30
+  [PASS] 运行/停止与故障交错  ticks=32
+  [PASS] 主界面按键序列  ticks=30
+
+  通过 3/3
+[run_tests] test_emulation_test_control_multitick_equivalence: OK
+
+=== test_emulation_test_crc16_against_model ===
+  [PASS] 执行 crc16(len=9) == Python模型 (0x4B37)  got 0x4B37
+  [PASS] 执行 crc16(len=6) == Python模型 (0x0A84)  got 0x0A84
+  [PASS] 执行 crc16(len=7) == Python模型 (0x630A)  got 0x630A
+
+  通过 3/3
+[run_tests] test_emulation_test_crc16_against_model: OK
+
+=== test_emulation_test_crc16_firmware_equivalence ===
+  [PASS] 编译版符号已解析  0x8b6c
+  [PASS] crc16(len=3) A/B 等价  ret_o=0x3C21h ret_n=0x3C21h
+  [PASS] crc16(len=6) A/B 等价  ret_o=0x5AE1h ret_n=0x5AE1h
+  [PASS] crc16(len=7) A/B 等价  ret_o=0x489Ah ret_n=0x489Ah
+  [PASS] crc16(len=9) A/B 等价  ret_o=0x9C66h ret_n=0x9C66h
+  [PASS] crc16(len=11) A/B 等价  ret_o=0x6C95h ret_n=0x6C95h
+
+  通过 6/6
+[run_tests] test_emulation_test_crc16_firmware_equivalence: OK
+
+=== test_emulation_test_delay_loop_structure ===
+  [PASS] Delay 循环倍率  原指令=[7, 157, 307] 新指令=[5, 155, 305]
+  [PASS] i2c_delay 循环倍率  原指令=[9, 70022, 140035] 新指令=[10, 70021, 140032]
+  [PASS] i2c_delay_short 固定5轮  原指令=39 新指令=38
+  注：循环次数/倍率一致；不同编译器的单轮指令数不同，绝对脉宽仍需示波器确认。
+[run_tests] test_emulation_test_delay_loop_structure: OK
+
+=== test_emulation_test_direct_execution_completion ===
+DIRECT_COMPLETION: PASS 配置加载/参数同步/ADC连续拍/公共call拒绝提前停止 4/4
+[run_tests] test_emulation_test_direct_execution_completion: OK
+
+=== test_emulation_test_display_byte_reads ===
+DISPLAY_BYTE_READS cases=40 failures=0
+[run_tests] test_emulation_test_display_byte_reads: OK
+
+=== test_emulation_test_display_call_equivalence ===
+  [PASS] 显示调用契约 152/152
+  [PASS] 控制量终态 12/12
+[run_tests] test_emulation_test_display_call_equivalence: OK
+
+=== test_emulation_test_eeprom_load_config_equivalence ===
+  [PASS] 双银行魔数有效：全部从EEPROM装载  writes=0
+  [PASS] 银行A无效：回写A默认值  writes=62
+  [PASS] 银行B无效：回写B默认值  writes=27
+  [PASS] 双银行无效：依次回写两组默认值  writes=89
+  [PASS] 仅银行A lo=0x55：A读取、B回写默认  writes=27
+  [PASS] 仅银行A hi=0x55：A读取、B回写默认  writes=27
+  [PASS] 仅银行B hi=0x66：A回写默认、B读取  writes=62
+  [PASS] 银行A魔数近似值0x54：仍应回写默认  writes=62
+  [PASS] 随机内容 seed=1：双银行有效  writes=0
+  [PASS] 随机内容 seed=2：双银行有效  writes=0
+  [PASS] 随机内容 seed=3：双银行有效  writes=0
+  [PASS] 随机内容 seed=4：双银行有效  writes=0
+  [PASS] 随机内容 seed=5：双银行有效  writes=0
+  [PASS] 随机内容 seed=6：双银行有效  writes=0
+  [PASS] 随机内容 seed=7：双银行有效  writes=0
+  [PASS] 随机内容 seed=8：双银行有效  writes=0
+  [PASS] 随机内容 seed=9：双银行有效  writes=0
+  [PASS] 随机内容 seed=10：双银行有效  writes=0
+  [PASS] 随机内容 seed=11：双银行有效  writes=0
+  [PASS] 随机内容 seed=12：双银行有效  writes=0
+  [PASS] 随机内容 seed=13：双银行有效  writes=0
+  [PASS] 随机内容 seed=14：双银行有效  writes=0
+
+  通过 22/22
+[run_tests] test_emulation_test_eeprom_load_config_equivalence: OK
+
+=== test_emulation_test_eeprom_persistent_chain ===
+EEPROM_CHAIN blank events= 711 reboot_reads= 728 PASS
+EEPROM_CHAIN zero events= 711 reboot_reads= 728 PASS
+EEPROM_FAULT nack= None busy= False PASS
+EEPROM_FAULT nack= 0 busy= False PASS
+EEPROM_FAULT nack= 1 busy= False PASS
+EEPROM_FAULT nack= 2 busy= False PASS
+EEPROM_FAULT nack= None busy= True PASS
+[run_tests] test_emulation_test_eeprom_persistent_chain: OK
+
+=== test_emulation_test_eeprom_powercut_recovery ===
+EEPROM_POWERCUT_RECOVERY 5 byte-boundary cuts + normal-complete PASS
+[run_tests] test_emulation_test_eeprom_powercut_recovery: OK
+
+=== test_emulation_test_eeprom_sync_matrix_equivalence ===
+  [PASS] EEPROM同步扰动矩阵 280/280
+[run_tests] test_emulation_test_eeprom_sync_matrix_equivalence: OK
+
+=== test_emulation_test_enum_range_equivalence ===
+  [PASS] 枚举越界绘制 47/47（双方都空 0）
+[run_tests] test_emulation_test_enum_range_equivalence: OK
+
+=== test_emulation_test_exception_func_code ===
+异常应答功能码 func+0x80：13/13 帧与原 BIN 一致
+[run_tests] test_emulation_test_exception_func_code: OK
+
+=== test_emulation_test_execution_completion ===
+EXECUTION_COMPLETION: PASS loop/return + original/ELF UART blocked/ready
+[run_tests] test_emulation_test_execution_completion: OK
+
+=== test_emulation_test_i2c_bit_contract ===
+I2C_BIT_CONTRACT cases=768 ACK/NACK+all256values+GPIO_STR_trace PASS
+[run_tests] test_emulation_test_i2c_bit_contract: OK
+
+=== test_emulation_test_init_trace ===
+  [PASS] SystemInit                   写迹 26 项 + 10 页末态一致
+  [PASS] timer0_init                  写迹  8 项 + 10 页末态一致
+  [PASS] long_delay                   写迹  1 项 + 10 页末态一致
+  [PASS] lcd_data_byte(0x55)          写迹  0 项 + 10 页末态一致
+  [PASS] lcd_data_byte(0x00)          写迹  0 项 + 10 页末态一致
+  [PASS] lcd_data_byte(0xFF)          写迹  0 项 + 10 页末态一致
+  [PASS] gpio1_init                   写迹  0 项 + 10 页末态一致
+  [PASS] gpio_inputs_dir_init         写迹  0 项 + 10 页末态一致
+  [PASS] chk_p02_p03                  写迹  0 项 + 10 页末态一致
+  [PASS] adc_init                     写迹 12 项 + 10 页末态一致
+  [PASS] timer1_init                  写迹  6 项 + 10 页末态一致
+  [PASS] timer2_init                  写迹  7 项 + 10 页末态一致
+  [PASS] eint1_init                   写迹  7 项 + 10 页末态一致
+  [PASS] eint2_init                   写迹  5 项 + 10 页末态一致
+  [PASS] eint3_init                   写迹  5 项 + 10 页末态一致
+  [PASS] gpio_outputs_set             写迹  0 项 + 10 页末态一致
+  [PASS] nvic_enable_irq(0)           写迹  1 项 + 10 页末态一致
+  [PASS] nvic_enable_irq(20)          写迹  1 项 + 10 页末态一致
+  [PASS] nvic_enable_irq(37)          写迹  1 项 + 10 页末态一致
+  --- 读写 SRAM / 显示后端的函数
+  [PASS] gpio0_input_init             SRAM + 10 页末态
+  [PASS] read_input_p02 (P0.2=0)      SRAM + 10 页末态
+  [PASS] read_input_p02 (P0.2=1)      SRAM + 10 页末态
+  [PASS] freq_adj(event=0)            SRAM + 10 页末态
+  [PASS] freq_adj(event=2) 未达上限       SRAM + 10 页末态
+  [PASS] freq_adj(event=2) 触上限        SRAM + 10 页末态
+  [PASS] freq_adj(event=0x16) 触上限     SRAM + 10 页末态
+  [PASS] freq_adj(event=3) 未达下限       SRAM + 10 页末态
+  [PASS] freq_adj(event=3) 触下限        SRAM + 10 页末态
+  [PASS] freq_adj(event=0x21) 触下限     SRAM + 10 页末态
+  [PASS] freq_adj(event=5) 置运行        SRAM + 10 页末态
+  [PASS] freq_adj(event=6) 置停止        SRAM + 10 页末态
+  [PASS] disp_decimal1(1234,1,2,0)    SRAM + 10 页末态，显示调用 3 项一致
+  [PASS] disp_screen_static           SRAM + 10 页末态，显示调用 4 项一致
+  [PASS] disp_screen_calib            SRAM + 10 页末态，显示调用 20 项一致
+  [PASS] run_stop_preset(cfg=0)       SRAM + 10 页末态
+  [PASS] run_stop_preset(cfg=1)       SRAM + 10 页末态
+  [PASS] auth_set_timeout             SRAM + 10 页末态
+  [PASS] auth_retry(state=0)          SRAM + 10 页末态，显示调用 0 项一致
+  [PASS] auth_retry(state=1,cnt=9)    SRAM + 10 页末态，显示调用 1 项一致
+  [PASS] auth_retry(state=1,fail)     SRAM + 10 页末态，显示调用 5 项一致
+  ---
+  覆盖门禁：24 个唯一原机入口 / 40 组用例，全部执行到返回
+  [PASS] 六相初始化/底层 I/O 外设等价性：40 组全部一致
+[run_tests] test_emulation_test_init_trace: OK
+
+=== test_emulation_test_input_scan_equivalence ===
+  [PASS] 编译版符号已解析  0x1624
+  [PASS] 引脚组合×计数 差分 512 例（未发现读址/分支差异）
+  [PASS] 0x16 快加 A=1,B=0,P0.30/29,P3.25/26 就绪 → 0x16  原始=0x16 编译=0x16
+  [PASS] 0x21 快减 A=1,B=1,P0.30=0,P0.29=1 → 0x21  原始=0x21 编译=0x21
+  [PASS] 0x17 慢减 A=1,B=0,P0.30=0,P0.29=1(计数0x1D) → 0x17  原始=0x17 编译=0x17
+  [PASS] 0x0E 组合 A=0,B=1,P0.30=1,P0.29=0(计数0x1D) → 0x0E  原始=0x0E 编译=0x0E
+  [PASS] 0x0B 慢加 A=0,B=1,P0.30/29=1(慢计数9) → 0x0B  原始=0x0B 编译=0x0B
+
+  通过 6/6
+[run_tests] test_emulation_test_input_scan_equivalence: OK
+
+=== test_emulation_test_interrupt_preemption_contract ===
+INTERRUPT_PREEMPTION cases=8 shared-store before/after real-ISR context-save/restore PASS
+[run_tests] test_emulation_test_interrupt_preemption_contract: OK
+
+=== test_emulation_test_interrupt_sequence_equivalence ===
+  [PASS] 过零链正序  RAM+MMIO handlers=5 writes=29
+  [PASS] 过零链逆序  RAM（MMIO模型受限） handlers=5 writes=29
+  [PASS] 节拍夹在触发中断之间  RAM+MMIO handlers=6 writes=30
+  [PASS] UART与定时器交错  RAM（MMIO模型受限） handlers=6 writes=16
+  [PASS] 重复完整序列  RAM+MMIO handlers=24 writes=120
+
+  通过 5/5
+[run_tests] test_emulation_test_interrupt_sequence_equivalence: OK
+
+=== test_emulation_test_main_software_chain ===
+MAIN_SOFTWARE_CHAIN encoder frames= 64 conversions= 768 PASS
+MAIN_SOFTWARE_CHAIN terminal frames= 200 conversions= 2400 PASS
+[run_tests] test_emulation_test_main_software_chain: OK
+
+=== test_emulation_test_menu_page_bounds ===
+[menu_page_bounds] 保护页分页上界 72/72
+[run_tests] test_emulation_test_menu_page_bounds: OK
+
+=== test_emulation_test_menu_persistent_workflow ===
+MENU_PERSISTENT_WORKFLOW edit/save/reboot + password-cancel + timeout real-state-machine PASS
+[run_tests] test_emulation_test_menu_persistent_workflow: OK
+
+=== test_emulation_test_modbus_dispatch_execution ===
+  [PASS] 读请求帧 CRC 自洽（0x0AD1）  0x0AD1
+  [PASS] 原固件读分支发 7 字节  tx_count=['0x7']
+  [PASS] 新固件读分支发 7 字节  tx_count=['0x7']
+  [PASS] 原固件响应 = [01 03 02 0056 crc]  0x0103020056387A
+  [PASS] 新固件响应 = [01 03 02 0056 crc]  0x0103020056387A
+  [PASS] A/B 差分：原/新 TXBUF 逐字节一致  原 0x0103020056387A vs 新 0x0103020056387A
+  [PASS] 原固件 CRC 错帧 → 异常 5B [01 83 04]  0x01830440F3
+  [PASS] 新固件 CRC 错帧 → 异常 5B [01 83 04]  0x01830440F3
+  [PASS] 原固件站址不匹配 → 不发送  tx_count=-0x1
+  [PASS] 新固件站址不匹配 → 不发送  tx_count=-0x1
+  [PASS] 0x06 原固件发送 8 字节回显  0x0106100100025D0B
+  [PASS] 0x06 新固件发送 8 字节回显  0x0106100100025D0B
+  [PASS] 0x06 完整帧 A/B 响应一致  原 0x0106100100025D0B vs 新 0x0106100100025D0B
+  [PASS] 0x10 原固件发送 8 字节确认  0x01101001000154C9
+  [PASS] 0x10 新固件发送 8 字节确认  0x01101001000154C9
+  [PASS] 0x10 完整帧 A/B 响应一致  原 0x01101001000154C9 vs 新 0x01101001000154C9
+  [PASS] 0x06 值越界 A/B结果一致  原=('OK', 5, b'\x01\x86\x03\x02a') 新=('OK', 5, b'\x01\x86\x03\x02a')
+  [PASS] 0x06 不存在寄存器 A/B结果一致  原=('OK', 5, b'\x01\x86\x02\xc3\xa1') 新=('OK', 5, b'\x01\x86\x02\xc3\xa1')
+  [PASS] 0x10 数量为0 A/B结果一致  原=('OK', 5, b'\x01\x90\x03\x0c\x01') 新=('OK', 5, b'\x01\x90\x03\x0c\x01')
+  [PASS] 0x10 数量超限 A/B结果一致  原=('OK', 5, b'\x01\x90\x03\x0c\x01') 新=('OK', 5, b'\x01\x90\x03\x0c\x01')
+  [PASS] 0x10 字节数不匹配 A/B结果一致  原=('OK', 5, b'\x01\x90\x03\x0c\x01') 新=('OK', 5, b'\x01\x90\x03\x0c\x01')
+  [PASS] 不支持功能码 A/B结果一致  原=('OK', 5, b'\x01\x84\x01\x82\xc0') 新=('OK', 5, b'\x01\x84\x01\x82\xc0')
+  [PASS] 1字节短帧 A/B结果一致  原=('OK', 5, b'\x01\x80\x01\x80\x00') 新=('OK', 5, b'\x01\x80\x01\x80\x00')
+  [PASS] 2字节短帧 A/B结果一致  原=('OK', 5, b'\x01\x83\x04@\xf3') 新=('OK', 5, b'\x01\x83\x04@\xf3')
+
+  通过 24/24
+[run_tests] test_emulation_test_modbus_dispatch_execution: OK
+
+=== test_emulation_test_modbus_read_register_equivalence ===
+  [PASS] 编译版符号已解析  0x8b98
+  [PASS] reg 0x00 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x01 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x02 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x03 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x04 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x05 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x06 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x07 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x08 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x09 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x0A A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x0B A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x0C A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x0D A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x0E A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x0F A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x10 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x11 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x12 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x13 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x14 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x15 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x16 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x17 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x18 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x19 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x1A A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x1B A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x1C A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x1D A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x1E A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x1F A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x20 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x21 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x22 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x23 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x24 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x25 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x26 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x27 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x28 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x29 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x2A A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x2B A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x2C A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x2D A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x2E A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x2F A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x30 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x31 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x32 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x33 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x34 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x35 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x36 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x37 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x38 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x39 A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x3A A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x3B A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x3C A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x3D A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x3E A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+  [PASS] reg 0x3F A/B 等价  ret_o=0x00000000 ret_n=0x00000000
+
+  通过 65/65
+[run_tests] test_emulation_test_modbus_read_register_equivalence: OK
+
+=== test_emulation_test_modbus_write_multi_equivalence ===
+  [PASS] 编译版符号已解析  0x8bf8
+  [PASS] reg 0x00 A/B 等价  reg00 → g_gain_sel (byte) | ret_o=0x0 ret_n=0x0
+  [PASS] reg 0x01 A/B 等价  reg01 → g_gain_a   (word) | ret_o=0x0 ret_n=0x0
+  [PASS] reg 0x02 A/B 等价  reg02 → g_gain_b   (word) | ret_o=0x0 ret_n=0x0
+  [PASS] reg 0x03 A/B 等价  reg03 → modbus_response_buffer (word) | ret_o=0x0 ret_n=0x0
+  [PASS] reg 0x1A A/B 等价  reg1A → g_scratch  (word, 保留区) | ret_o=0x0 ret_n=0x0
+  [PASS] reg 0x1F A/B 等价  reg1F → g_scratch  (word, 保留区) | ret_o=0x0 ret_n=0x0
+  [PASS] reg 0x26 A/B 等价  reg26 → g_run_flag (byte) | ret_o=0x0 ret_n=0x0
+  [PASS] reg 0x2E A/B 等价  reg2E → g_slave_addr (byte) | ret_o=0x0 ret_n=0x0
+  [PASS] reg 0x2F A/B 等价  reg2F → g_baud_idx (word) | ret_o=0x0 ret_n=0x0
+  [PASS] reg 0x3C A/B 等价  reg3C → g_reg61_remote_en (word) | ret_o=0x0 ret_n=0x0
+  [PASS] reg 0x3D A/B 等价  reg3D → g_reg62_start_phase (word) | ret_o=0x0 ret_n=0x0
+
+  通过 12/12
+[run_tests] test_emulation_test_modbus_write_multi_equivalence: OK
+
+=== test_emulation_test_output_persistent_replay ===
+OUTPUT_PERSISTENT_REPLAY channel=0 ticks=240 actual_pid_calls=20 PASS
+OUTPUT_PERSISTENT_REPLAY channel=1 ticks=240 actual_pid_calls=20 PASS
+[run_tests] test_emulation_test_output_persistent_replay: OK
+
+=== test_emulation_test_parameter_sync_execution ===
+  [PASS] 写后 EEPROM 镜像控制方式=live(0xAB)  got 0xAB
+  [PASS] i2c_write_reg 被调用（EEPROM 写触发）  1 次
+
+  通过 2/2
+[run_tests] test_emulation_test_parameter_sync_execution: OK
+
+=== test_emulation_test_parameter_sync_retry_gate ===
+  [PASS] 周期同步 retry 门控 96/96（retry 门控断言 3 例）
+[run_tests] test_emulation_test_parameter_sync_retry_gate: OK
+
+=== test_emulation_test_peripheral_leaf_trace_equivalence ===
+  [PASS] 外设叶函数写序列 45/45
+[run_tests] test_emulation_test_peripheral_leaf_trace_equivalence: OK
+
+=== test_emulation_test_peripheral_polling ===
+PERIPHERAL_POLLING cases=30 delayed-ready+WAIT_PERIPHERAL PASS
+[run_tests] test_emulation_test_peripheral_polling: OK
+
+=== test_emulation_test_pid_signed_boundaries ===
+PID_SIGNED_BOUNDARIES cases=486 failures=0 original_branches=['0x108f2', '0x10954']
+[run_tests] test_emulation_test_pid_signed_boundaries: OK
+
+=== test_emulation_test_relay_state_machine_equivalence ===
+  [PASS] 上电放行 SYNC_2C=1 RUN=0 A/B 等价  原始={'RLY3/P0.20': '断开', 'RLY2/P0.21': '断开', 'RLY1/P0.22': '断开'} 编译={'RLY3/P0.20': '断开', 'RLY2/P0.21': '断开', 'RLY1/P0.22': '断开'}
+  [PASS] 上电放行 SYNC_2C=1 RUN=0 符合上电预期  预期={'RLY3/P0.20': '断开', 'RLY2/P0.21': '断开', 'RLY1/P0.22': '断开'} 原始={'RLY3/P0.20': '断开', 'RLY2/P0.21': '断开', 'RLY1/P0.22': '断开'} 编译={'RLY3/P0.20': '断开', 'RLY2/P0.21': '断开', 'RLY1/P0.22': '断开'}
+  [PASS] 锁机     SYNC_2C=0 RUN=0 A/B 等价  原始={'RLY3/P0.20': '吸合', 'RLY2/P0.21': '吸合', 'RLY1/P0.22': '吸合'} 编译={'RLY3/P0.20': '吸合', 'RLY2/P0.21': '吸合', 'RLY1/P0.22': '吸合'}
+  [PASS] 锁机     SYNC_2C=0 RUN=0 符合上电预期  预期={'RLY3/P0.20': '吸合', 'RLY2/P0.21': '吸合', 'RLY1/P0.22': '吸合'} 原始={'RLY3/P0.20': '吸合', 'RLY2/P0.21': '吸合', 'RLY1/P0.22': '吸合'} 编译={'RLY3/P0.20': '吸合', 'RLY2/P0.21': '吸合', 'RLY1/P0.22': '吸合'}
+  [PASS] 运行态   SYNC_2C=1 RUN=1 A/B 等价  原始={'RLY3/P0.20': '断开', 'RLY2/P0.21': '断开', 'RLY1/P0.22': '吸合'} 编译={'RLY3/P0.20': '断开', 'RLY2/P0.21': '断开', 'RLY1/P0.22': '吸合'}
+  [PASS] 运行态   SYNC_2C=1 RUN=1 符合上电预期  预期={'RLY3/P0.20': '断开', 'RLY2/P0.21': '断开', 'RLY1/P0.22': '吸合'} 原始={'RLY3/P0.20': '断开', 'RLY2/P0.21': '断开', 'RLY1/P0.22': '吸合'} 编译={'RLY3/P0.20': '断开', 'RLY2/P0.21': '断开', 'RLY1/P0.22': '吸合'}
+
+  通过 6/6
+[run_tests] test_emulation_test_relay_state_machine_equivalence: OK
+
+=== test_emulation_test_reset_initialization_contract ===
+RESET_INITIALIZATION pattern=0x55 data=8508 BSS=2060 original_instructions=206 PASS
+RESET_INITIALIZATION pattern=0xaa data=8508 BSS=2060 original_instructions=206 PASS
+[run_tests] test_emulation_test_reset_initialization_contract: OK
+
+=== test_emulation_test_state_machine_call_trace_equivalence ===
+  [PASS] 状态机关键子调用轨迹 100/100
+[run_tests] test_emulation_test_state_machine_call_trace_equivalence: OK
+
+=== test_emulation_test_state_machine_multitick_matrix_equivalence ===
+  [PASS] 状态机跨拍组合矩阵 222/222
+[run_tests] test_emulation_test_state_machine_multitick_matrix_equivalence: OK
+
+=== test_emulation_test_sync_phase_contract ===
+SYNC_PHASE_CONTRACT cases=4416 phase-byte+state/frequency/scale bounds + 2x70-event loss/recovery PASS
+[run_tests] test_emulation_test_sync_phase_contract: OK
+
+=== test_emulation_test_terminal_event_contract ===
+PC6M-10 SCAN_RUN_STOP 1176 mismatches 0 examples []
+PC6M-10 DEBOUNCE 88 mismatches 0
+[run_tests] test_emulation_test_terminal_event_contract: OK
+
+=== test_emulation_test_timer1_byte_domain ===
+TIMER1_BYTE_DOMAIN cases=2304 full-scan-byte+frequency/mode/counter-bounds+STR-trace PASS
+[run_tests] test_emulation_test_timer1_byte_domain: OK
+
+=== test_emulation_test_uart_rx_sequence_equivalence ===
+  [PASS] 空闲态首字节后进入接收态  state=010001
+  [PASS] 接收态连续8字节  state=01000b
+  [PASS] 非接收态不改变缓冲区  state=050b17
+  [PASS] 索引254跨越255并回绕  state=010001
+  [PASS] 索引255单步回绕到0  state=010000
+
+  通过 5/5
+[run_tests] test_emulation_test_uart_rx_sequence_equivalence: OK
+
+=== test_emulation_test_uart_wire_chain ===
+UART_WIRE_CHAIN 5 frames invalid/CRC/write/wrong-slave/read real-TX+THRE PASS
+[run_tests] test_emulation_test_uart_wire_chain: OK
+
+=== test_emulation_test_unresolved_exceptions_rejected ===
+UNRESOLVED_EXCEPTIONS_REJECTED original/ELF same-UcError both rejected PASS
+[run_tests] test_emulation_test_unresolved_exceptions_rejected: OK
+
+=== test_static_test_crc16_tables_and_semantics ===
+=== 1. CRC 表与原始 bin 逐字节一致（S9 修复验证）===
+  [PASS] bin 表 == 标准 Modbus CRC16(0xA001) 高字节表
+  [PASS] bin 表 == 标准 Modbus CRC16(0xA001) 低字节表
+=== 2. crc16 长度语义（处理全部 len 字节 = 标准）===
+  [PASS] 参考算法处理9节 → 0x4B37  got 0x4B37
+  [PASS] 固件crc16(len=9)处理9节 → ==0x4B37  got 0x4B37
+  [PASS] 固件crc16 == 参考算法（长度 1..9 全部等价）
+=== 3. 真实 Modbus 读请求帧（站1 func03 reg0 cnt1 6节）===
+  [PASS] 参考算法处理帧体6节
+  [PASS] 固件crc16(帧,6)==参考(覆盖全部6节)
+  [PASS] 帧末CRC高/低字节序(先低后高)
+
+  通过 8 / 8
+[run_tests] test_static_test_crc16_tables_and_semantics: OK
+
+=== test_static_test_modbus_register_map ===
+read 描述 63 项 | write 描述 62 项 | 语义映射 503 符号
+  读/写共有 reg: 62
+  [PASS] INV1 可写 reg 的读/写均有语义地址
+  [PASS] INV2 读/写位宽一致
+  [PASS] read 表覆盖 0x00-0x3E
+  [PASS] write 表覆盖 0x00-0x3D
+  [PASS] read-only reg（不能写）1 个  ['0x3e']
+  [PASS] write-only reg（读不返回）0 个  []
+
+  通过 6/6
+[run_tests] test_static_test_modbus_register_map: OK
+
+=== test_static_test_parameter_sync_structure ===
+提取参数元组: 61 条（16位 k | 8位 35）
+  [PASS] INV1 所有 live/shadow 符号存在于语义映射
+  [PASS] INV2 EEPROM reg 地址无冲突
+  [PASS] INV3 live≠shadow 全部触发写（87 个）
+  [PASS] INV3 live==shadow 时绝不写
+  [PASS] INV4 16 位写高字节=live>>8
+  [PASS] INV4 16 位写低字节=live&0xff
+
+  通过 6/6
+[run_tests] test_static_test_parameter_sync_structure: OK
+
+=== test_static_test_readability_contract ===
+  [PASS] 活动源码不含反编译变量命名
+  [PASS] 构建入口不依赖 globals.c / globals.h / globals.o
+  [PASS] 旧集中式全局文件和对象不存在
+  [PASS] 显示文本地址、输入 GPIO 掩码和页面辅助函数已语义化
+  [PASS] 共用编译警告配置和活动源码格式检查通过
+[run_tests] test_static_test_readability_contract: OK
+
+[run_tests] 模块通过 54/54

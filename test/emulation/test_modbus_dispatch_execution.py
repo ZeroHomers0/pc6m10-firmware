@@ -69,7 +69,7 @@ def run_frame(load_fn, dispatch_addr, tx_addr, frame, slave=0x01, gain_sel=0x56)
     e.mem_write(SLAVE_ADDR, bytes([slave]))
     e.mem_write(0x10001634, bytes([gain_sel]))
     e.reg_write(UC_ARM_REG_LR, 0xFF000000)
-    e.emu_start(dispatch_addr | 1, 0xFF000000)
+    e.emu_start(dispatch_addr | 1, 0xFF000000, count=2_000_000)
     assert e.reg_read(UC_ARM_REG_PC) == 0xFF000000, '通信分发未正常返回'
     n = tx_count[0] if tx_count else -1
     txb = bytes(e.mem_read(TXBUF, max(n, 0)))
@@ -80,7 +80,7 @@ def run_outcome(load_fn, dispatch_addr, tx_addr, frame, slave=0x01, gain_sel=0x5
     try:
         return ("OK",) + run_frame(load_fn, dispatch_addr, tx_addr, frame, slave, gain_sel)
     except UcError as ex:
-        return ("UC_ERR", ex.errno)
+        raise AssertionError(f'通信执行发生未解释的模拟异常，禁止将双方异常判为等价：{ex.errno}') from ex
 
 # 原始固件固定地址（编译固件从 map 解析）
 ORIG_DISPATCH = 0xB642
