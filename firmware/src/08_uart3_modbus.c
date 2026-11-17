@@ -88,9 +88,10 @@ static void uart3_write_baud_divisor(uint32_t divisor)
   UART3->DLL = (uint8_t)divisor;
 }
 
-/* 0x0000AC24 —— UART3 初始化：波特率重算 + 8N1 + 使能 TX/RX
- *   0x1000B01C=数据位(0/1/2/3→LCR 0x87/8B/9B/83 含 DLAB)；
- *   0x1000B024=波特率索引(0..7)→查表 0x1000B028 得系数，分频=PCLK/(波特率×系数/1000) */
+/* 0x0000AC24 —— UART3 初始化：波特率重算 + 8 数据位 + 使能 TX/RX
+ *   0x10001704=帧格式(0=8N1 / 1=8O1 / 2=8E1 / 3=8N1；LCR 依次 0x87/0x8B/0x9B/0x83，
+ *   低两位恒为 11 即恒 8 数据位，差别只在 bit3/bit4 的校验位，均含 DLAB)；
+ *   0x10001700=波特率索引(0..7)→查表 0x100017BC 得系数，分频=PCLK/(波特率×系数/1000) */
 void uart3_init(uint32_t divisor)
 {
   fio_set_direction(FIO1, 0x20000000);
@@ -132,7 +133,7 @@ void uart3_init(uint32_t divisor)
 }
 
 /* 0x0000AE0C —— UART3 发送 1 字节（U3THR 写 + 等 THRE 位）
- *   0x1000B030=发送状态、0x1000B038=发送长度、0x1000B03C=发送缓冲 */
+ *   0x10001790=发送状态、0x10001793=发送长度、0x1000236C=发送缓冲 */
 void uart3_tx_byte(uint8_t tx_byte)
 {
   fio_set(FIO1, 0x20000000);
@@ -146,9 +147,9 @@ void uart3_tx_byte(uint8_t tx_byte)
 }
 
 /* 0x0000AE50 —— 接收超时监控（主循环每 tick 调）：
- *   0x1000B040=接收进行标志、0x1000B044=接收空闲计数（>0x7530 置 0x1000B048|0x8000 帧超时）、
- *   0x1000B04C=全局 tick 计数（>300 重新 uart3_init 防锁死）、
- *   0x1000B030=1 发送中：计数>10 → 状态=5、关 THRE 中断 */
+ *   0x10001705=接收进行标志、0x1000178C=接收空闲计数（>0x7530 置 0x10001624|0x8000 帧超时）、
+ *   0x100017B8=全局 tick 计数（>300 重新 uart3_init 防锁死）、
+ *   0x10001790=1 发送中：计数(0x10001791)>10 → 状态=5、关 THRE 中断 */
 void uart3_rx_timeout_monitor(void)
 {
   volatile uint32_t *rx_gap_cnt;
@@ -181,8 +182,8 @@ void uart3_rx_timeout_monitor(void)
 
 /* 0x0000AF08 —— UART3 中断：IIR 判因
  *   因=4（RX 数据可用）→ 子例程 0xAED0（接收组帧，未识别为函数，逐字节存入
- *     0x1000B054 缓冲，并置 0x1000B040=1 接收进行；长度满/收完置标志）
- *   因=2（THRE）→ 从 0x1000B03C 缓冲取下一字节发送，发完关 THRE 中断 */
+ *     0x10001792 索引 + 0x100022A4 缓冲，并置 0x10001790=1 接收进行；长度满/收完置标志）
+ *   因=2（THRE）→ 从 0x1000236C 缓冲取下一字节发送，发完关 THRE 中断 */
 void UART3_IRQHandler(void)
 {
   volatile uint8_t *tx_idx;
@@ -234,10 +235,11 @@ uint16_t crc16(uint8_t *data,uint16_t len)
 }
 
 /* 0x0000AF94 —— Modbus 读保持寄存器（reg_addr=寄存器号 & 0xFFF）
- *   0x1000B064=寄存器号、0x1000B068=控制方式组选择(1..4)，
- *   组基址表：组1→0x1000B06C/0x1000B074、组2→0x1000B07C/0x1000B080、
- *   组3→0x1000B084/0x1000B088、组4→0x1000B08C/0x1000B090；
- *   reg 0x00-0x3F 映射 0x1000B4B8..0x1000B590（0x1A-0x1F/0x24-0x25 等保留返回 0） */
+ *   0x100017A8=寄存器号、0x10001710=控制方式组选择(1..4)，
+ *   组基址：组1→0x10001711/0x10001712、组2→0x10001713/0x10001714、
+ *   组3→0x10001715/0x10001716、组4→0x10001717/0x10001718；
+ *   reg 0x00-0x3E 用 tbb 跳表（原 0x00B09A 起 63 项字节表）分派到 63 个代码块，
+ *   每块写自己的目标地址（0x1A-0x1F/0x24-0x25 等保留项恒写 0） */
 enum {
   MODBUS_READ_REGISTER_COUNT = 0x3F,
   MODBUS_WRITE_REGISTER_COUNT = 0x3E
@@ -341,8 +343,10 @@ uint32_t modbus_read_reg(uint32_t *out_val,uint32_t reg_addr)
     *parameter_active_gain_b_ptr = *profile->gain_b;
   }
 
-  if (register_index < MODBUS_READ_REGISTER_COUNT) {
-    const ModbusRegisterDescriptor *descriptor = &modbus_read_register_table[register_index];
+  if ((uint8_t)register_index < MODBUS_READ_REGISTER_COUNT) {
+    /* BIN 0xB004 `ldrb r4,[0x100017A8]`：原机按低 8 位查表，此处同样截断后再索引 */
+    const ModbusRegisterDescriptor *descriptor =
+        &modbus_read_register_table[(uint8_t)register_index];
     if (descriptor->address == 0) {
       *out_val = 0;
     } else {
@@ -353,8 +357,8 @@ uint32_t modbus_read_reg(uint32_t *out_val,uint32_t reg_addr)
 }
 
 /* 0x0000B2E0 —— Modbus 写保持寄存器（src_val=数据指针、reg_addr=寄存器号）
- *   0x1000B594=寄存器号；0x1A-0x1F/0x24-0x25/0x2B-0x2F/0x40-0x42 等映射到
- *   0x1000B5A0（保留/汇总区），0x2B-0x3D 段写 0x1000B984..0x1000B9C4 */
+ *   0x100017A8=寄存器号；0x1A-0x1F/0x24-0x25/0x28-0x2D 映射到 0x100017AC（保留/汇总区），
+ *   0x2E-0x3D 十六项用 trampoline（0xB984..0xB9C4）各写自己的目标地址 */
 static const ModbusRegisterDescriptor modbus_write_register_table[MODBUS_WRITE_REGISTER_COUNT] = {
   /* 参数区 0x00-0x19 */
   [0x00] = { parameter_control_mode_ptr, PARAMETER_STORAGE_BYTE },
@@ -438,8 +442,10 @@ uint32_t modbus_write_multi(uint32_t *src_val,uint32_t reg_addr)
   uint32_t register_index = reg_addr & 0xFFF;
 
   *modbus_register_index_ptr = register_index;
-  if (register_index < MODBUS_WRITE_REGISTER_COUNT) {
-    const ModbusRegisterDescriptor *descriptor = &modbus_write_register_table[register_index];
+  if ((uint8_t)register_index < MODBUS_WRITE_REGISTER_COUNT) {
+    /* BIN 0xB2F0 `ldrb r4,[0x100017A8]`：原机按低 8 位查表，此处同样截断后再索引 */
+    const ModbusRegisterDescriptor *descriptor =
+        &modbus_write_register_table[(uint8_t)register_index];
     modbus_write_descriptor(descriptor, src_val);
   }
   return 0;

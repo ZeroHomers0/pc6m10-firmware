@@ -56,12 +56,12 @@ typedef struct {
     volatile uint32_t USB_CLOCK_CONFIGURATION; /* +0x108 */
     volatile uint32_t CLOCK_SOURCE_SELECT;  /* +0x10C */
     volatile uint8_t RESERVED3[0x90];
-    volatile uint32_t PLL1_LOCK_CONTROL;    /* +0x1A0 */
+    volatile uint32_t SYSTEM_CONTROL_AND_STATUS; /* +0x1A0：bit5=OSCEN 使能主晶振、bit6=OSCSTAT 起振完成 */
     volatile uint8_t RESERVED4[0x04];
     volatile uint32_t PERIPHERAL_CLOCK_SELECT0; /* +0x1A8 */
     volatile uint32_t PERIPHERAL_CLOCK_SELECT1; /* +0x1AC */
     volatile uint8_t RESERVED5[0x18];
-    volatile uint32_t PERIPHERAL_CLOCK_SELECT1_ALIAS; /* +0x1C8, original map */
+    volatile uint32_t CLOCK_OUTPUT_CONFIG;  /* +0x1C8：原机启动末尾写 0，关闭 CLKOUT */
 } LPC_CLOCK_CONTROL_TypeDef;
 
 typedef struct {

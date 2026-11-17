@@ -15,9 +15,9 @@
  *   触发角：180°(0xB4) - 当前角；周期基量 TRIG_PERIOD、角度系数 ANGLE_SCALE(6333)/100
  *   软起/软停斜坡（状态机 0x1000EE24/0x1000F268/0x1000F780：0=停、4=运行、5=稳定）
  *   闭环：closed_loop_wrapper(PID) 计算输出角；上下限钳位 0x1000F2C8/0x1000F2D0
- *   保护：过压(0x1000EDE4..) / 过流(0x1000EDF8..) / 缺相(0x1000EE04..)，
+ *   保护：过压(0x1000EDE4..) / 欠压(0x1000EDF8..) / 缺相(0x1000EE04..)，
  *   故障标志 0x1000EDF4（只置不清锁存，需断电复位；2026-08-21 反编译确证）：
- *     bit4=过压、bit5=过流、bit3=缺相(判据×0.15/1.5/2 且延时×50/20/10)、
+ *     bit4=过压、bit5=欠压、bit3=缺相(判据×0.15/1.5/2 且延时×50/20/10)、
  *     bit9=缺相严重级(判据×2.5/3/3.5 且延时×5/2/1)
  *   停机斜坡（cfg_word=0 且联锁非 0 时）：0x1000FBB0/6C/70 逐拍降频
  * 导出：2026-08-21（L0 语义化：局部 GPIO、定时器和电平变量均已按实际角色命名、
@@ -250,7 +250,7 @@ static void output_check_undervoltage(void)
         *output_undervoltage_counter_ptr = *output_undervoltage_counter_ptr + 1;
         if ((uint32_t)*parameter_undervoltage_time_ptr * 0x32 < *output_undervoltage_counter_ptr) {
           *output_undervoltage_counter_ptr = 0;
-          *output_fault_flags_ptr = *output_fault_flags_ptr | 0x20;      /* 过流故障标志 */
+          *output_fault_flags_ptr = *output_fault_flags_ptr | 0x20;      /* 欠压故障标志 */
         }
       }
 }
@@ -319,7 +319,7 @@ void output_stage(void)
     if ((*parameter_output_mode_ptr == '\x01') && (9 < *adc_output_reference_ptr)) {
       /* —— 过压保护（0x1000EDE4 阈值 / 0x1000EDE8 延时上限）—— */
       output_check_overvoltage();
-      /* —— 过流保护（0x1000EDF8 阈值）—— */
+      /* —— 欠压保护（0x1000EDF8 阈值）—— */
       output_check_undervoltage();
       /* —— 缺相/不平衡保护（0x1000EE04 判据，多级延时）—— */
       output_check_phase_imbalance();

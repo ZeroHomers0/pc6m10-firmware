@@ -68,7 +68,7 @@ void wd_feed(void)
 
 /* ==================== 系统节拍定时器 TIMER0 ==================== */
 
-/* 0x00000248 —— TIMER0 初始化：MR0=1999（节拍周期），匹配中断 IRQ0 */
+/* 0x00000248 —— TIMER0 初始化：MR0=1999（节拍周期），匹配中断 IRQ1 */
 void timer0_init(void)
 {
   SYSTEM_CONTROL->power_control = *system_pconp | 2;  /* PCONP |= 2：TIMER0 上电 */
@@ -105,16 +105,17 @@ void TIMER0_IRQHandler(void)
 
 /* ==================== 芯片时钟/电源初始化 ==================== */
 
-/* 0x00000440 —— 系统初始化：内部 RC → PLL0/PLL1 → 外设时钟树
+/* 0x00000440 —— 系统初始化：使能主晶振 → PLL0/PLL1 → 外设时钟树
  * 时钟/电源寄存器块 0x400FC000（SCB 区，对照语义地址映射）：
  *   所有 PLL、PCLK 和 PCONP 寄存器均通过 firmware_state.h 的语义化地址访问。
+ * 开头 SCS=0x20（OSCEN）并轮询 OSCSTAT(bit6) 等主晶振起振（原 BIN 0x440-0x450）。
  * PLL 配置要点：改 PLLxCON 后须向 PLLxFEED 写 0xAA→0x55 序列锁存；随后
  *   do{}while 轮询 PLLxSTAT 位直到锁相完成。pll_feed 即 PLL0FEED 寄存器指针。 */
 void SystemInit(void)
 {
-  CLOCK_CONTROL->PLL1_LOCK_CONTROL = 0x20;
+  CLOCK_CONTROL->SYSTEM_CONTROL_AND_STATUS = 0x20;
   do {
-  } while ((CLOCK_CONTROL->PLL1_LOCK_CONTROL & 0x40) == 0);
+  } while ((CLOCK_CONTROL->SYSTEM_CONTROL_AND_STATUS & 0x40) == 0);
   CLOCK_CONTROL->CLOCK_CONFIGURATION = 3;
   CLOCK_CONTROL->CLOCK_SOURCE_SELECT = 1;
   CLOCK_CONTROL->PLL0_CONFIG = system_pll0_config_value;
@@ -146,7 +147,7 @@ void SystemInit(void)
   CLOCK_CONTROL->PERIPHERAL_CLOCK_SELECT0 = 0;
   CLOCK_CONTROL->PERIPHERAL_CLOCK_SELECT1 = 0;
   SYSTEM_CONTROL->power_control = system_pconp_default;
-  CLOCK_CONTROL->PERIPHERAL_CLOCK_SELECT1_ALIAS = 0;
+  CLOCK_CONTROL->CLOCK_OUTPUT_CONFIG = 0;
   CLOCK_CONTROL->SYSTEM_CONTROL_REGISTER = 0x303a;
   return;
 }

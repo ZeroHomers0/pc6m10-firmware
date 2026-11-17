@@ -385,16 +385,17 @@ uint32_t chk_p02_p03(void)
   return result;
 }
 
-/* 0x000010F8C —— P0 输入初始化（P0.2/3/28/27 等置输入，配合 read_input_p02） */
+/* 0x000010F8C —— P0 输入初始化（P0.2/P0.28/P0.27；P0.3 见 gpio_inputs_dir_init） */
 void gpio0_input_init(void)
 {
-  FIO0->DIR = FIO0->DIR & ~INPUT_P02_FIO0_MASK;                  /* P0.3 输入 */
+  FIO0->DIR = FIO0->DIR & ~INPUT_P02_FIO0_MASK;                  /* P0.2 输入 */
   FIO0->DIR = FIO0->DIR & ~INPUT_RUN_FIO0_MASK;               /* P0.28 输入 */
   FIO0->DIR = FIO0->DIR & ~INPUT_STOP_FIO0_MASK;               /* P0.27 输入 */
   return;
 }
 
-/* 0x000010FAE —— 读 P0.2 状态到 0x100010FD0（RUN/STOP 模式选择读取） */
+/* 0x000010FAE —— 读 P0.2 状态到 0x10002138（RUN/STOP 模式选择读取；该字节同时是
+ * system_auth_enabled，上电为高即旁路开机认证，属原厂设计） */
 uint32_t read_input_p02(void)
 {
   if ((FIO0->PIN & 4) == 0) {
