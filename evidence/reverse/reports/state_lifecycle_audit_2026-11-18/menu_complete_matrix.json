@@ -1,0 +1,10 @@
+{
+  "project": "PC6M-10",
+  "cases": 14688,
+  "nonempty_display_cases": 7096,
+  "password_delay_cases": 272,
+  "failures": [],
+  "original_sha256": "dd629eac0243a13cecc826b1fc2b4b54066f7647d8c1d09a62d5caf7b4f13f65",
+  "firmware_sha256": "3a5c87633f7bc2a5d96007efe7a6a62e31ed236a806b793e79d3852f6d458580",
+  "script_sha256": "2c9c2df0bb02088b81d6bb1615f9b63c86a36f487f8670042d239b30eeb83dbd"
+}

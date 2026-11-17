@@ -1,0 +1,7 @@
+{
+  "project": "PC6M-10",
+  "cases": 1272,
+  "status": "PASS",
+  "BCS_branches_both": 40,
+  "source_selector": "0x10002024"
+}

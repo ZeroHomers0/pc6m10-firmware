@@ -1,0 +1,7 @@
+{
+  "project": "PC6M-10",
+  "runtime_cases": 100,
+  "phase_recovery_cases": 320,
+  "mode_switch_frames": 1248,
+  "status": "PASS"
+}

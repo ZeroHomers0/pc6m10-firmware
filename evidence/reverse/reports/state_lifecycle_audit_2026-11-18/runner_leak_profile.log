@@ -1,0 +1,20 @@
+         43377413 function calls (43377412 primitive calls) in 12.146 seconds
+
+   Ordered by: cumulative time
+   List reduced from 179 to 12 due to restriction <12>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.001    0.001   12.146   12.146 D:\code\LPC1765FBD100\PC6M-10\test/emulation\test_state_lifecycle_contract.py:41(lifecycle)
+      266    0.001    0.000   12.132    0.046 D:\code\LPC1765FBD100\PC6M-10\test\support\software_ab_support.py:31(call)
+      266    0.001    0.000   12.127    0.046 D:\code\LPC1765FBD100\PC6M-10\tools\verification\verify_firmware_equivalence.py:62(run)
+      266    4.629    0.017   12.112    0.046 D:\software\Python\Python313\Lib\site-packages\unicorn\unicorn_py3\unicorn.py:748(emu_start)
+ 14335639    3.967    0.000    7.483    0.000 D:\software\Python\Python313\Lib\site-packages\unicorn\unicorn_py3\unicorn.py:360(wrapper)
+ 14335639    2.447    0.000    3.516    0.000 D:\software\Python\Python313\Lib\site-packages\unicorn\unicorn_py3\unicorn.py:1061(__hook_code_cb)
+ 14016265    0.835    0.000    0.836    0.000 D:\code\LPC1765FBD100\PC6M-10\tools\verification\verify_firmware_equivalence.py:63(stop_at_return)
+   106458    0.054    0.000    0.175    0.000 D:\code\LPC1765FBD100\PC6M-10\test\support\mmio_code_trace.py:20(code)
+     9476    0.012    0.000    0.082    0.000 D:\code\LPC1765FBD100\PC6M-10\test\support\mmio_code_trace.py:16(reg)
+    10038    0.008    0.000    0.048    0.000 D:\software\Python\Python313\Lib\site-packages\unicorn\unicorn_py3\unicorn.py:507(reg_read)
+   106458    0.023    0.000    0.039    0.000 D:\code\LPC1765FBD100\PC6M-10\test\support\software_ab_support.py:62(hook)
+    10038    0.010    0.000    0.026    0.000 D:\software\Python\Python313\Lib\site-packages\unicorn\unicorn_py3\unicorn.py:436(_reg_read)
+
+

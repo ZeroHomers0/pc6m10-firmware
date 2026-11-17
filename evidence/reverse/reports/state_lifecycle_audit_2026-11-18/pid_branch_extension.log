@@ -1,0 +1,2 @@
+PID_RANGE_TABLE_CONTRACT cases=1272 original_BCS_both_outcomes=40/40 all_range_thresholds+source_selection+wrapper_wrap PASS
+PID_BRANCH_EXTENSION {'candidate_branches': 1931, 'both': 1575, 'one': 295, 'unhit': 61} => {'candidate_branches': 1931, 'both': 1592, 'one': 278, 'unhit': 61} matrix_exit 0
