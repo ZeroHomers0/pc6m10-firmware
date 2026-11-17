@@ -1,0 +1,193 @@
+diff --git a/firmware/src/07_state_machine.c b/firmware/src/07_state_machine.c
+index 7f29bd2..b3b80b2 100644
+--- a/firmware/src/07_state_machine.c
++++ b/firmware/src/07_state_machine.c
+@@ -62,7 +62,7 @@ static void draw_basic_parameter_item(uint32_t item_index, uint32_t row, uint32_
+       break;
+     case 6: disp_uint4(*parameter_soft_start_time_ptr, row, 0xb, attr); break;
+     case 7: disp_uint4(*parameter_soft_stop_time_ptr, row, 0xb, attr); break;
+-    case 8: disp_number3(*parameter_phase_limit_ptr, row, 0xb, attr); break;
++    case 8: disp_number3((uint8_t)*parameter_phase_limit_ptr, row, 0xb, attr); break; /* BIN 0x7752/0x7762 LDRB */
+     case 9: disp_signed_angle(*parameter_master_slave_offset_ptr, row, 0xb, attr); break;
+     case 10:
+       if (*parameter_control_method_ptr == 0) disp_string(DISPLAY_START_MODE_OPTION_1, row, 0xb, attr);
+@@ -86,7 +86,7 @@ static void draw_basic_parameter_item(uint32_t item_index, uint32_t row, uint32_
+       if (*parameter_input_mode_ptr == 0) disp_string(DISPLAY_INPUT_MODE_ANALOG, row, 0xb, attr);
+       else disp_string(DISPLAY_INPUT_MODE_DIGITAL, row, 0xb, attr);
+       break;
+-    case 15: disp_number3(*parameter_start_phase_ptr, row, 0xb, attr); break;
++    case 15: disp_number3((uint8_t)*parameter_start_phase_ptr, row, 0xb, attr); break; /* BIN 0x7A16/0x7A26 LDRB */
+   }
+ }
+ 
+@@ -531,7 +531,7 @@ static void state_machine_page_calibration_menu(KeyCode key_code)
+     (*ui_idle_refresh_ticks_ptr)++;
+     if (*ui_idle_refresh_ticks_ptr >= 0x1f4) {
+       *ui_idle_refresh_ticks_ptr = 0; (*ui_calibration_timeout_ticks_ptr)--;
+-      disp_number3(*ui_calibration_timeout_ticks_ptr, 3, 6, 0);
++      disp_number3((uint8_t)*ui_calibration_timeout_ticks_ptr, 3, 6, 0); /* BIN 0x554E LDRB */
+       if (*ui_calibration_timeout_ticks_ptr == 0) { *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return; }
+     }
+     return;
+@@ -562,7 +562,7 @@ static void state_machine_page_calibration_active(KeyCode key_code)
+     (*ui_idle_refresh_ticks_ptr)++;
+     if (*ui_idle_refresh_ticks_ptr >= 0x1f4) {
+       *ui_idle_refresh_ticks_ptr = 0; (*ui_calibration_timeout_ticks_ptr)--;
+-      disp_number3(*ui_calibration_timeout_ticks_ptr, 3, 6, 0);
++      disp_number3((uint8_t)*ui_calibration_timeout_ticks_ptr, 3, 6, 0); /* BIN 0x5724 LDRB */
+       if (*ui_calibration_timeout_ticks_ptr == 0) { *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return; }
+     }
+     return;
+@@ -666,7 +666,7 @@ static void state_machine_page_calibration_result(KeyCode key_code)
+         if (*parameter_output_phase_ptr == 0) disp_string(DISPLAY_OUTPUT_PHASE_A, 1, 0xb, (*ui_item_index_ptr == 9) ? 1 : 0);
+         else disp_string(DISPLAY_OUTPUT_PHASE_B, 1, 0xb, (*ui_item_index_ptr == 9) ? 1 : 0);
+         /* item0xa=起始相位 row2（8 位装入） */
+-        disp_number3(*parameter_start_phase_ptr, 2, 0xb, (*ui_item_index_ptr == 0xa) ? 1 : 0);
++        disp_number3((uint8_t)*parameter_start_phase_ptr, 2, 0xb, (*ui_item_index_ptr == 0xa) ? 1 : 0); /* BIN 0x5F58/0x5F68 LDRB */
+       }
+     }
+     /* ui_statistics_timeout_ticks_ptr 超 0x1F4 → 回绕为 0；编辑态按 ui_item_index_ptr 用空格串擦除当前项值列
+diff --git a/firmware/src/12_closed_loop.c b/firmware/src/12_closed_loop.c
+index a28c645..87cd579 100644
+--- a/firmware/src/12_closed_loop.c
++++ b/firmware/src/12_closed_loop.c
+@@ -51,28 +51,30 @@ int closed_loop_integral(int setpoint,int feedback,uint32_t coef_a,uint32_t coef
+   *pid_error_previous_term_ptr = *pid_error_current_ptr;           /* 上次误差滚动 */
+   *pid_error_current_ptr = *pid_setpoint_ptr - *pid_feedback_ptr;   /* 当前误差 */
+   p_pid = pid_error_absolute;                    /* p_pid → 误差值寄存器 0x10002118 */
+-  if (*pid_feedback_ptr <= *pid_setpoint_ptr) {
++  /* 原 BIN 0x108F2/0x10954 使用 BLT/BGE：给定/反馈及死区比较均为有符号；
++   * 差值仍用 uint32_t 运算保留原机 32 位回绕。 */
++  if ((int32_t)*pid_feedback_ptr <= (int32_t)*pid_setpoint_ptr) {
+     *pid_error_absolute = *pid_setpoint_ptr - *pid_feedback_ptr; /* 误差（正值路径） */
+-    if ((int)(uint32_t)*closed_loop_threshold_upper_ptr <= *p_pid) {     /* 误差 ≥ 死区上界 */
++    if ((int32_t)*closed_loop_threshold_upper_ptr <= (int32_t)*p_pid) {     /* 误差 ≥ 死区上界 */
+       *pid_selected_gain_ptr = (uint32_t)*closed_loop_gain_high_ptr;
+     }
+-    if ((*pid_error_absolute < (int)(uint32_t)*closed_loop_threshold_upper_ptr) && ((int)(uint32_t)*closed_loop_threshold_lower_ptr < *pid_error_absolute)) {
++    if (((int32_t)*pid_error_absolute < (int32_t)*closed_loop_threshold_upper_ptr) && ((int32_t)*closed_loop_threshold_lower_ptr < (int32_t)*pid_error_absolute)) {
+       *pid_selected_gain_ptr = (uint32_t)*closed_loop_gain_mid_ptr;         /* 死区上界内 */
+     }
+-    if (*pid_error_absolute <= (int)(uint32_t)*closed_loop_threshold_lower_ptr) {
++    if ((int32_t)*pid_error_absolute <= (int32_t)*closed_loop_threshold_lower_ptr) {
+       *pid_selected_gain_ptr = (uint32_t)*closed_loop_gain_low_ptr;         /* 误差 ≤ 死区下界 */
+     }
+   }
+   p_pid = pid_error_absolute;                    /* p_pid → 误差值寄存器（负值路径） */
+-  if (*pid_setpoint_ptr < *pid_feedback_ptr) {
++  if ((int32_t)*pid_setpoint_ptr < (int32_t)*pid_feedback_ptr) {
+     *pid_error_absolute = *pid_feedback_ptr - *pid_setpoint_ptr; /* 误差（负值路径，绝对值） */
+-    if ((int)(uint32_t)*closed_loop_threshold_upper_ptr <= *p_pid) {
++    if ((int32_t)*closed_loop_threshold_upper_ptr <= (int32_t)*p_pid) {
+       *pid_selected_gain_ptr = (uint32_t)*closed_loop_gain_high_ptr;
+     }
+-    if ((*pid_error_absolute < (int)(uint32_t)*closed_loop_threshold_upper_ptr) && ((int)(uint32_t)*closed_loop_threshold_lower_ptr < *pid_error_absolute)) {
++    if (((int32_t)*pid_error_absolute < (int32_t)*closed_loop_threshold_upper_ptr) && ((int32_t)*closed_loop_threshold_lower_ptr < (int32_t)*pid_error_absolute)) {
+       *pid_selected_gain_ptr = (uint32_t)*closed_loop_gain_mid_ptr;
+     }
+-    if (*pid_error_absolute <= (int)(uint32_t)*closed_loop_threshold_lower_ptr) {
++    if ((int32_t)*pid_error_absolute <= (int32_t)*closed_loop_threshold_lower_ptr) {
+       *pid_selected_gain_ptr = (uint32_t)*closed_loop_gain_low_ptr;
+     }
+   }
+diff --git a/test/emulation/test_adc_scan_sequence_equivalence.py b/test/emulation/test_adc_scan_sequence_equivalence.py
+index c1ad98a..67f50c1 100644
+--- a/test/emulation/test_adc_scan_sequence_equivalence.py
++++ b/test/emulation/test_adc_scan_sequence_equivalence.py
+@@ -44,6 +44,7 @@ def run(load_fn, scan, start, wait, samples, calls, overrides=()):
+     for _ in range(calls):
+         uc.reg_write(UC_ARM_REG_LR, RETURN)
+         uc.emu_start(scan | 1, RETURN, count=1_000_000)
++        assert uc.reg_read(UC_ARM_REG_PC) == RETURN, 'ADC 扫描未正常返回，禁止继续下一拍'
+     return (bytes(uc.mem_read(0x10000000, 0x4000)),
+             bytes(uc.mem_read(ADC, 0x40)), cursor[0])
+ 
+diff --git a/test/emulation/test_eeprom_load_config_equivalence.py b/test/emulation/test_eeprom_load_config_equivalence.py
+index 82b4a72..d09c864 100644
+--- a/test/emulation/test_eeprom_load_config_equivalence.py
++++ b/test/emulation/test_eeprom_load_config_equivalence.py
+@@ -44,6 +44,7 @@ def run(load_fn, load_addr, read_addr, write_addr, eeprom):
+     uc.hook_add(UC_HOOK_CODE, write_hook, begin=write_addr, end=write_addr + 1)
+     uc.reg_write(UC_ARM_REG_LR, RETURN)
+     uc.emu_start(load_addr | 1, RETURN, count=2_000_000)
++    assert uc.reg_read(UC_ARM_REG_PC) == RETURN, '配置加载未正常返回，禁止比较中途状态'
+     return bytes(uc.mem_read(0x10000000, 0x4000)), writes
+ 
+ 
+diff --git a/test/emulation/test_eeprom_sync_matrix_equivalence.py b/test/emulation/test_eeprom_sync_matrix_equivalence.py
+index 911acd2..9931efb 100644
+--- a/test/emulation/test_eeprom_sync_matrix_equivalence.py
++++ b/test/emulation/test_eeprom_sync_matrix_equivalence.py
+@@ -36,6 +36,7 @@ def execute(load_fn, sync, write, mutations):
+     uc.hook_add(UC_HOOK_CODE, write_hook, begin=write, end=write + 1)
+     uc.reg_write(UC_ARM_REG_LR, RETURN)
+     uc.emu_start(sync | 1, RETURN, count=2_000_000)
++    assert uc.reg_read(UC_ARM_REG_PC) == RETURN, '参数同步未正常返回，禁止比较中途状态'
+     return bytes(uc.mem_read(0x10001000, 0x800)), writes
+ 
+ 
+diff --git a/test/emulation/test_modbus_dispatch_execution.py b/test/emulation/test_modbus_dispatch_execution.py
+index f41b994..dde7883 100644
+--- a/test/emulation/test_modbus_dispatch_execution.py
++++ b/test/emulation/test_modbus_dispatch_execution.py
+@@ -70,6 +70,7 @@ def run_frame(load_fn, dispatch_addr, tx_addr, frame, slave=0x01, gain_sel=0x56)
+     e.mem_write(0x10001634, bytes([gain_sel]))
+     e.reg_write(UC_ARM_REG_LR, 0xFF000000)
+     e.emu_start(dispatch_addr | 1, 0xFF000000)
++    assert e.reg_read(UC_ARM_REG_PC) == 0xFF000000, '通信分发未正常返回'
+     n = tx_count[0] if tx_count else -1
+     txb = bytes(e.mem_read(TXBUF, max(n, 0)))
+     return n, txb
+diff --git a/test/emulation/test_uart_rx_sequence_equivalence.py b/test/emulation/test_uart_rx_sequence_equivalence.py
+index 35a9fb2..1876c9e 100644
+--- a/test/emulation/test_uart_rx_sequence_equivalence.py
++++ b/test/emulation/test_uart_rx_sequence_equivalence.py
+@@ -16,7 +16,7 @@ except Exception:
+ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ sys.path.insert(0, os.path.join(ROOT, "test", "support"))
+ 
+-from unicorn.arm_const import UC_ARM_REG_LR
++from unicorn.arm_const import UC_ARM_REG_LR, UC_ARM_REG_PC
+ from unicorn_harness import load_firmware, load_original, lookup
+ 
+ ORIG = 0xAED0
+@@ -42,6 +42,7 @@ def run(load_fn, entry, initial, data):
+         uc.mem_write(UART3_RBR, bytes([value]))
+         uc.reg_write(UC_ARM_REG_LR, RETURN)
+         uc.emu_start(entry | 1, RETURN)
++        assert uc.reg_read(UC_ARM_REG_PC) == RETURN, 'UART 接收未正常返回'
+     return bytes(uc.mem_read(STATE, 3)), bytes(uc.mem_read(FRAME, 256))
+ 
+ 
+diff --git a/test/support/unicorn_harness.py b/test/support/unicorn_harness.py
+index 63c6368..164092f 100644
+--- a/test/support/unicorn_harness.py
++++ b/test/support/unicorn_harness.py
+@@ -109,6 +109,7 @@ def call(e, func_addr, args=None, ret_spec='r0'):
+             e.reg_write(regs[i], v)
+     e.reg_write(UC_ARM_REG_LR, STOP)
+     e.emu_start(func_addr | 1, STOP)
++    assert e.reg_read(UC_ARM_REG_PC) == STOP, '函数未正常返回，禁止比较中途状态'
+     if ret_spec == 'r1':
+         return e.reg_read(UC_ARM_REG_R1)
+     return e.reg_read(UC_ARM_REG_R0)
+@@ -151,6 +152,7 @@ def differential(func_orig, func_new, args, seed, region=(0x10001000, 0x10003F00
+                 e.reg_write(regs[i], v)
+         e.reg_write(UC_ARM_REG_LR, 0xFF000000)
+         e.emu_start(fn | 1, 0xFF000000)        # Cortex-M3 = Thumb；起始地址|1 进入 Thumb 真执行
++        assert e.reg_read(UC_ARM_REG_PC) == 0xFF000000, '差分函数未正常返回'
+         ret = e.reg_read(UC_ARM_REG_R0)
+         post = bytes(e.mem_read(lo, hi - lo))
+         return ret, post
+diff --git a/tools/verification/verify_firmware_equivalence.py b/tools/verification/verify_firmware_equivalence.py
+index c000f82..0b2e94d 100644
+--- a/tools/verification/verify_firmware_equivalence.py
++++ b/tools/verification/verify_firmware_equivalence.py
+@@ -450,6 +450,7 @@ def verify_relay_direct():
+                 uc.hook_add(UC_HOOK_MEM_WRITE, cb, begin=0x2009C000, end=0x2009CFFF)
+                 uc.reg_write(UC_ARM_REG_R0, level)
+                 uc.emu_start(entry | 1, 0x3FF00, count=500)
++                assert uc.reg_read(UC_ARM_REG_PC) == 0x3FF00, f'relay execution incomplete: {name}'
+                 traces.append(trace)
+             assert traces[0] == traces[1], f"relay A/B mismatch {name}(level={level})"
+     print(f"RELAY_DIRECT: PASS funcs={len(funcs)} levels=2")

@@ -44,6 +44,7 @@ def run(load_fn, scan, start, wait, samples, calls, overrides=()):
     for _ in range(calls):
         uc.reg_write(UC_ARM_REG_LR, RETURN)
         uc.emu_start(scan | 1, RETURN, count=1_000_000)
+        assert uc.reg_read(UC_ARM_REG_PC) == RETURN, 'ADC 扫描未正常返回，禁止继续下一拍'
     return (bytes(uc.mem_read(0x10000000, 0x4000)),
             bytes(uc.mem_read(ADC, 0x40)), cursor[0])
 

@@ -44,6 +44,7 @@ def run(load_fn, load_addr, read_addr, write_addr, eeprom):
     uc.hook_add(UC_HOOK_CODE, write_hook, begin=write_addr, end=write_addr + 1)
     uc.reg_write(UC_ARM_REG_LR, RETURN)
     uc.emu_start(load_addr | 1, RETURN, count=2_000_000)
+    assert uc.reg_read(UC_ARM_REG_PC) == RETURN, '配置加载未正常返回，禁止比较中途状态'
     return bytes(uc.mem_read(0x10000000, 0x4000)), writes
 
 

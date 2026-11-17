@@ -8,13 +8,13 @@
 `LPC1765.bin`（262144 B）是所有等价验证的金标准。
 
 - GCC 可编译工程：`firmware/`，Arm GNU Toolchain 14.2.Rel1。
-- 当前构建：`text 59900 / data 0 / bss 2188`（2026-11-17 寄存器命名与 Modbus 索引订正后）。
-- 当前 `firmware.bin` SHA-256：`B20C67A1994AED331C59CE096DF4903B9B3391676D10CCB051ADA94095FBA92B`（60460 B）。
+- 当前构建：`text 59908 / data 0 / bss 2188`（2026-11-17 独立复核PID符号与显示位宽修复后）。
+- 当前 `firmware.bin` SHA-256：`0D78C63565741AD9CC5B81C7F396FBF6D7B02D107D8F527DE24D07415F974E91`（60468 B）。
 - 板上已烧写镜像为上一版 `E843035C88D1B5AE52A516072F09FC551BC90720CFF23EA4EEF6623FF19022B2`（60368 B，text 59808，含闭环反馈复制修复；本次功能码修复未烧写）。
 - 自编译固件已于 2026-08-26 完成 CRP 布局修复（`0x2FC` 显式保留 `0xFFFFFFFF`，见
   `firmware/lpc1765.ld`、`firmware/startup.s`、`firmware/build.sh`）并经 J-Link SWD 烧写入板、
   全镜像校验通过；过程见 `docs/w8/W8_POST_FLASH_2026-08-26.md`。
-- 测试：静态测试 `run_tests.py` 25/25；A/B 矩阵全 PASS（TIMER1 126 / 输出级 144 /
+- 测试：全量回归 `run_tests.py` 40/40；A/B 矩阵全 PASS（TIMER1 126 / 输出级 144 /
   状态机 130 / 显示 106 + 全执行 4 / Modbus 65 读 + 320 写）。
 - **2026-09-02 实机测试通过（用户直接实机验证）**：自编译固件已烧写入板并经用户实机测试
   通过（含产品信息定制、X/O 字形修复与电话行宽修正后的最终固件）。**W8 分级实测流程
@@ -79,6 +79,8 @@
 - **2026-11-17 立即数（阈值）差分全量审计**：改用「只抽比较类指令（`cmp/cmn/tst/teq` 带条件后缀与 `.w`）立即数集合差」这一独立视角排查 87 个函数，逐函数比对先得 36/87 有差、215 条明细，过滤「`v-1`/`v+1` 在新函数体内出现」的 `>=N` 与 `>N-1` 等价改写后剩 68 条，再对 `state_machine` 做「原机单块 blob vs 新 ELF 全部 7 个 `state_machine*` 符号」整体比对。**68 条与状态机集合差全部定性为等价改写**：①原机 12 个故障位 `tst.w #16…#32768`（`0x46c2`–`0x4772`）在新 ELF 改为 `lsls` 移入 bit31 后 `bf44 itt mi` 取条件，事件码写入顺序与原机 `0x46b0–0x4780` 一致；②`>=`/`>` 改写（`input_scan_state` `0x1804 cmp #250/bcc` ≡ 新 `0x1780 cmp #249/bls`；`state_machine` `0x9ada cmp #69/bcs` ≡ 新 `0x69a2 cmp #68/itt ls`；`0x88d4 cmp #246/blt` ≡ 新 `0x6752 cmp #245/itt hi`）；③`modbus_dispatch` 22 条逐值比较改为「减下界 + 上界」（`0x840e sub #40`+`0x8412 cmp #120` 对应原机 `0xbed4 cmp #161/bcs`+`0xbedc cmp #39/bls` 的 40..160，写 `0x10001654`；`0x8626 subs #1`+`0x8628 cmp #246` 对应原机 `0xd54e cmp #248/bcs`+`0xd556 cbz` 的 1..247，写 `0x100016FF`）；④屏号 switch 由 `tbb` 降级为 `cmp #98/#99/#90` 加 `tbh`，`0x1d`/`0x1e`/`0x1f`/`0x3b` 是 `subs #1`/`#2` 后的范围检查。原机 `0x6b8c`/`0x4814`/`0x4da4` 等处的 ASCII `cmp #48..57`/`cmp #45` 是串数据区被误反汇编，不是真实阈值。结论：**未发现新的阈值或边界差异**。状态机全矩阵本轮累计 **302940 例 bad=0**（另有 201960 + 65450 例同批 bad=0）。详见 `docs/analysis/PC6M_IMMEDIATE_DIFF_AUDIT_2026-11-17.md`。仅新增文档与 `DOCUMENTATION_INDEX.md` 条目，未改业务源码、未烧写。
 
 - **2026-11-17 初始化/底层 I/O 执行级覆盖补齐**：一致性估算暴露六相官方套件有 25 个函数（2502 B）从未做过执行级 A/B（`uart3_init`/`gpio1_init`/`gpio_inputs_dir_init`/`i2c_*`/`adc_init`/`lcd_data_byte`/`SystemInit`/显示后端等）。新增 `test/emulation/test_init_trace.py`：对这些只写外设的函数用「`UC_HOOK_MEM_WRITE` 写迹（地址/宽度/值逐项）+ 10 个外设页与 FIO 末态」判定，对读写 SRAM 的 `i2c_read_reg`/`freq_adjust_sync`/`auth_retry`/显示后端改用「SRAM 末态 + 显示调用序列」。**24 个唯一原机入口 / 40 组用例全部通过**；官方覆盖缺口 **25 项 / 2502 B → 1 项 / 2 B**（`0x5CA startup_idle_hook` 空函数，新 ELF 已优化掉），函数覆盖 86/87=98.9%、字节覆盖 57480/57482=100.0%。五个 Unicorn 陷阱已固化进测试 docstring：FIO 页不能挂 MEM_WRITE 钩子（TCG 缓存会让新 ELF 函数体一条不执行）、`i2c_delay` 入口不能用体内循环地址、`SystemInit` 死等 OSCSTAT/PLL 且 MEM_WRITE 钩子早于写入生效需在 CODE 钩子补位、`long_delay` 6000×1000 双层空转需按「内层计数器在 [sp]」快进（原机 `0x5AA`/`[sp,#0]`，新 ELF `0x5A6`/`[sp,#4]`）、显示叶函数必须跳过函数体但记录调用序列。**检出能力经注入双向验证（4 次注入全部检出）**：`TIMER0->MR0` 1999→1998、`long_delay` 的 `i < 6000` → `< 5999`、`while (*auth_retry_counter_ptr < 5)` → `< 4` 均被检出。后两者各有一次漏检教训：①`long_delay` 是纯空转函数、不写任何外设或 SRAM，只改写内层计数器时两版写迹全空、末态相同，必须先把它导成伪写迹 `(0xFFFFFFF0,4,轮数)` 才能比较外层轮数；②`auth_retry` 只跑「认证成功」路径时第一轮就 counter=10 退出、循环次数恒为 1，补 `auth_response_status=1` 失败分支后才真正跑满 5 轮 —— 只跑顺利路径的函数级 A/B 等于没测。构建未变 `text 59900 / 60460 B / B20C67A1…5FBA92B`，回归 36/36、原 BIN A/B 全 PASS。本轮未发现新的行为差异。详见 `docs/analysis/PC6M_INIT_TRACE_2026-11-17.md`。
+
+- **2026-11-17 双项目独立修复复核**：近期提交未发现应撤销的业务修复；扩域又确认两仓PID给定/反馈及死区比较误用无符号（各486例旧版216失败、修复后全过），六相另修正5处相位/密码倒计时显示应读低字节（40/40）。补齐独立执行入口正常返回门禁。每仓控制/索引扩域5648例、菜单数值扩域6800例与双通道各240拍持久SRAM回放均通过；回归40/40、完整原BIN A/B、菜单/背光专项通过，两次构建BIN一致。认证放行与定制保留；未提交/推送/烧写。不把有限验证写成全部路径已穷举，实施方案S0–S7未整体关闭。详见 `docs/analysis/INDEPENDENT_REPAIR_REVIEW_2026-11-17.md`，证据在 `evidence/reverse/reports/independent_repair_review_2026-11-17/`。
 
 ## 必须遵守
 

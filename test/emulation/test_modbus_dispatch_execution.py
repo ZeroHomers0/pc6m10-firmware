@@ -70,6 +70,7 @@ def run_frame(load_fn, dispatch_addr, tx_addr, frame, slave=0x01, gain_sel=0x56)
     e.mem_write(0x10001634, bytes([gain_sel]))
     e.reg_write(UC_ARM_REG_LR, 0xFF000000)
     e.emu_start(dispatch_addr | 1, 0xFF000000)
+    assert e.reg_read(UC_ARM_REG_PC) == 0xFF000000, '通信分发未正常返回'
     n = tx_count[0] if tx_count else -1
     txb = bytes(e.mem_read(TXBUF, max(n, 0)))
     return n, txb

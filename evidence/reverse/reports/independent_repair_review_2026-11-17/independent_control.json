@@ -1,0 +1,14 @@
+{
+  "root": "D:\\code\\LPC1765FBD100\\PC6M-10",
+  "counts": {
+    "modbus_read_reg": 1024,
+    "modbus_write_multi": 1024,
+    "closed_loop_integral": 1800,
+    "output_stage": 1800
+  },
+  "failures": [],
+  "unicorn": "2.1.4",
+  "original_sha256": "dd629eac0243a13cecc826b1fc2b4b54066f7647d8c1d09a62d5caf7b4f13f65",
+  "firmware_sha256": "0d78c63565741ad9cc5b81c7f396fbf6d7b02d107d8f527de24d07415f974e91",
+  "script_sha256": "c3f9e2a679efee58c9242f076d4a15a5046670e239162ce891831088713a0f57"
+}

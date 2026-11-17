@@ -1,0 +1,65 @@
+
+=== test_emulation_test_adc_scan_sequence_equivalence ===
+  [PASS] 零值连续12拍  conversions=72
+  [PASS] 六通道固定梯度连续12拍  conversions=72
+  [PASS] 边界与交错样本连续24拍  conversions=144
+  [PASS] cfg=0/gain_sel=0  conversions=108
+  [PASS] cfg=0/gain_sel=1  conversions=108
+  [PASS] cfg=0/gain_sel=2  conversions=108
+  [PASS] cfg=1/gain_sel=0  conversions=108
+  [PASS] cfg=1/gain_sel=1  conversions=108
+  [PASS] cfg=1/gain_sel=2  conversions=108
+  [PASS] 标定除数边界0x1  conversions=108
+  [PASS] 标定除数边界0xA  conversions=108
+  [PASS] 标定除数边界0xFFFF  conversions=108
+  [PASS] 标定除数边界0xFFFFFFFF  conversions=108
+
+  通过 13/13
+[run_tests] test_emulation_test_adc_scan_sequence_equivalence: OK
+
+=== test_emulation_test_direct_execution_completion ===
+DIRECT_COMPLETION: PASS 配置加载/参数同步/ADC连续拍/公共call拒绝提前停止 4/4
+[run_tests] test_emulation_test_direct_execution_completion: OK
+
+=== test_emulation_test_eeprom_load_config_equivalence ===
+  [PASS] 双银行魔数有效：全部从EEPROM装载  writes=0
+  [PASS] 银行A无效：回写A默认值  writes=62
+  [PASS] 银行B无效：回写B默认值  writes=27
+  [PASS] 双银行无效：依次回写两组默认值  writes=89
+  [PASS] 仅银行A lo=0x55：A读取、B回写默认  writes=27
+  [PASS] 仅银行A hi=0x55：A读取、B回写默认  writes=27
+  [PASS] 仅银行B hi=0x66：A回写默认、B读取  writes=62
+  [PASS] 银行A魔数近似值0x54：仍应回写默认  writes=62
+  [PASS] 随机内容 seed=1：双银行有效  writes=0
+  [PASS] 随机内容 seed=2：双银行有效  writes=0
+  [PASS] 随机内容 seed=3：双银行有效  writes=0
+  [PASS] 随机内容 seed=4：双银行有效  writes=0
+  [PASS] 随机内容 seed=5：双银行有效  writes=0
+  [PASS] 随机内容 seed=6：双银行有效  writes=0
+  [PASS] 随机内容 seed=7：双银行有效  writes=0
+  [PASS] 随机内容 seed=8：双银行有效  writes=0
+  [PASS] 随机内容 seed=9：双银行有效  writes=0
+  [PASS] 随机内容 seed=10：双银行有效  writes=0
+  [PASS] 随机内容 seed=11：双银行有效  writes=0
+  [PASS] 随机内容 seed=12：双银行有效  writes=0
+  [PASS] 随机内容 seed=13：双银行有效  writes=0
+  [PASS] 随机内容 seed=14：双银行有效  writes=0
+
+  通过 22/22
+[run_tests] test_emulation_test_eeprom_load_config_equivalence: OK
+
+=== test_emulation_test_eeprom_sync_matrix_equivalence ===
+  [PASS] EEPROM同步扰动矩阵 280/280
+[run_tests] test_emulation_test_eeprom_sync_matrix_equivalence: OK
+
+=== test_emulation_test_uart_rx_sequence_equivalence ===
+  [PASS] 空闲态首字节后进入接收态  state=010001
+  [PASS] 接收态连续8字节  state=01000b
+  [PASS] 非接收态不改变缓冲区  state=050b17
+  [PASS] 索引254跨越255并回绕  state=010001
+  [PASS] 索引255单步回绕到0  state=010000
+
+  通过 5/5
+[run_tests] test_emulation_test_uart_rx_sequence_equivalence: OK
+
+[run_tests] 模块通过 5/5

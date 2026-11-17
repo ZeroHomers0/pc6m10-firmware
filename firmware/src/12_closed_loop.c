@@ -51,28 +51,30 @@ int closed_loop_integral(int setpoint,int feedback,uint32_t coef_a,uint32_t coef
   *pid_error_previous_term_ptr = *pid_error_current_ptr;           /* 上次误差滚动 */
   *pid_error_current_ptr = *pid_setpoint_ptr - *pid_feedback_ptr;   /* 当前误差 */
   p_pid = pid_error_absolute;                    /* p_pid → 误差值寄存器 0x10002118 */
-  if (*pid_feedback_ptr <= *pid_setpoint_ptr) {
+  /* 原 BIN 0x108F2/0x10954 使用 BLT/BGE：给定/反馈及死区比较均为有符号；
+   * 差值仍用 uint32_t 运算保留原机 32 位回绕。 */
+  if ((int32_t)*pid_feedback_ptr <= (int32_t)*pid_setpoint_ptr) {
     *pid_error_absolute = *pid_setpoint_ptr - *pid_feedback_ptr; /* 误差（正值路径） */
-    if ((int)(uint32_t)*closed_loop_threshold_upper_ptr <= *p_pid) {     /* 误差 ≥ 死区上界 */
+    if ((int32_t)*closed_loop_threshold_upper_ptr <= (int32_t)*p_pid) {     /* 误差 ≥ 死区上界 */
       *pid_selected_gain_ptr = (uint32_t)*closed_loop_gain_high_ptr;
     }
-    if ((*pid_error_absolute < (int)(uint32_t)*closed_loop_threshold_upper_ptr) && ((int)(uint32_t)*closed_loop_threshold_lower_ptr < *pid_error_absolute)) {
+    if (((int32_t)*pid_error_absolute < (int32_t)*closed_loop_threshold_upper_ptr) && ((int32_t)*closed_loop_threshold_lower_ptr < (int32_t)*pid_error_absolute)) {
       *pid_selected_gain_ptr = (uint32_t)*closed_loop_gain_mid_ptr;         /* 死区上界内 */
     }
-    if (*pid_error_absolute <= (int)(uint32_t)*closed_loop_threshold_lower_ptr) {
+    if ((int32_t)*pid_error_absolute <= (int32_t)*closed_loop_threshold_lower_ptr) {
       *pid_selected_gain_ptr = (uint32_t)*closed_loop_gain_low_ptr;         /* 误差 ≤ 死区下界 */
     }
   }
   p_pid = pid_error_absolute;                    /* p_pid → 误差值寄存器（负值路径） */
-  if (*pid_setpoint_ptr < *pid_feedback_ptr) {
+  if ((int32_t)*pid_setpoint_ptr < (int32_t)*pid_feedback_ptr) {
     *pid_error_absolute = *pid_feedback_ptr - *pid_setpoint_ptr; /* 误差（负值路径，绝对值） */
-    if ((int)(uint32_t)*closed_loop_threshold_upper_ptr <= *p_pid) {
+    if ((int32_t)*closed_loop_threshold_upper_ptr <= (int32_t)*p_pid) {
       *pid_selected_gain_ptr = (uint32_t)*closed_loop_gain_high_ptr;
     }
-    if ((*pid_error_absolute < (int)(uint32_t)*closed_loop_threshold_upper_ptr) && ((int)(uint32_t)*closed_loop_threshold_lower_ptr < *pid_error_absolute)) {
+    if (((int32_t)*pid_error_absolute < (int32_t)*closed_loop_threshold_upper_ptr) && ((int32_t)*closed_loop_threshold_lower_ptr < (int32_t)*pid_error_absolute)) {
       *pid_selected_gain_ptr = (uint32_t)*closed_loop_gain_mid_ptr;
     }
-    if (*pid_error_absolute <= (int)(uint32_t)*closed_loop_threshold_lower_ptr) {
+    if ((int32_t)*pid_error_absolute <= (int32_t)*closed_loop_threshold_lower_ptr) {
       *pid_selected_gain_ptr = (uint32_t)*closed_loop_gain_low_ptr;
     }
   }

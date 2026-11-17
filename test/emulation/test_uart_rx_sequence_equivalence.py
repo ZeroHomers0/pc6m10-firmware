@@ -16,7 +16,7 @@ except Exception:
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.join(ROOT, "test", "support"))
 
-from unicorn.arm_const import UC_ARM_REG_LR
+from unicorn.arm_const import UC_ARM_REG_LR, UC_ARM_REG_PC
 from unicorn_harness import load_firmware, load_original, lookup
 
 ORIG = 0xAED0
@@ -42,6 +42,7 @@ def run(load_fn, entry, initial, data):
         uc.mem_write(UART3_RBR, bytes([value]))
         uc.reg_write(UC_ARM_REG_LR, RETURN)
         uc.emu_start(entry | 1, RETURN)
+        assert uc.reg_read(UC_ARM_REG_PC) == RETURN, 'UART 接收未正常返回'
     return bytes(uc.mem_read(STATE, 3)), bytes(uc.mem_read(FRAME, 256))
 
 

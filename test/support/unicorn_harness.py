@@ -109,6 +109,7 @@ def call(e, func_addr, args=None, ret_spec='r0'):
             e.reg_write(regs[i], v)
     e.reg_write(UC_ARM_REG_LR, STOP)
     e.emu_start(func_addr | 1, STOP)
+    assert e.reg_read(UC_ARM_REG_PC) == STOP, '函数未正常返回，禁止比较中途状态'
     if ret_spec == 'r1':
         return e.reg_read(UC_ARM_REG_R1)
     return e.reg_read(UC_ARM_REG_R0)
@@ -151,6 +152,7 @@ def differential(func_orig, func_new, args, seed, region=(0x10001000, 0x10003F00
                 e.reg_write(regs[i], v)
         e.reg_write(UC_ARM_REG_LR, 0xFF000000)
         e.emu_start(fn | 1, 0xFF000000)        # Cortex-M3 = Thumb；起始地址|1 进入 Thumb 真执行
+        assert e.reg_read(UC_ARM_REG_PC) == 0xFF000000, '差分函数未正常返回'
         ret = e.reg_read(UC_ARM_REG_R0)
         post = bytes(e.mem_read(lo, hi - lo))
         return ret, post

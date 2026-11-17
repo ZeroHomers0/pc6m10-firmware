@@ -1,0 +1,24 @@
+== 编译 ==
+  src/01_startup.c
+  src/02_lcd_display.c
+  src/03_input_debounce.c
+  src/04_i2c.c
+  src/05_adc.c
+  src/06_frequency_adjust.c
+  src/06_param_system.c
+  src/07_state_machine.c
+  src/08_modbus_dispatch.c
+  src/08_uart3_modbus.c
+  src/08_uart3_receive.c
+  src/09_output_stage.c
+  src/10_relay_led.c
+  src/11_auth.c
+  src/12_closed_loop.c
+  src/13_gpio_init.c
+  src/crc16_table.c
+  src/strpool.c
+== 链接 ==
+== 产物 ==
+   text	   data	    bss	    dec	    hex	filename
+  59908	      0	   2188	  62096	   f290	firmware.elf
+OK: firmware.elf / firmware.hex / firmware.bin

@@ -62,7 +62,7 @@ static void draw_basic_parameter_item(uint32_t item_index, uint32_t row, uint32_
       break;
     case 6: disp_uint4(*parameter_soft_start_time_ptr, row, 0xb, attr); break;
     case 7: disp_uint4(*parameter_soft_stop_time_ptr, row, 0xb, attr); break;
-    case 8: disp_number3(*parameter_phase_limit_ptr, row, 0xb, attr); break;
+    case 8: disp_number3((uint8_t)*parameter_phase_limit_ptr, row, 0xb, attr); break; /* BIN 0x7752/0x7762 LDRB */
     case 9: disp_signed_angle(*parameter_master_slave_offset_ptr, row, 0xb, attr); break;
     case 10:
       if (*parameter_control_method_ptr == 0) disp_string(DISPLAY_START_MODE_OPTION_1, row, 0xb, attr);
@@ -86,7 +86,7 @@ static void draw_basic_parameter_item(uint32_t item_index, uint32_t row, uint32_
       if (*parameter_input_mode_ptr == 0) disp_string(DISPLAY_INPUT_MODE_ANALOG, row, 0xb, attr);
       else disp_string(DISPLAY_INPUT_MODE_DIGITAL, row, 0xb, attr);
       break;
-    case 15: disp_number3(*parameter_start_phase_ptr, row, 0xb, attr); break;
+    case 15: disp_number3((uint8_t)*parameter_start_phase_ptr, row, 0xb, attr); break; /* BIN 0x7A16/0x7A26 LDRB */
   }
 }
 
@@ -531,7 +531,7 @@ static void state_machine_page_calibration_menu(KeyCode key_code)
     (*ui_idle_refresh_ticks_ptr)++;
     if (*ui_idle_refresh_ticks_ptr >= 0x1f4) {
       *ui_idle_refresh_ticks_ptr = 0; (*ui_calibration_timeout_ticks_ptr)--;
-      disp_number3(*ui_calibration_timeout_ticks_ptr, 3, 6, 0);
+      disp_number3((uint8_t)*ui_calibration_timeout_ticks_ptr, 3, 6, 0); /* BIN 0x554E LDRB */
       if (*ui_calibration_timeout_ticks_ptr == 0) { *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return; }
     }
     return;
@@ -562,7 +562,7 @@ static void state_machine_page_calibration_active(KeyCode key_code)
     (*ui_idle_refresh_ticks_ptr)++;
     if (*ui_idle_refresh_ticks_ptr >= 0x1f4) {
       *ui_idle_refresh_ticks_ptr = 0; (*ui_calibration_timeout_ticks_ptr)--;
-      disp_number3(*ui_calibration_timeout_ticks_ptr, 3, 6, 0);
+      disp_number3((uint8_t)*ui_calibration_timeout_ticks_ptr, 3, 6, 0); /* BIN 0x5724 LDRB */
       if (*ui_calibration_timeout_ticks_ptr == 0) { *ui_screen_id_ptr = UI_SCREEN_MAIN_MENU; disp_splash_screen(); return; }
     }
     return;
@@ -666,7 +666,7 @@ static void state_machine_page_calibration_result(KeyCode key_code)
         if (*parameter_output_phase_ptr == 0) disp_string(DISPLAY_OUTPUT_PHASE_A, 1, 0xb, (*ui_item_index_ptr == 9) ? 1 : 0);
         else disp_string(DISPLAY_OUTPUT_PHASE_B, 1, 0xb, (*ui_item_index_ptr == 9) ? 1 : 0);
         /* item0xa=起始相位 row2（8 位装入） */
-        disp_number3(*parameter_start_phase_ptr, 2, 0xb, (*ui_item_index_ptr == 0xa) ? 1 : 0);
+        disp_number3((uint8_t)*parameter_start_phase_ptr, 2, 0xb, (*ui_item_index_ptr == 0xa) ? 1 : 0); /* BIN 0x5F58/0x5F68 LDRB */
       }
     }
     /* ui_statistics_timeout_ticks_ptr 超 0x1F4 → 回绕为 0；编辑态按 ui_item_index_ptr 用空格串擦除当前项值列

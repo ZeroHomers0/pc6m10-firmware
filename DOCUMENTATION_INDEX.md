@@ -22,6 +22,8 @@
 
 - **2026-11-17 保护页第 3 页上界 + 枚举越界绘制**：全屏显示调用矩阵发现屏号 4 项号 12..16 多画第 3 页，按原 BIN 0x84FC/0x8504 限定 8..11（`test/emulation/test_menu_page_bounds.py` 72/72）；又按用户实测修掉通信校验/校验位/控制方式等越界值仍绘制「关闭」的问题（`test/emulation/test_enum_range_equivalence.py` 27/27）。构建 text 59852、SHA `0C7B6539…AFBD8EA`；未烧写。
 
+- **2026-11-17 独立复核与新差异修复**：见 [双项目复核报告](docs/analysis/INDEPENDENT_REPAIR_REVIEW_2026-11-17.md)；PID符号边界、六相显示低字节读取与独立执行完成门禁已修复。当前构建以AGENTS.md为准；未烧写。
+
 ## 当前文档
 
 | 主题 | 文档 |
