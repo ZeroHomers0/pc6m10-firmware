@@ -88,6 +88,8 @@
 
 - **2026-11-17 寄存器命名与 Modbus 索引订正**：SCS(0x400FC1A0, bit5=OSCEN) 与 CLKOUTCFG(0x400FC1C8) 原名误标为 PLL1 锁相/PCLKSEL1 别名，crc16 两表字节角色、uart3 池槽地址当数据地址、gpio0_input_init 位号、timer0 中断号一并订正；modbus_read_reg/modbus_write_multi 按原机 ldrb 截断后索引。构建 text 59900（SHA `B20C67A1…5FBA92B`，60460 B），提交 `b5f6868`，回归 35/35、原 BIN A/B 全 PASS，未烧写。
 
+- **2026-11-17 立即数（阈值）差分全量审计**：以「比较类指令立即数集合差」独立排查 87 个函数，68 条候选与状态机（GCC 已拆成 7 个符号）整体集合差全部定性为等价改写（位测试移位化、`>=N` 与 `>N-1`、逐值比较改区间比较、switch 降级形式），未发现新的阈值/边界差异。状态机全矩阵累计 302940 例 bad=0。详见 [PC6M_IMMEDIATE_DIFF_AUDIT_2026-11-17.md](docs/analysis/PC6M_IMMEDIATE_DIFF_AUDIT_2026-11-17.md)。
+
 ## 差异消除实施方案（2026-11-17）
 
 [PC6M／PC12M 固件逻辑差异消除与缺陷修复实施方案](docs/project/FIRMWARE_EQUIVALENCE_REMEDIATION_PLAN_2026-11-17.md)：以证据修正行为和验证失真，保留认证放行与已授权定制，不以删除代码或证据完成任务。该文件为实施设计，仅做代码/模拟验证，不包含实机验证或烧写，不代表已完成全量验收。
