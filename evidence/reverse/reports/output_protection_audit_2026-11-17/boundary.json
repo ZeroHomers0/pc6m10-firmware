@@ -1,0 +1,1961 @@
+{
+  "project": "PC6M-10",
+  "firmware_sha256": "0d78c63565741ad9cc5b81c7f396fbf6d7b02d107d8f527de24d07415f974e91",
+  "original_sha256": "dd629eac0243a13cecc826b1fc2b4b54066f7647d8c1d09a62d5caf7b4f13f65",
+  "test_sha256": "82a7e0d411c1e4f7e7be06a3b8241cbad7b40162b78f9ef24427fbcd240d164a",
+  "cases": 11494,
+  "pid_cases": 5378,
+  "failures": [],
+  "branches": {
+    "0xe9b4": {
+      "instruction": "0000e9b4  beq  0x0000eaa6",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 1000,
+        "other": 0
+      },
+      "added": {
+        "taken": 2,
+        "fallthrough": 11492,
+        "other": 0
+      }
+    },
+    "0xe9c6": {
+      "instruction": "0000e9c6  blt  0x0000eaa6",
+      "baseline": {
+        "taken": 752,
+        "fallthrough": 248,
+        "other": 0
+      },
+      "added": {
+        "taken": 12,
+        "fallthrough": 11480,
+        "other": 0
+      }
+    },
+    "0xe9dc": {
+      "instruction": "0000e9dc  cbnz  r0, 0x0000e9e2",
+      "baseline": {
+        "taken": 248,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 10466,
+        "fallthrough": 1014,
+        "other": 0
+      }
+    },
+    "0xe9f2": {
+      "instruction": "0000e9f2  cbnz  r0, 0x0000ea50",
+      "baseline": {
+        "taken": 138,
+        "fallthrough": 110,
+        "other": 0
+      },
+      "added": {
+        "taken": 9854,
+        "fallthrough": 1626,
+        "other": 0
+      }
+    },
+    "0xe9fe": {
+      "instruction": "0000e9fe  cbnz  r0, 0x0000ea0e",
+      "baseline": {
+        "taken": 52,
+        "fallthrough": 58,
+        "other": 0
+      },
+      "added": {
+        "taken": 1029,
+        "fallthrough": 597,
+        "other": 0
+      }
+    },
+    "0xea14": {
+      "instruction": "0000ea14  bne  0x0000ea24",
+      "baseline": {
+        "taken": 82,
+        "fallthrough": 28,
+        "other": 0
+      },
+      "added": {
+        "taken": 1042,
+        "fallthrough": 584,
+        "other": 0
+      }
+    },
+    "0xea2a": {
+      "instruction": "0000ea2a  bne  0x0000ea50",
+      "baseline": {
+        "taken": 86,
+        "fallthrough": 24,
+        "other": 0
+      },
+      "added": {
+        "taken": 1181,
+        "fallthrough": 445,
+        "other": 0
+      }
+    },
+    "0xea56": {
+      "instruction": "0000ea56  bne  0x0000eb52",
+      "baseline": {
+        "taken": 110,
+        "fallthrough": 138,
+        "other": 0
+      },
+      "added": {
+        "taken": 1658,
+        "fallthrough": 9822,
+        "other": 0
+      }
+    },
+    "0xea5e": {
+      "instruction": "0000ea5e  bcc  0x0000eb52",
+      "baseline": {
+        "taken": 80,
+        "fallthrough": 58,
+        "other": 0
+      },
+      "added": {
+        "taken": 953,
+        "fallthrough": 8869,
+        "other": 0
+      }
+    },
+    "0xea64": {
+      "instruction": "0000ea64  cbz  r0, 0x0000eaa8",
+      "baseline": {
+        "taken": 58,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 8695,
+        "fallthrough": 174,
+        "other": 0
+      }
+    },
+    "0xea70": {
+      "instruction": "0000ea70  bls  0x0000eaa8",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 96,
+        "fallthrough": 78,
+        "other": 0
+      }
+    },
+    "0xea90": {
+      "instruction": "0000ea90  bls  0x0000eaae",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 26,
+        "fallthrough": 52,
+        "other": 0
+      }
+    },
+    "0xeab2": {
+      "instruction": "0000eab2  cbz  r0, 0x0000eaf4",
+      "baseline": {
+        "taken": 58,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 8695,
+        "fallthrough": 174,
+        "other": 0
+      }
+    },
+    "0xeabe": {
+      "instruction": "0000eabe  bcs  0x0000eaf4",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 120,
+        "fallthrough": 54,
+        "other": 0
+      }
+    },
+    "0xeade": {
+      "instruction": "0000eade  bls  0x0000eafa",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 38,
+        "fallthrough": 16,
+        "other": 0
+      }
+    },
+    "0xeb00": {
+      "instruction": "0000eb00  beq  0x0000ec00",
+      "baseline": {
+        "taken": 58,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 6805,
+        "fallthrough": 2064,
+        "other": 0
+      }
+    },
+    "0xeb16": {
+      "instruction": "0000eb16  bcs  0x0000eb1e",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 1926,
+        "fallthrough": 138,
+        "other": 0
+      }
+    },
+    "0xeb28": {
+      "instruction": "0000eb28  bcc  0x0000eb4c",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 138,
+        "fallthrough": 1926,
+        "other": 0
+      }
+    },
+    "0xeb3e": {
+      "instruction": "0000eb3e  bls  0x0000eb4c",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 1632,
+        "fallthrough": 294,
+        "other": 0
+      }
+    },
+    "0xeb64": {
+      "instruction": "0000eb64  bcs  0x0000eb84",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 590,
+        "fallthrough": 1474,
+        "other": 0
+      }
+    },
+    "0xeb76": {
+      "instruction": "0000eb76  bls  0x0000eb84",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 1014,
+        "fallthrough": 460,
+        "other": 0
+      }
+    },
+    "0xeb90": {
+      "instruction": "0000eb90  bls  0x0000ebb0",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 928,
+        "fallthrough": 1136,
+        "other": 0
+      }
+    },
+    "0xeba2": {
+      "instruction": "0000eba2  bls  0x0000ebb0",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 602,
+        "fallthrough": 534,
+        "other": 0
+      }
+    },
+    "0xebc8": {
+      "instruction": "0000ebc8  bcs  0x0000ebe6",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 1268,
+        "fallthrough": 796,
+        "other": 0
+      }
+    },
+    "0xebd8": {
+      "instruction": "0000ebd8  bcs  0x0000ebe6",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 294,
+        "fallthrough": 502,
+        "other": 0
+      }
+    },
+    "0xebf4": {
+      "instruction": "0000ebf4  bcs  0x0000ec14",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 1604,
+        "fallthrough": 460,
+        "other": 0
+      }
+    },
+    "0xec06": {
+      "instruction": "0000ec06  bls  0x0000ec14",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 96,
+        "fallthrough": 364,
+        "other": 0
+      }
+    },
+    "0xec2c": {
+      "instruction": "0000ec2c  bcs  0x0000ec42",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 1940,
+        "fallthrough": 124,
+        "other": 0
+      }
+    },
+    "0xec34": {
+      "instruction": "0000ec34  bls  0x0000ec42",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 28,
+        "fallthrough": 96,
+        "other": 0
+      }
+    },
+    "0xec56": {
+      "instruction": "0000ec56  bls  0x0000ec64",
+      "baseline": {
+        "taken": 58,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 7927,
+        "fallthrough": 942,
+        "other": 0
+      }
+    },
+    "0xec6a": {
+      "instruction": "0000ec6a  bne  0x0000ed66",
+      "baseline": {
+        "taken": 36,
+        "fallthrough": 22,
+        "other": 0
+      },
+      "added": {
+        "taken": 6025,
+        "fallthrough": 2844,
+        "other": 0
+      }
+    },
+    "0xec7e": {
+      "instruction": "0000ec7e  cbnz  r0, 0x0000ecae",
+      "baseline": {
+        "taken": 21,
+        "fallthrough": 1,
+        "other": 0
+      },
+      "added": {
+        "taken": 2605,
+        "fallthrough": 239,
+        "other": 0
+      }
+    },
+    "0xecb4": {
+      "instruction": "0000ecb4  bne  0x0000eda4",
+      "baseline": {
+        "taken": 21,
+        "fallthrough": 1,
+        "other": 0
+      },
+      "added": {
+        "taken": 2331,
+        "fallthrough": 513,
+        "other": 0
+      }
+    },
+    "0xecf6": {
+      "instruction": "0000ecf6  cbnz  r0, 0x0000ed18",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 1,
+        "other": 0
+      },
+      "added": {
+        "taken": 356,
+        "fallthrough": 157,
+        "other": 0
+      }
+    },
+    "0xed1e": {
+      "instruction": "0000ed1e  bne  0x0000ed2e",
+      "baseline": {
+        "taken": 1,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 340,
+        "fallthrough": 173,
+        "other": 0
+      }
+    },
+    "0xed72": {
+      "instruction": "0000ed72  bcs  0x0000ed7a",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 1,
+        "other": 0
+      },
+      "added": {
+        "taken": 306,
+        "fallthrough": 207,
+        "other": 0
+      }
+    },
+    "0xed84": {
+      "instruction": "0000ed84  bcc  0x0000ed98",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 1,
+        "other": 0
+      },
+      "added": {
+        "taken": 228,
+        "fallthrough": 285,
+        "other": 0
+      }
+    },
+    "0xed90": {
+      "instruction": "0000ed90  bcc  0x0000ed98",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 1,
+        "other": 0
+      },
+      "added": {
+        "taken": 72,
+        "fallthrough": 213,
+        "other": 0
+      }
+    },
+    "0xee68": {
+      "instruction": "0000ee68  bcs  0x0000ee70",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 1,
+        "other": 0
+      },
+      "added": {
+        "taken": 275,
+        "fallthrough": 238,
+        "other": 0
+      }
+    },
+    "0xee76": {
+      "instruction": "0000ee76  bne  0x0000ef74",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 22,
+        "other": 0
+      },
+      "added": {
+        "taken": 133,
+        "fallthrough": 2711,
+        "other": 0
+      }
+    },
+    "0xee88": {
+      "instruction": "0000ee88  bcc  0x0000eea4",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 22,
+        "other": 0
+      },
+      "added": {
+        "taken": 489,
+        "fallthrough": 2222,
+        "other": 0
+      }
+    },
+    "0xee94": {
+      "instruction": "0000ee94  bcs  0x0000eea4",
+      "baseline": {
+        "taken": 20,
+        "fallthrough": 2,
+        "other": 0
+      },
+      "added": {
+        "taken": 1289,
+        "fallthrough": 933,
+        "other": 0
+      }
+    },
+    "0xeeb4": {
+      "instruction": "0000eeb4  bls  0x0000eece",
+      "baseline": {
+        "taken": 20,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 1406,
+        "fallthrough": 372,
+        "other": 0
+      }
+    },
+    "0xeed8": {
+      "instruction": "0000eed8  bcc  0x0000eee2",
+      "baseline": {
+        "taken": 22,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 1690,
+        "fallthrough": 1021,
+        "other": 0
+      }
+    },
+    "0xeef2": {
+      "instruction": "0000eef2  bls  0x0000ef0a",
+      "baseline": {
+        "taken": 21,
+        "fallthrough": 1,
+        "other": 0
+      },
+      "added": {
+        "taken": 1387,
+        "fallthrough": 303,
+        "other": 0
+      }
+    },
+    "0xef14": {
+      "instruction": "0000ef14  bcc  0x0000ef5c",
+      "baseline": {
+        "taken": 22,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 1690,
+        "fallthrough": 1021,
+        "other": 0
+      }
+    },
+    "0xef20": {
+      "instruction": "0000ef20  bcc  0x0000ef5c",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 167,
+        "fallthrough": 854,
+        "other": 0
+      }
+    },
+    "0xef28": {
+      "instruction": "0000ef28  bne  0x0000ef5c",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 656,
+        "fallthrough": 198,
+        "other": 0
+      }
+    },
+    "0xef46": {
+      "instruction": "0000ef46  bls  0x0000ef4e",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 184,
+        "fallthrough": 14,
+        "other": 0
+      }
+    },
+    "0xef66": {
+      "instruction": "0000ef66  bcc  0x0000efba",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 22,
+        "other": 0
+      },
+      "added": {
+        "taken": 389,
+        "fallthrough": 2322,
+        "other": 0
+      }
+    },
+    "0xef6e": {
+      "instruction": "0000ef6e  bne  0x0000efba",
+      "baseline": {
+        "taken": 13,
+        "fallthrough": 9,
+        "other": 0
+      },
+      "added": {
+        "taken": 1519,
+        "fallthrough": 803,
+        "other": 0
+      }
+    },
+    "0xef7e": {
+      "instruction": "0000ef7e  bcs  0x0000efba",
+      "baseline": {
+        "taken": 9,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 517,
+        "fallthrough": 286,
+        "other": 0
+      }
+    },
+    "0xef8c": {
+      "instruction": "0000ef8c  beq  0x0000ef9c",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 96,
+        "fallthrough": 190,
+        "other": 0
+      }
+    },
+    "0xefa2": {
+      "instruction": "0000efa2  bcs  0x0000efaa",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 181,
+        "fallthrough": 105,
+        "other": 0
+      }
+    },
+    "0xefc4": {
+      "instruction": "0000efc4  bcc  0x0000f020",
+      "baseline": {
+        "taken": 3,
+        "fallthrough": 19,
+        "other": 0
+      },
+      "added": {
+        "taken": 1795,
+        "fallthrough": 916,
+        "other": 0
+      }
+    },
+    "0xefd0": {
+      "instruction": "0000efd0  bcc  0x0000f020",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 19,
+        "other": 0
+      },
+      "added": {
+        "taken": 193,
+        "fallthrough": 723,
+        "other": 0
+      }
+    },
+    "0xefd8": {
+      "instruction": "0000efd8  bne  0x0000f020",
+      "baseline": {
+        "taken": 11,
+        "fallthrough": 8,
+        "other": 0
+      },
+      "added": {
+        "taken": 215,
+        "fallthrough": 508,
+        "other": 0
+      }
+    },
+    "0xefe4": {
+      "instruction": "0000efe4  bcc  0x0000f020",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 8,
+        "other": 0
+      },
+      "added": {
+        "taken": 116,
+        "fallthrough": 392,
+        "other": 0
+      }
+    },
+    "0xeff2": {
+      "instruction": "0000eff2  beq  0x0000f002",
+      "baseline": {
+        "taken": 8,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 135,
+        "fallthrough": 257,
+        "other": 0
+      }
+    },
+    "0xf008": {
+      "instruction": "0000f008  bcs  0x0000f010",
+      "baseline": {
+        "taken": 8,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 217,
+        "fallthrough": 175,
+        "other": 0
+      }
+    },
+    "0xf026": {
+      "instruction": "0000f026  bcs  0x0000f074",
+      "baseline": {
+        "taken": 20,
+        "fallthrough": 2,
+        "other": 0
+      },
+      "added": {
+        "taken": 2534,
+        "fallthrough": 177,
+        "other": 0
+      }
+    },
+    "0xf032": {
+      "instruction": "0000f032  bcc  0x0000f074",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 2,
+        "other": 0
+      },
+      "added": {
+        "taken": 80,
+        "fallthrough": 97,
+        "other": 0
+      }
+    },
+    "0xf03a": {
+      "instruction": "0000f03a  bne  0x0000f074",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 2,
+        "other": 0
+      },
+      "added": {
+        "taken": 48,
+        "fallthrough": 49,
+        "other": 0
+      }
+    },
+    "0xf046": {
+      "instruction": "0000f046  beq  0x0000f056",
+      "baseline": {
+        "taken": 2,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 39,
+        "fallthrough": 10,
+        "other": 0
+      }
+    },
+    "0xf05c": {
+      "instruction": "0000f05c  bcs  0x0000f064",
+      "baseline": {
+        "taken": 2,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 41,
+        "fallthrough": 8,
+        "other": 0
+      }
+    },
+    "0xf07a": {
+      "instruction": "0000f07a  bcs  0x0000f0ac",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 22,
+        "other": 0
+      },
+      "added": {
+        "taken": 339,
+        "fallthrough": 2372,
+        "other": 0
+      }
+    },
+    "0xf082": {
+      "instruction": "0000f082  bne  0x0000f0ac",
+      "baseline": {
+        "taken": 8,
+        "fallthrough": 14,
+        "other": 0
+      },
+      "added": {
+        "taken": 226,
+        "fallthrough": 2146,
+        "other": 0
+      }
+    },
+    "0xf08a": {
+      "instruction": "0000f08a  bne  0x0000f0ac",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 14,
+        "other": 0
+      },
+      "added": {
+        "taken": 204,
+        "fallthrough": 1942,
+        "other": 0
+      }
+    },
+    "0xf09c": {
+      "instruction": "0000f09c  bls  0x0000f0b2",
+      "baseline": {
+        "taken": 14,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 1852,
+        "fallthrough": 90,
+        "other": 0
+      }
+    },
+    "0xf0da": {
+      "instruction": "0000f0da  bhi  0x0000f0f0",
+      "baseline": {
+        "taken": 22,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 2301,
+        "fallthrough": 543,
+        "other": 0
+      }
+    },
+    "0xf0e0": {
+      "instruction": "0000f0e0  cbnz  r0, 0x0000f0f0",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 267,
+        "fallthrough": 276,
+        "other": 0
+      }
+    },
+    "0xf100": {
+      "instruction": "0000f100  bcc  0x0000f116",
+      "baseline": {
+        "taken": 8,
+        "fallthrough": 14,
+        "other": 0
+      },
+      "added": {
+        "taken": 309,
+        "fallthrough": 2535,
+        "other": 0
+      }
+    },
+    "0xf106": {
+      "instruction": "0000f106  cbnz  r0, 0x0000f116",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 14,
+        "other": 0
+      },
+      "added": {
+        "taken": 312,
+        "fallthrough": 2223,
+        "other": 0
+      }
+    },
+    "0xf11c": {
+      "instruction": "0000f11c  bne  0x0000f21c",
+      "baseline": {
+        "taken": 23,
+        "fallthrough": 35,
+        "other": 0
+      },
+      "added": {
+        "taken": 6090,
+        "fallthrough": 2779,
+        "other": 0
+      }
+    },
+    "0xf130": {
+      "instruction": "0000f130  cbnz  r0, 0x0000f160",
+      "baseline": {
+        "taken": 34,
+        "fallthrough": 1,
+        "other": 0
+      },
+      "added": {
+        "taken": 2540,
+        "fallthrough": 239,
+        "other": 0
+      }
+    },
+    "0xf166": {
+      "instruction": "0000f166  bne  0x0000f25c",
+      "baseline": {
+        "taken": 34,
+        "fallthrough": 1,
+        "other": 0
+      },
+      "added": {
+        "taken": 2291,
+        "fallthrough": 488,
+        "other": 0
+      }
+    },
+    "0xf1a8": {
+      "instruction": "0000f1a8  cbnz  r0, 0x0000f1ca",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 1,
+        "other": 0
+      },
+      "added": {
+        "taken": 323,
+        "fallthrough": 165,
+        "other": 0
+      }
+    },
+    "0xf1d0": {
+      "instruction": "0000f1d0  bne  0x0000f1e0",
+      "baseline": {
+        "taken": 1,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 339,
+        "fallthrough": 149,
+        "other": 0
+      }
+    },
+    "0xf224": {
+      "instruction": "0000f224  bcs  0x0000f22c",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 1,
+        "other": 0
+      },
+      "added": {
+        "taken": 297,
+        "fallthrough": 191,
+        "other": 0
+      }
+    },
+    "0xf236": {
+      "instruction": "0000f236  bcc  0x0000f24a",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 1,
+        "other": 0
+      },
+      "added": {
+        "taken": 212,
+        "fallthrough": 276,
+        "other": 0
+      }
+    },
+    "0xf242": {
+      "instruction": "0000f242  bcc  0x0000f24a",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 1,
+        "other": 0
+      },
+      "added": {
+        "taken": 75,
+        "fallthrough": 201,
+        "other": 0
+      }
+    },
+    "0xf254": {
+      "instruction": "0000f254  bcs  0x0000f25c",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 1,
+        "other": 0
+      },
+      "added": {
+        "taken": 247,
+        "fallthrough": 241,
+        "other": 0
+      }
+    },
+    "0xf30c": {
+      "instruction": "0000f30c  bne  0x0000f40c",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 35,
+        "other": 0
+      },
+      "added": {
+        "taken": 112,
+        "fallthrough": 2667,
+        "other": 0
+      }
+    },
+    "0xf31e": {
+      "instruction": "0000f31e  bcc  0x0000f33c",
+      "baseline": {
+        "taken": 8,
+        "fallthrough": 27,
+        "other": 0
+      },
+      "added": {
+        "taken": 467,
+        "fallthrough": 2200,
+        "other": 0
+      }
+    },
+    "0xf32a": {
+      "instruction": "0000f32a  bcs  0x0000f33c",
+      "baseline": {
+        "taken": 5,
+        "fallthrough": 22,
+        "other": 0
+      },
+      "added": {
+        "taken": 313,
+        "fallthrough": 1887,
+        "other": 0
+      }
+    },
+    "0xf34c": {
+      "instruction": "0000f34c  bls  0x0000f366",
+      "baseline": {
+        "taken": 11,
+        "fallthrough": 2,
+        "other": 0
+      },
+      "added": {
+        "taken": 424,
+        "fallthrough": 356,
+        "other": 0
+      }
+    },
+    "0xf370": {
+      "instruction": "0000f370  bcc  0x0000f37a",
+      "baseline": {
+        "taken": 28,
+        "fallthrough": 7,
+        "other": 0
+      },
+      "added": {
+        "taken": 1641,
+        "fallthrough": 1026,
+        "other": 0
+      }
+    },
+    "0xf38a": {
+      "instruction": "0000f38a  bls  0x0000f3a2",
+      "baseline": {
+        "taken": 28,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 1363,
+        "fallthrough": 278,
+        "other": 0
+      }
+    },
+    "0xf3ac": {
+      "instruction": "0000f3ac  bcc  0x0000f3f4",
+      "baseline": {
+        "taken": 28,
+        "fallthrough": 7,
+        "other": 0
+      },
+      "added": {
+        "taken": 1641,
+        "fallthrough": 1026,
+        "other": 0
+      }
+    },
+    "0xf3b8": {
+      "instruction": "0000f3b8  bcc  0x0000f3f4",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 7,
+        "other": 0
+      },
+      "added": {
+        "taken": 169,
+        "fallthrough": 857,
+        "other": 0
+      }
+    },
+    "0xf3c0": {
+      "instruction": "0000f3c0  bne  0x0000f3f4",
+      "baseline": {
+        "taken": 7,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 666,
+        "fallthrough": 191,
+        "other": 0
+      }
+    },
+    "0xf3de": {
+      "instruction": "0000f3de  bls  0x0000f3e6",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 172,
+        "fallthrough": 19,
+        "other": 0
+      }
+    },
+    "0xf3fe": {
+      "instruction": "0000f3fe  bcc  0x0000f452",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 35,
+        "other": 0
+      },
+      "added": {
+        "taken": 363,
+        "fallthrough": 2304,
+        "other": 0
+      }
+    },
+    "0xf406": {
+      "instruction": "0000f406  bne  0x0000f452",
+      "baseline": {
+        "taken": 5,
+        "fallthrough": 30,
+        "other": 0
+      },
+      "added": {
+        "taken": 576,
+        "fallthrough": 1728,
+        "other": 0
+      }
+    },
+    "0xf416": {
+      "instruction": "0000f416  bcs  0x0000f452",
+      "baseline": {
+        "taken": 8,
+        "fallthrough": 22,
+        "other": 0
+      },
+      "added": {
+        "taken": 492,
+        "fallthrough": 1236,
+        "other": 0
+      }
+    },
+    "0xf424": {
+      "instruction": "0000f424  beq  0x0000f434",
+      "baseline": {
+        "taken": 20,
+        "fallthrough": 2,
+        "other": 0
+      },
+      "added": {
+        "taken": 1015,
+        "fallthrough": 221,
+        "other": 0
+      }
+    },
+    "0xf43a": {
+      "instruction": "0000f43a  bcs  0x0000f442",
+      "baseline": {
+        "taken": 14,
+        "fallthrough": 8,
+        "other": 0
+      },
+      "added": {
+        "taken": 1114,
+        "fallthrough": 122,
+        "other": 0
+      }
+    },
+    "0xf45c": {
+      "instruction": "0000f45c  bcc  0x0000f4b8",
+      "baseline": {
+        "taken": 27,
+        "fallthrough": 8,
+        "other": 0
+      },
+      "added": {
+        "taken": 1656,
+        "fallthrough": 1011,
+        "other": 0
+      }
+    },
+    "0xf468": {
+      "instruction": "0000f468  bcc  0x0000f4b8",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 8,
+        "other": 0
+      },
+      "added": {
+        "taken": 202,
+        "fallthrough": 809,
+        "other": 0
+      }
+    },
+    "0xf470": {
+      "instruction": "0000f470  bne  0x0000f4b8",
+      "baseline": {
+        "taken": 4,
+        "fallthrough": 4,
+        "other": 0
+      },
+      "added": {
+        "taken": 292,
+        "fallthrough": 517,
+        "other": 0
+      }
+    },
+    "0xf47c": {
+      "instruction": "0000f47c  bcc  0x0000f4b8",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 4,
+        "other": 0
+      },
+      "added": {
+        "taken": 127,
+        "fallthrough": 390,
+        "other": 0
+      }
+    },
+    "0xf48a": {
+      "instruction": "0000f48a  beq  0x0000f49a",
+      "baseline": {
+        "taken": 4,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 135,
+        "fallthrough": 255,
+        "other": 0
+      }
+    },
+    "0xf4a0": {
+      "instruction": "0000f4a0  bcs  0x0000f4a8",
+      "baseline": {
+        "taken": 4,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 220,
+        "fallthrough": 170,
+        "other": 0
+      }
+    },
+    "0xf4be": {
+      "instruction": "0000f4be  bcs  0x0000f50c",
+      "baseline": {
+        "taken": 30,
+        "fallthrough": 5,
+        "other": 0
+      },
+      "added": {
+        "taken": 2498,
+        "fallthrough": 169,
+        "other": 0
+      }
+    },
+    "0xf4ca": {
+      "instruction": "0000f4ca  bcc  0x0000f50c",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 5,
+        "other": 0
+      },
+      "added": {
+        "taken": 60,
+        "fallthrough": 109,
+        "other": 0
+      }
+    },
+    "0xf4d2": {
+      "instruction": "0000f4d2  bne  0x0000f50c",
+      "baseline": {
+        "taken": 1,
+        "fallthrough": 4,
+        "other": 0
+      },
+      "added": {
+        "taken": 53,
+        "fallthrough": 56,
+        "other": 0
+      }
+    },
+    "0xf4de": {
+      "instruction": "0000f4de  beq  0x0000f4ee",
+      "baseline": {
+        "taken": 4,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 49,
+        "fallthrough": 7,
+        "other": 0
+      }
+    },
+    "0xf4f4": {
+      "instruction": "0000f4f4  bcs  0x0000f4fc",
+      "baseline": {
+        "taken": 4,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 47,
+        "fallthrough": 9,
+        "other": 0
+      }
+    },
+    "0xf512": {
+      "instruction": "0000f512  bcs  0x0000f544",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 35,
+        "other": 0
+      },
+      "added": {
+        "taken": 319,
+        "fallthrough": 2348,
+        "other": 0
+      }
+    },
+    "0xf51a": {
+      "instruction": "0000f51a  bne  0x0000f544",
+      "baseline": {
+        "taken": 8,
+        "fallthrough": 27,
+        "other": 0
+      },
+      "added": {
+        "taken": 232,
+        "fallthrough": 2116,
+        "other": 0
+      }
+    },
+    "0xf522": {
+      "instruction": "0000f522  bne  0x0000f544",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 27,
+        "other": 0
+      },
+      "added": {
+        "taken": 206,
+        "fallthrough": 1910,
+        "other": 0
+      }
+    },
+    "0xf534": {
+      "instruction": "0000f534  bls  0x0000f54a",
+      "baseline": {
+        "taken": 27,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 1828,
+        "fallthrough": 82,
+        "other": 0
+      }
+    },
+    "0xf572": {
+      "instruction": "0000f572  bhi  0x0000f588",
+      "baseline": {
+        "taken": 35,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 2265,
+        "fallthrough": 514,
+        "other": 0
+      }
+    },
+    "0xf578": {
+      "instruction": "0000f578  cbnz  r0, 0x0000f588",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 265,
+        "fallthrough": 249,
+        "other": 0
+      }
+    },
+    "0xf598": {
+      "instruction": "0000f598  bcc  0x0000f5ae",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 35,
+        "other": 0
+      },
+      "added": {
+        "taken": 312,
+        "fallthrough": 2467,
+        "other": 0
+      }
+    },
+    "0xf59e": {
+      "instruction": "0000f59e  cbnz  r0, 0x0000f5ae",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 35,
+        "other": 0
+      },
+      "added": {
+        "taken": 276,
+        "fallthrough": 2191,
+        "other": 0
+      }
+    },
+    "0xf5b4": {
+      "instruction": "0000f5b4  bne  0x0000f6b4",
+      "baseline": {
+        "taken": 57,
+        "fallthrough": 1,
+        "other": 0
+      },
+      "added": {
+        "taken": 7921,
+        "fallthrough": 948,
+        "other": 0
+      }
+    },
+    "0xf5da": {
+      "instruction": "0000f5da  bls  0x0000f5e2",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 1,
+        "other": 0
+      },
+      "added": {
+        "taken": 930,
+        "fallthrough": 18,
+        "other": 0
+      }
+    },
+    "0xf5e8": {
+      "instruction": "0000f5e8  bcs  0x0000f5f0",
+      "baseline": {
+        "taken": 1,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 936,
+        "fallthrough": 12,
+        "other": 0
+      }
+    },
+    "0xf5f4": {
+      "instruction": "0000f5f4  cbnz  r0, 0x0000f5fc",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 1,
+        "other": 0
+      },
+      "added": {
+        "taken": 708,
+        "fallthrough": 240,
+        "other": 0
+      }
+    },
+    "0xf602": {
+      "instruction": "0000f602  bne  0x0000f6be",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 1,
+        "other": 0
+      },
+      "added": {
+        "taken": 469,
+        "fallthrough": 479,
+        "other": 0
+      }
+    },
+    "0xf608": {
+      "instruction": "0000f608  cbnz  r0, 0x0000f610",
+      "baseline": {
+        "taken": 1,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 364,
+        "fallthrough": 115,
+        "other": 0
+      }
+    },
+    "0xf648": {
+      "instruction": "0000f648  cbnz  r0, 0x0000f66a",
+      "baseline": {
+        "taken": 1,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 297,
+        "fallthrough": 182,
+        "other": 0
+      }
+    },
+    "0xf670": {
+      "instruction": "0000f670  bne  0x0000f680",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 1,
+        "other": 0
+      },
+      "added": {
+        "taken": 326,
+        "fallthrough": 153,
+        "other": 0
+      }
+    },
+    "0xf692": {
+      "instruction": "0000f692  bcs  0x0000f698",
+      "baseline": {
+        "taken": 1,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 322,
+        "fallthrough": 157,
+        "other": 0
+      }
+    },
+    "0xf6b6": {
+      "instruction": "0000f6b6  bcs  0x0000f6be",
+      "baseline": {
+        "taken": 1,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 295,
+        "fallthrough": 184,
+        "other": 0
+      }
+    },
+    "0xf6c4": {
+      "instruction": "0000f6c4  bne  0x0000f6f0",
+      "baseline": {
+        "taken": 1,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 227,
+        "fallthrough": 721,
+        "other": 0
+      }
+    },
+    "0xf700": {
+      "instruction": "0000f700  bhi  0x0000f7a8",
+      "baseline": {
+        "taken": 1,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 418,
+        "fallthrough": 530,
+        "other": 0
+      }
+    },
+    "0xf798": {
+      "instruction": "0000f798  cbnz  r0, 0x0000f7a8",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 253,
+        "fallthrough": 277,
+        "other": 0
+      }
+    },
+    "0xf7b8": {
+      "instruction": "0000f7b8  bcc  0x0000f7ce",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 1,
+        "other": 0
+      },
+      "added": {
+        "taken": 299,
+        "fallthrough": 649,
+        "other": 0
+      }
+    },
+    "0xf7be": {
+      "instruction": "0000f7be  cbnz  r0, 0x0000f7ce",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 1,
+        "other": 0
+      },
+      "added": {
+        "taken": 239,
+        "fallthrough": 410,
+        "other": 0
+      }
+    },
+    "0xf7d2": {
+      "instruction": "0000f7d2  cbnz  r0, 0x0000f80c",
+      "baseline": {
+        "taken": 138,
+        "fallthrough": 110,
+        "other": 0
+      },
+      "added": {
+        "taken": 9854,
+        "fallthrough": 1626,
+        "other": 0
+      }
+    },
+    "0xf7d8": {
+      "instruction": "0000f7d8  cbz  r0, 0x0000f80c",
+      "baseline": {
+        "taken": 106,
+        "fallthrough": 4,
+        "other": 0
+      },
+      "added": {
+        "taken": 337,
+        "fallthrough": 1289,
+        "other": 0
+      }
+    },
+    "0xf7e0": {
+      "instruction": "0000f7e0  bne  0x0000f80c",
+      "baseline": {
+        "taken": 3,
+        "fallthrough": 1,
+        "other": 0
+      },
+      "added": {
+        "taken": 800,
+        "fallthrough": 489,
+        "other": 0
+      }
+    },
+    "0xf810": {
+      "instruction": "0000f810  cbnz  r0, 0x0000f818",
+      "baseline": {
+        "taken": 138,
+        "fallthrough": 110,
+        "other": 0
+      },
+      "added": {
+        "taken": 9854,
+        "fallthrough": 1626,
+        "other": 0
+      }
+    },
+    "0xf816": {
+      "instruction": "0000f816  cbnz  r0, 0x0000f820",
+      "baseline": {
+        "taken": 3,
+        "fallthrough": 107,
+        "other": 0
+      },
+      "added": {
+        "taken": 800,
+        "fallthrough": 826,
+        "other": 0
+      }
+    },
+    "0xf81e": {
+      "instruction": "0000f81e  bcs  0x0000f874",
+      "baseline": {
+        "taken": 70,
+        "fallthrough": 175,
+        "other": 0
+      },
+      "added": {
+        "taken": 9508,
+        "fallthrough": 1172,
+        "other": 0
+      }
+    },
+    "0xf826": {
+      "instruction": "0000f826  bne  0x0000f83c",
+      "baseline": {
+        "taken": 176,
+        "fallthrough": 2,
+        "other": 0
+      },
+      "added": {
+        "taken": 1020,
+        "fallthrough": 952,
+        "other": 0
+      }
+    },
+    "0xf840": {
+      "instruction": "0000f840  cbnz  r0, 0x0000f876",
+      "baseline": {
+        "taken": 178,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 1568,
+        "fallthrough": 404,
+        "other": 0
+      }
+    },
+    "0xf85c": {
+      "instruction": "0000f85c  cbnz  r0, 0x0000f86a",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 235,
+        "fallthrough": 169,
+        "other": 0
+      }
+    },
+    "0xf8a6": {
+      "instruction": "0000f8a6  bls  0x0000f976",
+      "baseline": {
+        "taken": 176,
+        "fallthrough": 2,
+        "other": 0
+      },
+      "added": {
+        "taken": 1199,
+        "fallthrough": 369,
+        "other": 0
+      }
+    },
+    "0xf8b2": {
+      "instruction": "0000f8b2  cbnz  r0, 0x0000f8ba",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 2,
+        "other": 0
+      },
+      "added": {
+        "taken": 253,
+        "fallthrough": 116,
+        "other": 0
+      }
+    },
+    "0xf8ce": {
+      "instruction": "0000f8ce  bne  0x0000f8ea",
+      "baseline": {
+        "taken": 2,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 243,
+        "fallthrough": 126,
+        "other": 0
+      }
+    },
+    "0xf8ee": {
+      "instruction": "0000f8ee  cbnz  r0, 0x0000f8f8",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 2,
+        "other": 0
+      },
+      "added": {
+        "taken": 253,
+        "fallthrough": 116,
+        "other": 0
+      }
+    },
+    "0xf914": {
+      "instruction": "0000f914  bhi  0x0000f92a",
+      "baseline": {
+        "taken": 2,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 175,
+        "fallthrough": 194,
+        "other": 0
+      }
+    },
+    "0xf91a": {
+      "instruction": "0000f91a  cbnz  r0, 0x0000f92a",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 0,
+        "other": 0
+      },
+      "added": {
+        "taken": 74,
+        "fallthrough": 120,
+        "other": 0
+      }
+    },
+    "0xf93a": {
+      "instruction": "0000f93a  bcc  0x0000f9a8",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 2,
+        "other": 0
+      },
+      "added": {
+        "taken": 119,
+        "fallthrough": 250,
+        "other": 0
+      }
+    },
+    "0xf940": {
+      "instruction": "0000f940  cbnz  r0, 0x0000f9a8",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 2,
+        "other": 0
+      },
+      "added": {
+        "taken": 75,
+        "fallthrough": 175,
+        "other": 0
+      }
+    },
+    "0xf95c": {
+      "instruction": "0000f95c  cbnz  r0, 0x0000f96a",
+      "baseline": {
+        "taken": 0,
+        "fallthrough": 2,
+        "other": 0
+      },
+      "added": {
+        "taken": 102,
+        "fallthrough": 73,
+        "other": 0
+      }
+    },
+    "0xf990": {
+      "instruction": "0000f990  cbnz  r0, 0x0000f99e",
+      "baseline": {
+        "taken": 80,
+        "fallthrough": 96,
+        "other": 0
+      },
+      "added": {
+        "taken": 516,
+        "fallthrough": 683,
+        "other": 0
+      }
+    }
+  }
+}
