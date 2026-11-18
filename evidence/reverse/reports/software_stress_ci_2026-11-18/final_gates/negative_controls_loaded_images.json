@@ -1,0 +1,13 @@
+{
+  "entry": "tools/audit/branch_gap_negative_controls.py",
+  "args": [],
+  "exit_code": 0,
+  "loads": {
+    "original_BIN": 7,
+    "current_BIN": 13,
+    "current_ELF_sections": 0
+  },
+  "original_sha256": "dd629eac0243a13cecc826b1fc2b4b54066f7647d8c1d09a62d5caf7b4f13f65",
+  "firmware_sha256": "7d9601cbf3c8fc1b2583eee43b448babe073b523732085fe46fdf6ed24a150f0",
+  "ELF_sections_only_note": "旧ELF加载器只验其实际装载节，不把Flash填充区未装载伪装为整BIN装载。"
+}

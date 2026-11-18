@@ -1,0 +1,88 @@
+{
+  "project": "PC6M-10",
+  "status": "PASS",
+  "results": [
+    {
+      "seed": 1765,
+      "channel": 0,
+      "events": 1830,
+      "ticks": 1706,
+      "PID_calls": 131,
+      "limit_entries": 2,
+      "limit_exits": 1,
+      "fault_ticks": 20,
+      "reboots": 2,
+      "ADC_conversions": 20472
+    },
+    {
+      "seed": 1765,
+      "channel": 1,
+      "events": 1830,
+      "ticks": 1706,
+      "PID_calls": 131,
+      "limit_entries": 2,
+      "limit_exits": 1,
+      "fault_ticks": 20,
+      "reboots": 2,
+      "ADC_conversions": 20472
+    },
+    {
+      "seed": 20261118,
+      "channel": 0,
+      "events": 1830,
+      "ticks": 1677,
+      "PID_calls": 122,
+      "limit_entries": 2,
+      "limit_exits": 1,
+      "fault_ticks": 20,
+      "reboots": 2,
+      "ADC_conversions": 20124
+    },
+    {
+      "seed": 20261118,
+      "channel": 1,
+      "events": 1830,
+      "ticks": 1677,
+      "PID_calls": 122,
+      "limit_entries": 2,
+      "limit_exits": 1,
+      "fault_ticks": 20,
+      "reboots": 2,
+      "ADC_conversions": 20124
+    },
+    {
+      "seed": 5904128,
+      "channel": 0,
+      "events": 1830,
+      "ticks": 1683,
+      "PID_calls": 129,
+      "limit_entries": 2,
+      "limit_exits": 1,
+      "fault_ticks": 20,
+      "reboots": 2,
+      "ADC_conversions": 20196
+    },
+    {
+      "seed": 5904128,
+      "channel": 1,
+      "events": 1830,
+      "ticks": 1683,
+      "PID_calls": 129,
+      "limit_entries": 2,
+      "limit_exits": 1,
+      "fault_ticks": 20,
+      "reboots": 2,
+      "ADC_conversions": 20196
+    }
+  ],
+  "negative_control_reduced_events": [
+    {
+      "op": "tick",
+      "level": "low",
+      "fault": false,
+      "noise": -3
+    }
+  ],
+  "original_sha256": "dd629eac0243a13cecc826b1fc2b4b54066f7647d8c1d09a62d5caf7b4f13f65",
+  "firmware_sha256": "7d9601cbf3c8fc1b2583eee43b448babe073b523732085fe46fdf6ed24a150f0"
+}

@@ -1,0 +1,67 @@
+{
+  "project": "PC6M-10",
+  "status": "FAIL",
+  "python": "3.13.1",
+  "unicorn": "2.1.4",
+  "capstone": "5.0.7",
+  "images": {
+    "firmware\\firmware.bin": "7d9601cbf3c8fc1b2583eee43b448babe073b523732085fe46fdf6ed24a150f0",
+    "firmware\\firmware.elf": "81605cde17f1850b5d0ad4e83b6176d36d463486dfc7fe1aacf782f2ab3bc287",
+    "firmware\\firmware.map": "3b2bc3e4a6cc95d99ed1c60fc76bfd564ecce1e0b9c27d63173717f71085a39d",
+    "LPC1765.bin": "dd629eac0243a13cecc826b1fc2b4b54066f7647d8c1d09a62d5caf7b4f13f65"
+  },
+  "firmware_inputs": {
+    "firmware\\build.sh": "80b74925eeac7d25fc0913ea37e772548f8cc1c674fcfd7206701ae96f06edcc",
+    "firmware\\data_image.s": "bc5c11a2977365697b47b1cb025e8ea1705c677cf7e32c9d19a17740903f371a",
+    "firmware\\firmware.bin": "7d9601cbf3c8fc1b2583eee43b448babe073b523732085fe46fdf6ed24a150f0",
+    "firmware\\lpc1765.ld": "14f26b1e661e930f751d772f5dc392bd03b55c61ef2893cf685f3ada7414292f",
+    "firmware\\startup.s": "54a05d7dc8972cf70b686e42d264c5eca38fb8a6c94dfadc55dcb68d506aeca0",
+    "firmware\\assets\\ram_data_image.bin": "52a1b26c3d75820f53c3b99eb171dd73b4e40a420254ef910bdab1d0776d3110",
+    "firmware\\inc\\consts.h": "557a26c671f9340219e1f93e31a11d501bbca0c74e5f14807e853e95b4ccffd9",
+    "firmware\\inc\\firmware_api.h": "8425d6da300cc1c20231da83497a0b7968bed6b76f2e3117ff93d8861eadc762",
+    "firmware\\inc\\firmware_display_strings.h": "a8fe9443960df2e528d2670ac099bc320980a8a05805ad9ad31161c4f9780376",
+    "firmware\\inc\\firmware_input_pins.h": "7d24e396c305b9d985c76788a17e0b878680a7c9ff1a569f4b5f5070c9528874",
+    "firmware\\inc\\firmware_parameters.h": "a4d9cdf192aaf804945da36850ef52431b83bb0eeec14eff75e2cbce8f5b153f",
+    "firmware\\inc\\firmware_state.h": "b23e570506ce8da78ab967850bb644e847b3ef48eb8a4d816b0cce3bd1a60e2b",
+    "firmware\\inc\\firmware_types.h": "80ac434fe09d7c4c97d8a5da9b0ef130b9ab5181d8eee72223d907851e379b0c",
+    "firmware\\inc\\input_events.h": "d16f58047206db1762e05566ac1dadb1ba62b2dc32f7c36c729a640650ea0f58",
+    "firmware\\inc\\reg.h": "8e83a70e1fb9f3c00a6e9d407117f711306ade804a3e0c2eee0590fd6b6d22b8",
+    "firmware\\inc\\types.h": "ce83e2c575990c9d237d768e9f13c8a9f19be2fd5e5cb654905be849feb7562a",
+    "firmware\\src\\01_startup.c": "20a3f6c56315583d76126886e465fa1893a97ede94ca1a08890e0947fa40e279",
+    "firmware\\src\\02_lcd_display.c": "26534366141df10fd384550c4b124a2d4c2b921bb7d93bbe3869b12111d716b8",
+    "firmware\\src\\03_input_debounce.c": "24099a49f29f752da0d73a0b613c2ceaa8459e17d95a20198b67fd8e3c5a3a43",
+    "firmware\\src\\04_i2c.c": "f9500cb60ff388e9181782f3d5b72b9f89c431b91c5d44de47522852c2f227e2",
+    "firmware\\src\\05_adc.c": "1449c1afe55461fdbdf1458e5f3598b85d818c300c666c7b8f2fb4d878d9db41",
+    "firmware\\src\\06_frequency_adjust.c": "caec4d48213386404b63085279fcc1c426d2ffd8d6b126907efc8b7a6e2d503a",
+    "firmware\\src\\06_param_system.c": "5987acc4c86823688c853a057d62325843c992ece2c033f53a303e5b10093a50",
+    "firmware\\src\\07_state_machine.c": "f830cafdd6de20d9f9d6e9d961e1b02cf0274e522ecf2179bcb0f2f5d4e24740",
+    "firmware\\src\\08_modbus_dispatch.c": "e1a104b1fc57959576c3bf9cdbb43f5b59688cc612a1db207327cf09ebee8dcc",
+    "firmware\\src\\08_uart3_modbus.c": "d162538051507c28d8eb416f1262fd204e1772c8d0d16b11a77f1ccd4cf48eb0",
+    "firmware\\src\\08_uart3_receive.c": "53864f79f064570d5c1df6eaacebe0a76dce58183730448ee454013acb0b38dc",
+    "firmware\\src\\09_output_stage.c": "7d92ae0149524d923aab062ec3212c80247a95e93f90188c243e05c815eeb18f",
+    "firmware\\src\\10_relay_led.c": "45d93a02dedb01a1920b18f34fefdbbd4e43208b4997f7db594f3db82add09e8",
+    "firmware\\src\\11_auth.c": "b1249b3ba7e96d9ca39d6724a16d56b3dc7e22ea8f16db34e71db0b58681982f",
+    "firmware\\src\\12_closed_loop.c": "1a248af4de831fe472d2434dea8ba82c77be800772b3dab057f3634ad6ba5358",
+    "firmware\\src\\13_gpio_init.c": "77ae148893c93b51779738a41ef2ecebcfcb2c9dc9a33f6be811e00648d5fe7e",
+    "firmware\\src\\crc16_table.c": "e6058da71938e34d8a0d7f90e9fb6a9bedcf19d52e77da1d64ca25a78ab62e9c",
+    "firmware\\src\\strpool.c": "f80fb9750c3cbf8d71b4d046514014f4e8cdaf4c50e51f6eec28f19864623aa2"
+  },
+  "steps": [
+    {
+      "name": "regression",
+      "entry": "test/run_tests.py",
+      "args": [],
+      "exit_code": 0,
+      "seconds": 595.077,
+      "log_sha256": "c55652be1548f10ea44ab98592cf547541eaab319ce03cb51ce787469178bf5c",
+      "loads": {
+        "original_BIN": 56699,
+        "current_BIN": 55731,
+        "current_ELF_sections": 951
+      }
+    }
+  ],
+  "extended": true,
+  "hardware_actions": false,
+  "publishes_release": false
+}

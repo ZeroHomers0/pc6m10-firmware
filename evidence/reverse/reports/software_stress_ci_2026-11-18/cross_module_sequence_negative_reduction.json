@@ -1,0 +1,179 @@
+{
+  "seed": 1765,
+  "channel": 0,
+  "failure": {
+    "event_index": 14,
+    "event": {
+      "op": "tick",
+      "level": "low",
+      "fault": false,
+      "noise": -3
+    },
+    "parts": [
+      0
+    ],
+    "SRAM_diff": [
+      [
+        "0x10002078",
+        1,
+        0
+      ]
+    ],
+    "signature": [
+      "tick",
+      [
+        0
+      ],
+      "0x10002078"
+    ]
+  },
+  "events": [
+    {
+      "op": "write",
+      "reg": 1,
+      "value": 0
+    },
+    {
+      "op": "write",
+      "reg": 2,
+      "value": 600
+    },
+    {
+      "op": "write",
+      "reg": 3,
+      "value": 1200
+    },
+    {
+      "op": "write",
+      "reg": 5,
+      "value": 300
+    },
+    {
+      "op": "write",
+      "reg": 6,
+      "value": 250
+    },
+    {
+      "op": "write",
+      "reg": 7,
+      "value": 1
+    },
+    {
+      "op": "write",
+      "reg": 8,
+      "value": 1
+    },
+    {
+      "op": "write",
+      "reg": 11,
+      "value": 2
+    },
+    {
+      "op": "write",
+      "reg": 12,
+      "value": 0
+    },
+    {
+      "op": "write",
+      "reg": 13,
+      "value": 0
+    },
+    {
+      "op": "write",
+      "reg": 15,
+      "value": 0
+    },
+    {
+      "op": "write",
+      "reg": 17,
+      "value": 0
+    },
+    {
+      "op": "write",
+      "reg": 21,
+      "value": 0
+    },
+    {
+      "op": "key",
+      "key": 5
+    },
+    {
+      "op": "tick",
+      "level": "low",
+      "fault": false,
+      "noise": -3
+    },
+    {
+      "op": "tick",
+      "level": "low",
+      "fault": false,
+      "noise": 3
+    },
+    {
+      "op": "tick",
+      "level": "low",
+      "fault": false,
+      "noise": -3
+    },
+    {
+      "op": "tick",
+      "level": "low",
+      "fault": false,
+      "noise": -3
+    },
+    {
+      "op": "tick",
+      "level": "low",
+      "fault": false,
+      "noise": 0
+    },
+    {
+      "op": "tick",
+      "level": "low",
+      "fault": false,
+      "noise": 3
+    },
+    {
+      "op": "tick",
+      "level": "low",
+      "fault": false,
+      "noise": 0
+    },
+    {
+      "op": "tick",
+      "level": "low",
+      "fault": false,
+      "noise": -3
+    },
+    {
+      "op": "tick",
+      "level": "low",
+      "fault": false,
+      "noise": 3
+    },
+    {
+      "op": "tick",
+      "level": "low",
+      "fault": false,
+      "noise": 3
+    },
+    {
+      "op": "tick",
+      "level": "low",
+      "fault": false,
+      "noise": -3
+    }
+  ],
+  "original_sha256": "dd629eac0243a13cecc826b1fc2b4b54066f7647d8c1d09a62d5caf7b4f13f65",
+  "firmware_sha256": "7d9601cbf3c8fc1b2583eee43b448babe073b523732085fe46fdf6ed24a150f0",
+  "injected_output_noop": true,
+  "reduction_status": "complete",
+  "minimized": [
+    {
+      "op": "tick",
+      "level": "low",
+      "fault": false,
+      "noise": -3
+    }
+  ]
+}
