@@ -1,0 +1,621 @@
+{
+  "project": "PC6M-10",
+  "date": "2026-11-18",
+  "HEAD": "b20b873f24831b8a7c5c9c0416f9de91fd6b5e26",
+  "branch": "firmware-menu-display-2026-11-13",
+  "working_tree_status": " M AGENTS.md\n M DOCUMENTATION_INDEX.md\n M firmware/src/07_state_machine.c\n M firmware/src/11_auth.c\n M tools/audit/test_intervention_inventory.py\n?? docs/analysis/BRANCH_GAP_AUDIT_2026-11-18.md\n?? docs/analysis/FINAL_SOFTWARE_REVIEW_2026-11-18.md\n?? docs/analysis/NUMERIC_LEAF_AUDIT_2026-11-18.md\n?? evidence/reverse/reports/branch_gap_audit_2026-11-18/\n?? evidence/reverse/reports/final_software_review_2026-11-18/\n?? evidence/reverse/reports/numeric_leaf_audit_2026-11-18/\n?? test/emulation/test_auth_response_device_contract.py\n?? test/emulation/test_basic_navigation_bounds_contract.py\n?? test/emulation/test_completion_leaf_contract.py\n?? test/emulation/test_frame_ready_stability_contract.py\n?? test/emulation/test_gpio_readback_probe_contract.py\n?? test/emulation/test_main_modes_contract.py\n?? test/emulation/test_menu_parameter_gap_contract.py\n?? test/emulation/test_modbus_address_profile_contract.py\n?? test/emulation/test_numeric_leaf_contract.py\n?? test/emulation/test_parameter_bank_profile_contract.py\n?? test/emulation/test_password_inner_iteration_contract.py\n?? test/emulation/test_remaining_peripheral_contract.py\n?? tools/audit/archive_branch_gap_batch_6.py\n?? tools/audit/archive_final_software_review.py\n?? tools/audit/branch_gap_negative_controls.py\n?? tools/audit/calibration_state_gap_probe.py\n?? tools/audit/completion_acceptance_ledger.py\n?? tools/audit/completion_bounds_negative.py\n?? tools/audit/completion_final_candidates.py\n?? tools/audit/completion_final_gates.py\n?? tools/audit/completion_reset_inner_probe.py\n?? tools/audit/completion_state_probe.py\n?? tools/audit/completion_terminal_probe.py\n?? tools/audit/final_intervention_contracts.py\n?? tools/audit/run_branch_gap_batch.py\n",
+  "original_sha256": "dd629eac0243a13cecc826b1fc2b4b54066f7647d8c1d09a62d5caf7b4f13f65",
+  "firmware_sha256": "7d9601cbf3c8fc1b2583eee43b448babe073b523732085fe46fdf6ed24a150f0",
+  "firmware_bytes": 60584,
+  "firmware_elf_sha256": "81605cde17f1850b5d0ad4e83b6176d36d463486dfc7fe1aacf782f2ab3bc287",
+  "python": "3.13.1",
+  "unicorn": "2.1.4",
+  "capstone": "5.0.7",
+  "regression_composition": [
+    {
+      "log": "completion_fresh_regression_ab.log",
+      "modules": 76
+    },
+    {
+      "log": "completion_updated_regression.log",
+      "modules": 3
+    }
+  ],
+  "current_modules_passed": 78,
+  "module_results": {
+    "test_emulation_test_adc_scan_sequence_equivalence": {
+      "source": "test/emulation/test_adc_scan_sequence_equivalence.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_adc_wait_done_equivalence": {
+      "source": "test/emulation/test_adc_wait_done_equivalence.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_audit_fixes": {
+      "source": "test/emulation/test_audit_fixes.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_audit_fixes_2": {
+      "source": "test/emulation/test_audit_fixes_2.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_auth_response_device_contract": {
+      "source": "test/emulation/test_auth_response_device_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_basic_navigation_bounds_contract": {
+      "source": "test/emulation/test_basic_navigation_bounds_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_case3_edit_equivalence": {
+      "source": "test/emulation/test_case3_edit_equivalence.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_clock_polling_contract": {
+      "source": "test/emulation/test_clock_polling_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_closed_loop_equivalence": {
+      "source": "test/emulation/test_closed_loop_equivalence.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_closed_loop_wrapper_equivalence": {
+      "source": "test/emulation/test_closed_loop_wrapper_equivalence.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_completion_leaf_contract": {
+      "source": "test/emulation/test_completion_leaf_contract.py",
+      "last_success_log": "completion_updated_regression.log"
+    },
+    "test_emulation_test_contract_mutation_detection": {
+      "source": "test/emulation/test_contract_mutation_detection.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_control_multitick_equivalence": {
+      "source": "test/emulation/test_control_multitick_equivalence.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_crc16_against_model": {
+      "source": "test/emulation/test_crc16_against_model.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_crc16_firmware_equivalence": {
+      "source": "test/emulation/test_crc16_firmware_equivalence.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_delay_loop_structure": {
+      "source": "test/emulation/test_delay_loop_structure.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_direct_execution_completion": {
+      "source": "test/emulation/test_direct_execution_completion.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_display_byte_reads": {
+      "source": "test/emulation/test_display_byte_reads.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_display_call_equivalence": {
+      "source": "test/emulation/test_display_call_equivalence.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_eeprom_load_config_equivalence": {
+      "source": "test/emulation/test_eeprom_load_config_equivalence.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_eeprom_persistent_chain": {
+      "source": "test/emulation/test_eeprom_persistent_chain.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_eeprom_powercut_recovery": {
+      "source": "test/emulation/test_eeprom_powercut_recovery.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_eeprom_sync_matrix_equivalence": {
+      "source": "test/emulation/test_eeprom_sync_matrix_equivalence.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_enum_range_equivalence": {
+      "source": "test/emulation/test_enum_range_equivalence.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_exception_func_code": {
+      "source": "test/emulation/test_exception_func_code.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_execution_completion": {
+      "source": "test/emulation/test_execution_completion.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_gpio_readback_probe_contract": {
+      "source": "test/emulation/test_gpio_readback_probe_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_i2c_bit_contract": {
+      "source": "test/emulation/test_i2c_bit_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_init_trace": {
+      "source": "test/emulation/test_init_trace.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_input_scan_equivalence": {
+      "source": "test/emulation/test_input_scan_equivalence.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_interrupt_preemption_contract": {
+      "source": "test/emulation/test_interrupt_preemption_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_interrupt_sequence_equivalence": {
+      "source": "test/emulation/test_interrupt_sequence_equivalence.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_main_software_chain": {
+      "source": "test/emulation/test_main_software_chain.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_menu_page_bounds": {
+      "source": "test/emulation/test_menu_page_bounds.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_menu_parameter_gap_contract": {
+      "source": "test/emulation/test_menu_parameter_gap_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_menu_persistent_workflow": {
+      "source": "test/emulation/test_menu_persistent_workflow.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_modbus_address_profile_contract": {
+      "source": "test/emulation/test_modbus_address_profile_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_modbus_boundary_contract": {
+      "source": "test/emulation/test_modbus_boundary_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_modbus_dispatch_execution": {
+      "source": "test/emulation/test_modbus_dispatch_execution.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_modbus_read_register_equivalence": {
+      "source": "test/emulation/test_modbus_read_register_equivalence.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_modbus_reset_contract": {
+      "source": "test/emulation/test_modbus_reset_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_modbus_sram_contract": {
+      "source": "test/emulation/test_modbus_sram_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_modbus_write_multi_equivalence": {
+      "source": "test/emulation/test_modbus_write_multi_equivalence.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_numeric_leaf_contract": {
+      "source": "test/emulation/test_numeric_leaf_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_output_boundary_contract": {
+      "source": "test/emulation/test_output_boundary_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_output_persistent_replay": {
+      "source": "test/emulation/test_output_persistent_replay.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_parameter_bank_profile_contract": {
+      "source": "test/emulation/test_parameter_bank_profile_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_parameter_sync_execution": {
+      "source": "test/emulation/test_parameter_sync_execution.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_parameter_sync_retry_gate": {
+      "source": "test/emulation/test_parameter_sync_retry_gate.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_password_delay_all_copies": {
+      "source": "test/emulation/test_password_delay_all_copies.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_password_inner_iteration_contract": {
+      "source": "test/emulation/test_password_inner_iteration_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_password_workflow_contract": {
+      "source": "test/emulation/test_password_workflow_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_peripheral_leaf_trace_equivalence": {
+      "source": "test/emulation/test_peripheral_leaf_trace_equivalence.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_peripheral_polling": {
+      "source": "test/emulation/test_peripheral_polling.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_peripheral_semantic_contract": {
+      "source": "test/emulation/test_peripheral_semantic_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_pid_range_table_contract": {
+      "source": "test/emulation/test_pid_range_table_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_pid_signed_boundaries": {
+      "source": "test/emulation/test_pid_signed_boundaries.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_protection_shutdown_chain": {
+      "source": "test/emulation/test_protection_shutdown_chain.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_relay_state_machine_equivalence": {
+      "source": "test/emulation/test_relay_state_machine_equivalence.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_remaining_peripheral_contract": {
+      "source": "test/emulation/test_remaining_peripheral_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_reset_initialization_contract": {
+      "source": "test/emulation/test_reset_initialization_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_runner_hook_lifetime": {
+      "source": "test/emulation/test_runner_hook_lifetime.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_state_lifecycle_contract": {
+      "source": "test/emulation/test_state_lifecycle_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_state_machine_call_trace_equivalence": {
+      "source": "test/emulation/test_state_machine_call_trace_equivalence.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_state_machine_multitick_matrix_equivalence": {
+      "source": "test/emulation/test_state_machine_multitick_matrix_equivalence.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_state_runtime_recovery": {
+      "source": "test/emulation/test_state_runtime_recovery.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_sync_phase_contract": {
+      "source": "test/emulation/test_sync_phase_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_terminal_event_contract": {
+      "source": "test/emulation/test_terminal_event_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_timer1_byte_domain": {
+      "source": "test/emulation/test_timer1_byte_domain.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_uart_rx_sequence_equivalence": {
+      "source": "test/emulation/test_uart_rx_sequence_equivalence.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_uart_wire_chain": {
+      "source": "test/emulation/test_uart_wire_chain.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_unresolved_exceptions_rejected": {
+      "source": "test/emulation/test_unresolved_exceptions_rejected.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_static_test_crc16_tables_and_semantics": {
+      "source": "test/static/test_crc16_tables_and_semantics.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_static_test_modbus_register_map": {
+      "source": "test/static/test_modbus_register_map.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_static_test_parameter_sync_structure": {
+      "source": "test/static/test_parameter_sync_structure.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_static_test_readability_contract": {
+      "source": "test/static/test_readability_contract.py",
+      "last_success_log": "completion_fresh_regression_ab.log"
+    },
+    "test_emulation_test_frame_ready_stability_contract": {
+      "source": "test/emulation/test_frame_ready_stability_contract.py",
+      "last_success_log": "completion_updated_regression.log"
+    },
+    "test_emulation_test_main_modes_contract": {
+      "source": "test/emulation/test_main_modes_contract.py",
+      "last_success_log": "completion_updated_regression.log"
+    }
+  },
+  "raw_branch_summary": {
+    "candidate_branches": 1931,
+    "both": 1928,
+    "one": 1,
+    "unhit": 2
+  },
+  "branch_classification": {
+    "BOTH_EXECUTED": 1926,
+    "BOTH_EXECUTED_ORIGINAL_RUNTIME_ADAPTATION": 1,
+    "BOTH_EXECUTED_AUTHORIZED_BACKLIGHT_CUSTOM": 1,
+    "UNREACHABLE_PROVEN_IN_READY_FRAME_CONTRACT": 1,
+    "DATA_MISDISASSEMBLED_NOT_EXECUTABLE_BRANCH": 2
+  },
+  "unexplained_candidates": 0,
+  "unclassified_functions": 0,
+  "function_contracts": {
+    "IAR_RUNTIME_REPLACED_BOOT_ABI_CONTRACT": 10,
+    "SOURCE_SYMBOL_AND_EXECUTION_LAYER_CONTRACT": 86,
+    "ORIGINAL_BX_LR_OPTIMIZED_AWAY": 1,
+    "VECTOR_ISR_EXECUTION_AND_FINITE_MODEL_CONTRACT": 8
+  },
+  "test_interventions": {
+    "ADC_DEVICE": 21,
+    "LAYERED_COMPOSITION": 354,
+    "AUTH_MAIN_CUSTOM": 21,
+    "EXECUTION_BOUNDARY": 24,
+    "DISPLAY_LAYER": 28,
+    "EEPROM_DEVICE": 35,
+    "GPIO_MODEL": 14,
+    "DELAY_EQ_SUMMARY": 45,
+    "FINITE_PREEMPTION": 11,
+    "STARTUP_ADAPTATION": 15,
+    "DORMANT_MASK_NOT_CALLED": 1,
+    "NEGATIVE_CONTROL": 2,
+    "OBSERVATION_ONLY": 3,
+    "HISTORICAL_DIAGNOSTIC_NOT_ACCEPTANCE": 86
+  },
+  "all_declared_software_review_items_disposed": true,
+  "scope": "本报告声明的源码/模拟输入与有限外设调度契约；不是任意RAM/全部中断交错/实机量化等价证明",
+  "hardware_actions_this_task": false,
+  "committed_or_pushed_this_task": false,
+  "files": {
+    "firmware/build.sh": "80b74925eeac7d25fc0913ea37e772548f8cc1c674fcfd7206701ae96f06edcc",
+    "firmware/data_image.s": "bc5c11a2977365697b47b1cb025e8ea1705c677cf7e32c9d19a17740903f371a",
+    "firmware/firmware.bin": "7d9601cbf3c8fc1b2583eee43b448babe073b523732085fe46fdf6ed24a150f0",
+    "firmware/firmware.elf": "81605cde17f1850b5d0ad4e83b6176d36d463486dfc7fe1aacf782f2ab3bc287",
+    "firmware/firmware.hex": "82879b30afe1efe5328e21656d1559aa86ff1deecc9996cbfe6bf2c8263c40d7",
+    "firmware/firmware.map": "3b2bc3e4a6cc95d99ed1c60fc76bfd564ecce1e0b9c27d63173717f71085a39d",
+    "firmware/lpc1765.ld": "14f26b1e661e930f751d772f5dc392bd03b55c61ef2893cf685f3ada7414292f",
+    "firmware/startup.s": "54a05d7dc8972cf70b686e42d264c5eca38fb8a6c94dfadc55dcb68d506aeca0",
+    "firmware/assets/ram_data_image.bin": "52a1b26c3d75820f53c3b99eb171dd73b4e40a420254ef910bdab1d0776d3110",
+    "firmware/inc/consts.h": "557a26c671f9340219e1f93e31a11d501bbca0c74e5f14807e853e95b4ccffd9",
+    "firmware/inc/firmware_api.h": "8425d6da300cc1c20231da83497a0b7968bed6b76f2e3117ff93d8861eadc762",
+    "firmware/inc/firmware_display_strings.h": "a8fe9443960df2e528d2670ac099bc320980a8a05805ad9ad31161c4f9780376",
+    "firmware/inc/firmware_input_pins.h": "7d24e396c305b9d985c76788a17e0b878680a7c9ff1a569f4b5f5070c9528874",
+    "firmware/inc/firmware_parameters.h": "a4d9cdf192aaf804945da36850ef52431b83bb0eeec14eff75e2cbce8f5b153f",
+    "firmware/inc/firmware_state.h": "b23e570506ce8da78ab967850bb644e847b3ef48eb8a4d816b0cce3bd1a60e2b",
+    "firmware/inc/firmware_types.h": "80ac434fe09d7c4c97d8a5da9b0ef130b9ab5181d8eee72223d907851e379b0c",
+    "firmware/inc/input_events.h": "d16f58047206db1762e05566ac1dadb1ba62b2dc32f7c36c729a640650ea0f58",
+    "firmware/inc/reg.h": "8e83a70e1fb9f3c00a6e9d407117f711306ade804a3e0c2eee0590fd6b6d22b8",
+    "firmware/inc/types.h": "ce83e2c575990c9d237d768e9f13c8a9f19be2fd5e5cb654905be849feb7562a",
+    "firmware/src/01_startup.c": "20a3f6c56315583d76126886e465fa1893a97ede94ca1a08890e0947fa40e279",
+    "firmware/src/02_lcd_display.c": "26534366141df10fd384550c4b124a2d4c2b921bb7d93bbe3869b12111d716b8",
+    "firmware/src/03_input_debounce.c": "24099a49f29f752da0d73a0b613c2ceaa8459e17d95a20198b67fd8e3c5a3a43",
+    "firmware/src/04_i2c.c": "f9500cb60ff388e9181782f3d5b72b9f89c431b91c5d44de47522852c2f227e2",
+    "firmware/src/05_adc.c": "1449c1afe55461fdbdf1458e5f3598b85d818c300c666c7b8f2fb4d878d9db41",
+    "firmware/src/06_frequency_adjust.c": "caec4d48213386404b63085279fcc1c426d2ffd8d6b126907efc8b7a6e2d503a",
+    "firmware/src/06_param_system.c": "5987acc4c86823688c853a057d62325843c992ece2c033f53a303e5b10093a50",
+    "firmware/src/07_state_machine.c": "f830cafdd6de20d9f9d6e9d961e1b02cf0274e522ecf2179bcb0f2f5d4e24740",
+    "firmware/src/08_modbus_dispatch.c": "e1a104b1fc57959576c3bf9cdbb43f5b59688cc612a1db207327cf09ebee8dcc",
+    "firmware/src/08_uart3_modbus.c": "d162538051507c28d8eb416f1262fd204e1772c8d0d16b11a77f1ccd4cf48eb0",
+    "firmware/src/08_uart3_receive.c": "53864f79f064570d5c1df6eaacebe0a76dce58183730448ee454013acb0b38dc",
+    "firmware/src/09_output_stage.c": "7d92ae0149524d923aab062ec3212c80247a95e93f90188c243e05c815eeb18f",
+    "firmware/src/10_relay_led.c": "45d93a02dedb01a1920b18f34fefdbbd4e43208b4997f7db594f3db82add09e8",
+    "firmware/src/11_auth.c": "b1249b3ba7e96d9ca39d6724a16d56b3dc7e22ea8f16db34e71db0b58681982f",
+    "firmware/src/12_closed_loop.c": "1a248af4de831fe472d2434dea8ba82c77be800772b3dab057f3634ad6ba5358",
+    "firmware/src/13_gpio_init.c": "77ae148893c93b51779738a41ef2ecebcfcb2c9dc9a33f6be811e00648d5fe7e",
+    "firmware/src/crc16_table.c": "e6058da71938e34d8a0d7f90e9fb6a9bedcf19d52e77da1d64ca25a78ab62e9c",
+    "firmware/src/strpool.c": "f80fb9750c3cbf8d71b4d046514014f4e8cdaf4c50e51f6eec28f19864623aa2",
+    "firmware/tools/decode_strpool.py": "1250c9b25be3a6a285bbce810ad63812bbb62b2f0486e87629c21eb44fcc713c",
+    "test/run_tests.py": "c144c7e2fbd3545c30a883007d1a50c2cb7bd74fef7c8acd67abb76c7e25107c",
+    "test/emulation/test_adc_scan_sequence_equivalence.py": "b17b5d9139af04fe41acb556d777d0b2b76212715bbb133b1705cf4aababd83a",
+    "test/emulation/test_adc_wait_done_equivalence.py": "48d14cbd1a04b03ea7544524ec3a131b269a3f6492d844321504a68b98c99a69",
+    "test/emulation/test_audit_fixes.py": "10c6261f8ee787a8c69c24a60add5c2d26a5d6eb63a23844f9f67f2cffa90671",
+    "test/emulation/test_audit_fixes_2.py": "6519cba9eb2bb04b9b3a521f004f550ac384746aabb92c209090a0deefcf960c",
+    "test/emulation/test_auth_response_device_contract.py": "9a962dac7fdb980b3cfb58741383808a18931d8da53d0df24e35f99308fdf9b6",
+    "test/emulation/test_basic_navigation_bounds_contract.py": "a8a06d907b516a8d90167839eb3b421a8ab1533686b5aea792cdf5a5e4f1d64b",
+    "test/emulation/test_case3_edit_equivalence.py": "f3843bede8a734030fd3850759ca8083a46bcd6fe215f66d19e759a3f58748a8",
+    "test/emulation/test_clock_polling_contract.py": "4599aad573dbe93d53f35e69a3f87ca6622c737ed3fba853a5d24dc12527e868",
+    "test/emulation/test_closed_loop_equivalence.py": "e86c0ebb0b29a10f9fb07733ee18214f4c2975ddde8b01903a5f7f4a9b65a409",
+    "test/emulation/test_closed_loop_wrapper_equivalence.py": "2849c991c5ad9cbef1b057703e761580abd813af832e552c78ff55388434d86d",
+    "test/emulation/test_completion_leaf_contract.py": "59f5bdf7dcc5502b27f18799feabf8861f611a2102b12e26a5aa3b31de36637f",
+    "test/emulation/test_contract_mutation_detection.py": "5f0217ffc3a5691adc98059e62eebb00a28be4643c786260f26812c0f61cf84d",
+    "test/emulation/test_control_multitick_equivalence.py": "2f2d3c338d9fab3f2c8141cd9c6aaf5ba6da703b4bd2bd0cf5f8545f4c1260f0",
+    "test/emulation/test_crc16_against_model.py": "93eb4be23a133d93ad0d8c09adcb65615b10810fef757dfeb7b1c1ab7e17cd69",
+    "test/emulation/test_crc16_firmware_equivalence.py": "8164627b7e75cce1ac55fa74e8526b37ec7fc0dd962862c801121b535e8fc99e",
+    "test/emulation/test_delay_loop_structure.py": "8321d392dbaeb6aa63d620fb0e9528acbfcf75509abe50e9dca4e89dc07bd222",
+    "test/emulation/test_direct_execution_completion.py": "7759f0c1970e76fa67d2799c7ee5e65aba6f779d8563acc218fac0f6ddbeecd6",
+    "test/emulation/test_display_byte_reads.py": "1c000117fe005b10ec1e4074cf8734db173f6ab3f1b6b913bb32e2d236c6d915",
+    "test/emulation/test_display_call_equivalence.py": "3c687e7370de6e97e8d967b79c229a868eb0110213fb3bf497c87163b29355df",
+    "test/emulation/test_eeprom_load_config_equivalence.py": "cb8a60c138db9cfab087dd98b67ff411b8cea3eb0dd40d0b1ea91ab9281e9d85",
+    "test/emulation/test_eeprom_persistent_chain.py": "fa86dbba6687c9e034539b0f237007e81a9f532701483c8e2f95285fad3ebeb0",
+    "test/emulation/test_eeprom_powercut_recovery.py": "e2208bd7e6f9b607bbf689997edba7f59580afa9c99235a83e674bdbd2454cdc",
+    "test/emulation/test_eeprom_sync_matrix_equivalence.py": "1d79f4cd29b9a0734433133b63d2a8289b5d1dc320eb0770de7fdb6cb24c714a",
+    "test/emulation/test_enum_range_equivalence.py": "ddb41a106ee49e8d66ebc5071f339f67bdb59da6cc5f41ee745f05f7ee3800f2",
+    "test/emulation/test_exception_func_code.py": "fe30fd55fc5161324283c6a87748901204f31837c1b799ceae9c836559d4b184",
+    "test/emulation/test_execution_completion.py": "4c70ca0057cd05b9a584a179da8ec6c6c99bcac2e9adfbc2eb5c89b977180bf7",
+    "test/emulation/test_frame_ready_stability_contract.py": "9ef91f851a0811f0a015d1365bb1fe61090248b06e6d336595dddf549effad47",
+    "test/emulation/test_gpio_readback_probe_contract.py": "a1d7f1c3a52d8058caa970241b45e2784081519b10e0ad5d48faf8d09104eee7",
+    "test/emulation/test_i2c_bit_contract.py": "0211bd57b6046b4ea890d0d97dba200dfa7979f131e2ad49d3eaeb45861fc206",
+    "test/emulation/test_init_trace.py": "3f76068197c622d92ee6c0454251aa954dcaa38764307e2f25166ecbfc77a5a8",
+    "test/emulation/test_input_scan_equivalence.py": "2679f7d0f6e919296bae66f0acf7cb06e4618e715ae0e2fc2d39ba1554d6e5d7",
+    "test/emulation/test_interrupt_preemption_contract.py": "53baef12f7bbeacd4668f1af51b4909ef33e312681a324a33c634533937538ba",
+    "test/emulation/test_interrupt_sequence_equivalence.py": "d51d1a763ee365b5a7d8b4f88da92a73d4efb36b09ef315ef9b048aef2f6ddf5",
+    "test/emulation/test_main_modes_contract.py": "741f2cbf7f0d3c119d58ef5efde02c51f34f84f333decf3c8556672368a38517",
+    "test/emulation/test_main_software_chain.py": "b37beffb9c5bbff1dd1c4ed0d467413803d5853278278845f2c91d336ff5b575",
+    "test/emulation/test_menu_page_bounds.py": "94170b93e31cc6bf930e16684f5c1141dbae6185ab4f970e367ca4c4b5b968ae",
+    "test/emulation/test_menu_parameter_gap_contract.py": "e4b093b991827ba7b179be29757edf5371716748d392b0e2fe02ef9715c64c63",
+    "test/emulation/test_menu_persistent_workflow.py": "b9fdc189ac7579956b968a97fadba5b093e620d2da17cc3f5038505c61a70ba0",
+    "test/emulation/test_modbus_address_profile_contract.py": "963af5fd4bf5a2cd096791320ccc4ce2d2cb15c81363ab0b1a458676967a53f3",
+    "test/emulation/test_modbus_boundary_contract.py": "aa5600d6ce4e0e4c3e43d275060042fb50a47b886303ae66ae1d94744489a982",
+    "test/emulation/test_modbus_dispatch_execution.py": "5481f497f3e58b6ca98e34161cb02b1723b649785837c679e696091a638f4246",
+    "test/emulation/test_modbus_read_register_equivalence.py": "69493dc8253291e8b5bf7c9351ad5776aee91ef9d34db36d3368444e5c9df17c",
+    "test/emulation/test_modbus_reset_contract.py": "50f55d3e09c14c3438bed25d7b5716d23047fcf3c601063e7f5b97e372d7d14f",
+    "test/emulation/test_modbus_sram_contract.py": "443a45ca69862291def1d40df23a0ab0da2bcdd9fc5b2bf62397606e9fa55dd5",
+    "test/emulation/test_modbus_write_multi_equivalence.py": "5ff06f22ccbdfe69499dcbbdb66ae362192ab3d642f49a96b7958f15a8c9c1cc",
+    "test/emulation/test_numeric_leaf_contract.py": "90dcdccbc61f5539fdd6140c2bb06a877b81eb94df7fb8d45f5bbcfa7baef954",
+    "test/emulation/test_output_boundary_contract.py": "82a7e0d411c1e4f7e7be06a3b8241cbad7b40162b78f9ef24427fbcd240d164a",
+    "test/emulation/test_output_persistent_replay.py": "c8b6de037e3745fe7c43760ebd7dd08cf73c09a44424fd6ec91f091f253aacf4",
+    "test/emulation/test_parameter_bank_profile_contract.py": "99b93c7d89052efb8097851bfa20534463eda6c32e0b4e4688b9c2f505688db9",
+    "test/emulation/test_parameter_sync_execution.py": "dd2e27b76af1f2c1d47e9ac4ff034952d5616dc78b832ebc2e071909c2bb8f10",
+    "test/emulation/test_parameter_sync_retry_gate.py": "61aac41a613953a9d484720648076aabcebb385d99eb8cace0b42241f5397b36",
+    "test/emulation/test_password_delay_all_copies.py": "888066284fda2ff76a7275271b17e42422bdaf1a799f55e3c2e2443ae93768f0",
+    "test/emulation/test_password_inner_iteration_contract.py": "aa20bf2a85d3c49c0896718a6c1427e62d3a64ddcd728f247968aa66ab0392a5",
+    "test/emulation/test_password_workflow_contract.py": "e396f8286314f2750ace1f45f9dceba3d3035dff4590ce49f6ba626b72c362a6",
+    "test/emulation/test_peripheral_leaf_trace_equivalence.py": "b3d8bfeceec4267825c0ce503ee1896fdf53538f96f080f005994d07ec5cb6b4",
+    "test/emulation/test_peripheral_polling.py": "d5ceed28fe60c31f746e567127bde20b33f6899d597edc5e6fbcacb706f17070",
+    "test/emulation/test_peripheral_semantic_contract.py": "44528fcee418e8ba6b9cafeae206ce5baf99c170a8795d330d70dccf30b68c7f",
+    "test/emulation/test_pid_range_table_contract.py": "9b6393feda33b7a9b4008c08c2f2d90103c588deaac65873366f5efc9ede9440",
+    "test/emulation/test_pid_signed_boundaries.py": "e97e3664bf6d59235aebf38b9f1aa133c804b536033aa211fc06db714887e0b5",
+    "test/emulation/test_protection_shutdown_chain.py": "cbdaf55bf630c19678a3859de177c5fee45777b239d3693412390aa88f246efe",
+    "test/emulation/test_relay_state_machine_equivalence.py": "1ef9916363b0f93cc875cd73968bfd7a9c732de00dfc3294f6b8f5850cbb0127",
+    "test/emulation/test_remaining_peripheral_contract.py": "74cd4fd6947f5002b327ed72de342af6e03675e62f801680a71069347a8f3622",
+    "test/emulation/test_reset_initialization_contract.py": "40d9d53f2b79e935f4a845eae688bb616c748cc16ca9a87de93a1500944d6109",
+    "test/emulation/test_runner_hook_lifetime.py": "076206d2155563caaaf6d7eaebdef9714d65d4d6fdaaf681f6be9464320fb77b",
+    "test/emulation/test_state_lifecycle_contract.py": "5bc7ad8d5d2c60eb9e9bfbe14e7265312d52c1cf03d2603152cdae7a603d2885",
+    "test/emulation/test_state_machine_call_trace_equivalence.py": "8191bfcd380bd20fc1e92eba8e8acdc2e4a0c04f550a06d2c4e91fd14d620f18",
+    "test/emulation/test_state_machine_multitick_matrix_equivalence.py": "3f270784308c62c292bda11d9dce437986f9c9e4b33c11ecb17a74c954c1f099",
+    "test/emulation/test_state_runtime_recovery.py": "56e02da9248fed3cf1e06458d2c9c3785cf6753195947a6cd108ea6de8698e3a",
+    "test/emulation/test_sync_phase_contract.py": "be7e3a35070f0d1e44c91b6bb1db48d9db90d652034c34efeca8d408e6f5be2d",
+    "test/emulation/test_terminal_event_contract.py": "29357dd61e09c06247d935a9f3aa44de5a00b7042fa154b460eb2465374e40dd",
+    "test/emulation/test_timer1_byte_domain.py": "745e1b4b544dd0a0e7695f936d7ea1618fa9c613a8c4ca31af403a0ea64a1f48",
+    "test/emulation/test_uart_rx_sequence_equivalence.py": "cfff529ce0b2a0fa9229ed9e24b7344b3ab4cb3e9429429435912c91eb979392",
+    "test/emulation/test_uart_wire_chain.py": "0748b101be510ce60812932d8eacb630d2d166bd4f2dc494126e2390d92ce864",
+    "test/emulation/test_unresolved_exceptions_rejected.py": "daefc414ab328126838338feda112adad177db9c2b80153ebb781471be6a1aa2",
+    "test/static/test_crc16_tables_and_semantics.py": "271bc454ad6be67b90e475e034859d0374477e3b886471e58081ad142922b93f",
+    "test/static/test_modbus_register_map.py": "780f8ee7b17a7273eae24b42478d7daf5f8afceeccf36850f2e665ffea78588d",
+    "test/static/test_parameter_sync_structure.py": "cc446720e4d69ac469c4230b6b916688b055a98c0cdd20f9b72bc68dd7e3e5ae",
+    "test/static/test_readability_contract.py": "487c1a400b27332106166126d2e18c21b34d0307bcf327db794df29461215ffc",
+    "test/support/menu_audit_support.py": "2ebae87564053bb52ddbbb18df8ee0b72171e5e60916f368db91dc7c55c4a676",
+    "test/support/mmio_code_trace.py": "2f9fefd091da59d7515c4b1aa54669297980a4635a6a94be8a75b6e69097b5de",
+    "test/support/peripheral_semantics.py": "3dd666fc3f23ec8d67b536273004f0485a0042f7b80eb6dad68a33b67891c3f8",
+    "test/support/software_ab_support.py": "103909312c5c4317a04499bdce5ee4c8e634fed22a4d59d409cb6e7fae2012c1",
+    "test/support/unicorn_harness.py": "4e188c76085b98ce8e77dd4e12741c4fa097e9847ff7e57d0312f71e23b16808",
+    "test/support/__init__.py": "58d11831b591fc4a9e8718a8d2bb032d4a6fb7e583720b1c3d837c8f65db556e",
+    "tools/audit/archive_branch_gap_batch_6.py": "edd5b80bf36da7ad0ffb21e25bc62020c25a8f95ee2b0d8cc9105f523080de87",
+    "tools/audit/archive_final_software_review.py": "1e40d9511edb2820dd0dfe70c1c144148c7f49b275b1816b279a950a88a19c2b",
+    "tools/audit/archive_lifecycle_audit.py": "d6f855db0d129d1ba81ebe5411df4da053953d8e88ead1c5737a35ac29959d62",
+    "tools/audit/branch_cfg_classification.py": "e70374ceb23bde8a732f81ba07219b221f2db9b0beb785896178628d1e017a49",
+    "tools/audit/branch_gap_negative_controls.py": "5abc503eec7f17cc925af8ca9dcb191a665d0ce2866ff5ff27515940a8cdd6f2",
+    "tools/audit/calibration_state_gap_probe.py": "2d8871498dc5f230e5b4fab1e96c77540c2e68ffefb03512682e48d4b3313929",
+    "tools/audit/codex_audit_crc_tables.py": "674b6d43a59cc846752ed73f6fda12d044dccb3f14a282b29b73c5933b75ea9b",
+    "tools/audit/codex_audit_function_coverage.py": "dd888829a129dda38361ed3e0968b4dab377e7d780499125bf2f51975829aa14",
+    "tools/audit/codex_audit_globals.py": "3be11421c3bbe81b23c382976ad56cdd1a3fb596fd8baea917b26b6d8c75eecc",
+    "tools/audit/codex_audit_strpool.py": "9b2901d74cf1c9bb0cc4f4e365ea9bd09a206850630ba8edc3937c6a91c9eb59",
+    "tools/audit/completion_acceptance_ledger.py": "b3fac2f772380ec1811213fca22fa8d9d321556aeec2e764ff2597572b08ccb0",
+    "tools/audit/completion_bounds_negative.py": "19e25aad2712c8fcc1818d8c38c61af9de454d054ac5f60113ae613953041e81",
+    "tools/audit/completion_final_candidates.py": "c8bc8e85e06b79542b7e5e231135e4698d86be4207e327ecf839be119b7ac915",
+    "tools/audit/completion_final_gates.py": "36b277a4e7a614033cc7fc50f0cfceccf5a5b9d60660a290677adaed9379a5fe",
+    "tools/audit/completion_reset_inner_probe.py": "9938a725e50e4f50015c0950ccb855f8af4c809fd8cc7b4dc39aeb3f51705496",
+    "tools/audit/completion_state_probe.py": "7116ff426f943798b3347f4804126371e78d99cb5fb235208ed3bd3fe8c0fe50",
+    "tools/audit/completion_terminal_probe.py": "982a99996507c664fa3efec86dc973fa6e60c1d9d09c9e9c22dc4bcdc540ebef",
+    "tools/audit/extend_menu_branch_inventory.py": "f6a9adf0fd55a22e4c907cb6dfc7b3d2c5ddc38ff0d2ffbb9d1ac39c0e2c6c6f",
+    "tools/audit/final_intervention_contracts.py": "f9bd6856ea98cf99bf5d6589532d184007ae8a05a369762a321dc69f56bee4f0",
+    "tools/audit/independent_control_diff.py": "c3f9e2a679efee58c9242f076d4a15a5046670e239162ce891831088713a0f57",
+    "tools/audit/lifecycle_negative_controls.py": "b8b24fecb3540172dffe9947dd2b6bedd3c2b0797e2384c1895fd378b20a2a39",
+    "tools/audit/menu_complete_matrix.py": "2c9c2df0bb02088b81d6bb1615f9b63c86a36f487f8670042d239b30eeb83dbd",
+    "tools/audit/modbus_short_frame_underflow.py": "8315de436460f0ee4c8c74fb26444feaefcd0659d29bde7c487f5035242e8c0f",
+    "tools/audit/modbus_work_slot_replay.py": "9ec1a92df830e4c32ba226cd50639bfef5c42510556d487f421ddb7e13a889fe",
+    "tools/audit/run_branch_gap_batch.py": "1c8e70a8dc3a07e485de928fd043d91a3d5436c0908b81f4c08eb0f9456d17f9",
+    "tools/audit/software_branch_inventory.py": "465efc4b80015b39b11c388645b8ba7cc7e16c23ad5fe26e06a9a4f8255d91c0",
+    "tools/audit/summarize_output_boundary.py": "766bf86090b9984c70f5e13213d3c17f685fabb2e1819f10fd0a96de9f14d2c2",
+    "tools/audit/test_intervention_inventory.py": "e8e2286766ef30cf6495ce49d43157833e51faec0bc172da4c072a6d5ef69206",
+    "tools/audit/full_review_2026-11-16/audit_all_menu_states.py": "cfb03c2ca918a6b37bf400a51d1a73dd3cb761051dd2a028749897f1cd1d68a6",
+    "tools/audit/full_review_2026-11-16/audit_leaf_and_numbers.py": "9da478f02414dd3d0fd4984dea1a57dd953bf7c8bc5884d14c089f8230140ae9",
+    "tools/audit/full_review_2026-11-16/audit_modbus_single_write.py": "28c8c93892a1fcd5f4a9731b932f73e9e1080b69eb6a85de80dfedc284f975a5",
+    "tools/audit/full_review_2026-11-16/audit_pid_boundaries.py": "4bc30a010d74eebee8533ba3466cfc44143239312e6f7c96d1783efc4eeebd2d",
+    "tools/audit/full_review_2026-11-16/audit_timer1_domain.py": "ce38a1721b1aa5a891343f6c85624d8cde8cb2228b81e2ecca76caeae189e9f7",
+    "tools/audit/full_review_2026-11-16/confirm_menu_findings.py": "fefca0470023357676e6deaa9b5539f34ae3d28a380481bf17398c2fce95f7a6",
+    "tools/audit/full_review_2026-11-16/confirm_password_delay.py": "0c7bc2b389758e463a6993b19037f780349bc8640f45738267a057a0a0bff8ed",
+    "tools/audit/full_review_2026-11-16/quick12_modbus.py": "cf4e9c11d8e25019b1ddd5f02f9120e7a58472e5afdee97d7afb5abc5646d8cc",
+    "tools/audit/full_review_2026-11-16/quick12_pid.py": "1c877116e101878daf8ff59ea4ef304c0860dbe0dd701d4b4661333a60e31f72",
+    "tools/audit/full_review_2026-11-16/quick12_ui.py": "0c3e19fa6407f9135596ba1eda7ca665c1a0396bbeffc23ade1a99e9c4860786",
+    "tools/verification/check_readwidth.py": "02e62cf1b265757b5a6e7fe1f87e1ecb696a0dba00bc94433c3cc43cc879906f",
+    "tools/verification/scan_state_machine_audit.py": "e4c3e9f0b5f85fdb3cf6f36628c41177ac4772f32423a11aa3f9de43994ae6dc",
+    "tools/verification/verify_backlight_timeout.py": "466f6181360c22e86aa484c0b1e4528c88b94368d0c01ccb94ec9afcb158ac1b",
+    "tools/verification/verify_firmware_equivalence.py": "12d2e7fdb1c8bed0e1137a02b870cc0a3effe6432702fe8463647806e19345aa",
+    "tools/verification/verify_mem_xref.py": "d96a067860b3c9b05b67c31cdc04ab5625e1793378b53d77abd3c1b461d98d5a",
+    "tools/verification/verify_menu_text.py": "bd45ba96b9e7a0622e825c5cb49f3a8c4ffe6fc35042f0a5bb075c931db93be5",
+    "tools/verification/verify_modbus_c.py": "34705766784fcc9314d5c133193948fab46a25499456980b215eec451d29632c",
+    "tools/verification/verify_periph_xref.py": "f5528f0d7509d04676818f60f7a208020e3375170882f285985a1c3470d3e0aa",
+    "tools/verification/verify_readwidth_all.py": "e678f469d33a90a095ed06e15af0482cab0f6784ae48a790e489a9371a115dd1",
+    "tools/verification/verify_sm_addresses.py": "d04b98812cce33b00147f14256eac46974ba3156a5974edf7708db0d535ff1ee",
+    "tools/verification/verify_startup.py": "a1ad501dfb116b37986b4ed85add69033bc817b665176282c12e08c5cd6db2b0",
+    "tools/verification/verify_startup_adaptation_contract.py": "efa68be84a8b12b331ea2f7190746731f9a4ef5b48fc0ec787c78711a3eb5d98",
+    "tools/verification/verify_strpool.py": "76a1957c8e63914527b95602f37a033e181903ca8659fbc94d3aaf96e4a79e2a",
+    "evidence/reverse/reports/final_software_review_2026-11-18/.gitattributes": "781dc85570afe8b6721956fd02ff6dbcda32e7d341dc70ceb62a3cbab9844220",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_acceptance_ledger.log": "83114a513c7a4369e10626f4189a05ccb51ce780d1868d1901159e666c5e9c8b",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_archive.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_audit_6.log": "bb34dbd63fdd65ae90ab8710f336826a6e64837cc54db5f02c4ce8092aa67116",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_auth_initial.log": "d16feae1a0673f627404e78db00488435c23beb96747bd2e538ea84844df01a8",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_bounds.log": "f5587ae77b39da1a387d0bf52c979eb9c5fe063383cd34b1c6bc42845e2c4cd6",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_bounds_negative.json": "fc8c6946a8a41d8f396d5085d234a4c2c923484d347906018a9602ca3c9026ab",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_bounds_negative.log": "a35b570dcac61aa78dcbfe190bafd1ce2eeead2099a35cf816be8491b4931016",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_branch_acceptance.json": "236355fd52273ec6a951471340fe98336bfaf65a668468f4c1594021aee27a00",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_build_1.log": "0ca9b5da8fd91462f53b1700a536eeb27c80bdf205f840df1d1fdc4df4fb8a66",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_build_2.log": "3c8cc958f89d48657ea69853484e37c9b8a8458d267e230f4cff6cf4a32d61d5",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_closed.log": "0a6fca76499f406e04d851e9f5d01e80d7bd565427573636b330a5072118680a",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_closed_inventory.json": "368736b54ec5b3b2e15ffa5c8acd88c7db6c2c6d3fb3b0663b982ef3b92914a8",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_closed_inventory.json.checkpoint.json": "368736b54ec5b3b2e15ffa5c8acd88c7db6c2c6d3fb3b0663b982ef3b92914a8",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_final_gates.json": "27bc65cbfadf361338b6bd1fa2f7397f5196013deb21e4f2cd4eaeacabd3c485",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_final_gates.log": "4153e5e6e1c06eb3a62850efdec94ad3e96acf06eec231640ba12a740ce2e490",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_fresh_regression_ab.log": "2dd7dd38735f8c04bf70d76fcc9919ba4c31d7493f902bd3161caaecffa9fb72",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_function_contracts.json": "9093f5194f3a37477cb4a5efc5d75e29b18d7e5a553c70a5ec3e7b92c20486f5",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_gate_backlight_custom.log": "79aae37692e3e54ac300cd6b5f4d51ac82780b6137d8b730fdcf42ff9f1bf33b",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_gate_bounds_auth_before_fix.log": "a35b570dcac61aa78dcbfe190bafd1ce2eeead2099a35cf816be8491b4931016",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_gate_build_repeat.log": "a7f82c061137aa2867c9dd02efcdd6597165465dd4cf282a275d505453a60058",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_gate_five_negative_controls.log": "034f7ad6749d37ed020ea92cdaac578882e252d0f10a43f07f2e4908a050191c",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_gate_menu_custom.log": "53552d971605d487516f193ad974d17ac826e99fdce63ce27a60a60afef68559",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_gate_startup_adaptation.log": "e41b93b82655ca41551141fc527d15aa40838bbebbb19f432ae7e10fae481149",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_gate_updated_regression.log": "62a4956dacb6fa89116f7c325dd6960bad4dce922958148c97a3d682537fe07b",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_intervention_contracts.json": "4c59fd60fbc2ebc5dbc392920c532fc5782ecb78de94ec666bf9cf145c31d514",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_intervention_contracts.log": "b796c4aabb4d3dbdd33c110321f8aeb96bb4abeb2787ee40b455a60673403c5f",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_intervention_scan.log": "4d939110bce73737e7b0bed1fca77a5b69434929abb8ffb9eae6a954a25d43cd",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_leaf.log": "f724d7ff3dfd9a9bf8b8e506c75bcf25ce8652e19a597288141815c396e09d5b",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_leaf_current.log": "af4416baa70ee507864b5bcf9b38b8f801afbc052777291293b90bf057182080",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_leaf_inventory.json": "e56e46a782fb3b3a60ffcee0a1689f8d0982127522fce8b0c3a96f36dbf3e1f3",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_main_modes.log": "fe152f40596c4eda2b1bcb99b2fa69f42f5a82967490afa9a14ae00587b0f487",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_pending_context.txt": "d0e5cca8652873453bb772c84d7dcb2f3aff45d1703ba52bea24167b95cb75f9",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_peripheral.log": "086a0590d7c94d0aa64a6c252c059338b933d7558efa57d6be127904a6aee2f3",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_peripheral_inventory.json": "8af5b8150a29a66bcfc0e9c308d47ebf85f054f0e19228446dd7711e112b85c1",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_replay.log": "b17785fc4a89b59e3522708047ba24232b1ba0f2a5e9820c7282f705d1ba7b71",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_replay_initial_argv.log": "37eea67ffc93e091cb33dd8747a677cb19833f16cb9002767dc43c580496aec2",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_replay_initial_argv_inventory.json": "f64f8f785e90701c4794954718bb83f02a40bac3635a77cab499a8bc94de0c62",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_replay_initial_eint_map.log": "79647a65453206b06dd69c07b70378082375a201542bb400e691f877cc2c0df9",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_replay_initial_eint_map_inventory.json": "46a97aecc6d8514439ee6bd4d51b99880dea39e7fc83878d104e9d43e0258d10",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_replay_inventory.json": "65ccd489651c7a2520348efbbc03fd46c73cd7c90b4691ad662f3416748218cc",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_replay_inventory.json.checkpoint.json": "65ccd489651c7a2520348efbbc03fd46c73cd7c90b4691ad662f3416748218cc",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_reset_inner.log": "2f3e90bb75e584e9b8f7fe8e28e6a35b3452feff32e94e5528661d3b40b484ac",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_state.log": "0eeb46d8f7de6b324b9bd91bd87daa521c5b3f6d1f84dd3a926a63bf0c94b4d1",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_state_closed.log": "b0fc7046ec379a094000632b5da140e012fc8ede2c2c98ef8632baa242857c2b",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_state_closed_inventory.json": "d8de1df80333372eb1e671498325c674007514790f5fcf6f2ac101f40948bb5a",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_state_final.log": "4aec501d1bcca8e9a198536772a7af035044059273bd92d673d9fdbf43db5661",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_state_final_inventory.json": "fc511f39be6a1412a51b478bb84e6fff951e44a8f06881a62c64356b659e45e9",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_state_full.log": "5fd285e7c46bfe5d5d5e44aae97ae827cabf89b714ca07050f6ee26b88f10660",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_state_full_inventory.json": "c665566d075d4f39f9ad3a72cdf43616f9c540af7d7d12c9f533d7d89fcc83ca",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_state_inventory.json": "bd49e1e02d02185eaf79611113af45b28c7aeb361123b091850eafc1f5b17490",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_terminal.log": "6eb407a8e3eb6d8fbe803e8975d276b7147480def1bd7515379b0e9733aca0c0",
+    "evidence/reverse/reports/final_software_review_2026-11-18/completion_updated_regression.log": "18f6d3a585ade06d0409002579c5c97c3a363750df3b26d099514685f982024b",
+    "evidence/reverse/reports/final_software_review_2026-11-18/working_tree.patch": "6379caa59116b9db040a61a43fbb8ecc306ac6d5f86ff4517574d2aebc7dfbc7",
+    "evidence/reverse/reports/final_software_review_2026-11-18/before_fix/07_state_machine.c": "0e723da31aa3266cd44aece4e95aaf43df49ac91ae504c2b450aab48d4a42a4b",
+    "evidence/reverse/reports/final_software_review_2026-11-18/before_fix/11_auth.c": "008df7a65a12746e08d3a260f02ad49d5aa521195f6f486eb3b9035e3ddd10dc",
+    "evidence/reverse/reports/final_software_review_2026-11-18/before_fix/completion_state_closed.log": "b0fc7046ec379a094000632b5da140e012fc8ede2c2c98ef8632baa242857c2b",
+    "evidence/reverse/reports/final_software_review_2026-11-18/before_fix/completion_state_closed_inventory.json": "d8de1df80333372eb1e671498325c674007514790f5fcf6f2ac101f40948bb5a",
+    "evidence/reverse/reports/final_software_review_2026-11-18/before_fix/firmware.bin": "3a5c87633f7bc2a5d96007efe7a6a62e31ed236a806b793e79d3852f6d458580",
+    "evidence/reverse/reports/final_software_review_2026-11-18/before_fix/firmware.elf": "55110d48f0ddbfd1b261321c33846b3e03ca33a694c26cf325a16c66594361f2",
+    "evidence/reverse/reports/final_software_review_2026-11-18/before_fix/firmware.map": "afb2f9e128e767c3496c0104fdcfe57b867e7b0ad354b2340264ada70e8e87fa",
+    "AGENTS.md": "9818813a5032176db992867eb16ae3cba84963254014a468169a211fb6b1e728",
+    "DOCUMENTATION_INDEX.md": "cec88a2171c5cb1f8f3244ed98fd3b566107e492b4187461f1d326f8b351214b",
+    "docs/analysis/FINAL_SOFTWARE_REVIEW_2026-11-18.md": "3a0317eb888d7a11a0c5f4665b295f9a9dd587379c2954547df7283ac75baacf",
+    "docs/project/FIRMWARE_EQUIVALENCE_REMEDIATION_PLAN_2026-11-17.md": "b6063b6317a945a0c96d23fc9e04f890581237a21aea4ed080dc7916599536bb"
+  }
+}

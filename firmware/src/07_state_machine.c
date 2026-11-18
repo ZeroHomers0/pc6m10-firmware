@@ -850,7 +850,7 @@ static void state_machine_page_basic_parameter_edit(KeyCode key_code)
                 disp_string(DISPLAY_BASIC_EDIT_LABEL_03,2,0,0); disp_string(DISPLAY_BASIC_EDIT_LABEL_04,3,0,0); break;
         case 2: disp_string(DISPLAY_BASIC_EDIT_LABEL_05,0,0,0); disp_string(DISPLAY_BASIC_EDIT_LABEL_06,1,0,0);
                 disp_string(DISPLAY_BASIC_EDIT_LABEL_07,2,0,0); disp_string(DISPLAY_BASIC_EDIT_LABEL_08,3,0,0); break;
-        default: disp_string(DISPLAY_BASIC_EDIT_LABEL_09,0,0,0); disp_string(DISPLAY_BASIC_EDIT_LABEL_10,1,0,0);
+        case 3: disp_string(DISPLAY_BASIC_EDIT_LABEL_09,0,0,0); disp_string(DISPLAY_BASIC_EDIT_LABEL_10,1,0,0);
                 disp_string(DISPLAY_BASIC_EDIT_LABEL_11,2,0,0); disp_string(DISPLAY_BASIC_EDIT_LABEL_12,3,0,0); break;
       }
     }

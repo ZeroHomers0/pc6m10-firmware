@@ -1,0 +1,13 @@
+{
+  "project": "PC6M-10",
+  "injections_detected": [
+    "modbus_missing_response_after_normal_return",
+    "missing_second_magic_byte_valid_bank_load",
+    "menu_missing_state_and_display_after_normal_return",
+    "inner_threshold_1000_to_992_detected_after_full_exit",
+    "GPIO_clear_leaf_not_executed"
+  ],
+  "restored_baseline_pass": true,
+  "firmware_sha256": "3a5c87633f7bc2a5d96007efe7a6a62e31ed236a806b793e79d3852f6d458580",
+  "original_sha256": "dd629eac0243a13cecc826b1fc2b4b54066f7647d8c1d09a62d5caf7b4f13f65"
+}

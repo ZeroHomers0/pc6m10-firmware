@@ -1,0 +1,3062 @@
+[
+  {
+    "address": "0x3596",
+    "instruction": "00003596  bne  0x000035a8",
+    "function_file": "000025dc_FUN_000025dc.txt",
+    "before": {
+      "taken": 78,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 249,
+      "fallthrough": 24,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x35c6",
+    "instruction": "000035c6  bne  0x000035d8",
+    "function_file": "000025dc_FUN_000025dc.txt",
+    "before": {
+      "taken": 78,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 249,
+      "fallthrough": 24,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x35de",
+    "instruction": "000035de  bne  0x000035f0",
+    "function_file": "000025dc_FUN_000025dc.txt",
+    "before": {
+      "taken": 78,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 249,
+      "fallthrough": 24,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x382c",
+    "instruction": "0000382c  beq  0x0000384e",
+    "function_file": "000035f2_FUN_000035f2.txt",
+    "before": {
+      "taken": 1748,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 5132,
+      "fallthrough": 96,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x4e34",
+    "instruction": "00004e34  cbnz  r0, 0x00004e5c",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 5,
+      "other": 0
+    },
+    "after": {
+      "taken": 135,
+      "fallthrough": 50,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x4e62",
+    "instruction": "00004e62  bne  0x00004e8c",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 5,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 140,
+      "fallthrough": 45,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x4e92",
+    "instruction": "00004e92  bne  0x00004ebc",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 5,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 140,
+      "fallthrough": 45,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x536c",
+    "instruction": "0000536c  beq  0x00005372",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 2146,
+      "other": 0
+    },
+    "after": {
+      "taken": 36,
+      "fallthrough": 2290,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x5370",
+    "instruction": "00005370  bne  0x000053a8",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 2146,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 2254,
+      "fallthrough": 36,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x5384",
+    "instruction": "00005384  bcc  0x0000538c",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 48,
+      "fallthrough": 24,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x5392",
+    "instruction": "00005392  bhi  0x0000539a",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 40,
+      "fallthrough": 32,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x53aa",
+    "instruction": "000053aa  beq  0x000053b0",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 2146,
+      "other": 0
+    },
+    "after": {
+      "taken": 36,
+      "fallthrough": 2290,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x53ae",
+    "instruction": "000053ae  bne  0x000053d6",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 2146,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 2254,
+      "fallthrough": 36,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x53b6",
+    "instruction": "000053b6  bhi  0x000053be",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 40,
+      "fallthrough": 32,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x548a",
+    "instruction": "0000548a  bcc  0x00005478",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 90074,
+      "other": 0
+    },
+    "after": {
+      "taken": 1000,
+      "fallthrough": 100074,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x55cc",
+    "instruction": "000055cc  bcc  0x000055ba",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 90074,
+      "other": 0
+    },
+    "after": {
+      "taken": 1000,
+      "fallthrough": 100074,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x58f6",
+    "instruction": "000058f6  bls  0x000058fe",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 7,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 35,
+      "fallthrough": 12,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x591a",
+    "instruction": "0000591a  bls  0x00005922",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 7,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 35,
+      "fallthrough": 12,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x593e",
+    "instruction": "0000593e  bls  0x00005946",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 4,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 32,
+      "fallthrough": 12,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x5962",
+    "instruction": "00005962  bls  0x0000596a",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 7,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 35,
+      "fallthrough": 12,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x5986",
+    "instruction": "00005986  bls  0x0000598e",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 4,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 32,
+      "fallthrough": 12,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x59a6",
+    "instruction": "000059a6  ble  0x000059ac",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 4,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 16,
+      "fallthrough": 8,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x59ca",
+    "instruction": "000059ca  ble  0x000059d0",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 4,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 16,
+      "fallthrough": 8,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x59e8",
+    "instruction": "000059e8  ble  0x000059ee",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 4,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 12,
+      "fallthrough": 12,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x5a06",
+    "instruction": "00005a06  ble  0x00005a0c",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 4,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 12,
+      "fallthrough": 12,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x5a24",
+    "instruction": "00005a24  ble  0x00005a2a",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 4,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 12,
+      "fallthrough": 12,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x5a42",
+    "instruction": "00005a42  bls  0x00005a48",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 4,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 20,
+      "fallthrough": 8,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x5a66",
+    "instruction": "00005a66  bls  0x00005a72",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 7,
+      "other": 0
+    },
+    "after": {
+      "taken": 16,
+      "fallthrough": 31,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x5a84",
+    "instruction": "00005a84  bls  0x00005a90",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 7,
+      "other": 0
+    },
+    "after": {
+      "taken": 16,
+      "fallthrough": 31,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x5aa2",
+    "instruction": "00005aa2  bls  0x00005aae",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 4,
+      "other": 0
+    },
+    "after": {
+      "taken": 16,
+      "fallthrough": 28,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x5ac0",
+    "instruction": "00005ac0  bls  0x00005acc",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 7,
+      "other": 0
+    },
+    "after": {
+      "taken": 16,
+      "fallthrough": 31,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x5ade",
+    "instruction": "00005ade  bls  0x00005aea",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 4,
+      "other": 0
+    },
+    "after": {
+      "taken": 16,
+      "fallthrough": 28,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x5be6",
+    "instruction": "00005be6  ble  0x00005bf2",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 4,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 8,
+      "fallthrough": 16,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x5c00",
+    "instruction": "00005c00  ble  0x00005c0c",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 4,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 8,
+      "fallthrough": 16,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x5c1a",
+    "instruction": "00005c1a  ble  0x00005c26",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 4,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 8,
+      "fallthrough": 16,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x5c34",
+    "instruction": "00005c34  ble  0x00005c40",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 4,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 8,
+      "fallthrough": 16,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x5c4e",
+    "instruction": "00005c4e  ble  0x00005c5a",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 4,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 8,
+      "fallthrough": 16,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x5c66",
+    "instruction": "00005c66  cbz  r0, 0x00005c72",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 4,
+      "other": 0
+    },
+    "after": {
+      "taken": 4,
+      "fallthrough": 24,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x5e3e",
+    "instruction": "00005e3e  bne  0x00005e4c",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 111,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 467,
+      "fallthrough": 4,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x5e8e",
+    "instruction": "00005e8e  cbnz  r0, 0x00005e9e",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 115,
+      "other": 0
+    },
+    "after": {
+      "taken": 8,
+      "fallthrough": 467,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x5ee8",
+    "instruction": "00005ee8  cbnz  r0, 0x00005ef8",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 114,
+      "other": 0
+    },
+    "after": {
+      "taken": 8,
+      "fallthrough": 304,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x6116",
+    "instruction": "00006116  bcc  0x00006130",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 835,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 2500,
+      "fallthrough": 36,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x69ba",
+    "instruction": "000069ba  bcc  0x000069d2",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 865,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 901,
+      "fallthrough": 72,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x7322",
+    "instruction": "00007322  bls  0x0000732e",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 9,
+      "other": 0
+    },
+    "after": {
+      "taken": 8,
+      "fallthrough": 41,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x733c",
+    "instruction": "0000733c  bls  0x00007348",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 6,
+      "other": 0
+    },
+    "after": {
+      "taken": 8,
+      "fallthrough": 38,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x7356",
+    "instruction": "00007356  bls  0x00007362",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 8,
+      "other": 0
+    },
+    "after": {
+      "taken": 8,
+      "fallthrough": 40,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x7370",
+    "instruction": "00007370  bls  0x0000737c",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 6,
+      "other": 0
+    },
+    "after": {
+      "taken": 8,
+      "fallthrough": 38,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x738a",
+    "instruction": "0000738a  bls  0x00007396",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 6,
+      "other": 0
+    },
+    "after": {
+      "taken": 8,
+      "fallthrough": 38,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x73ae",
+    "instruction": "000073ae  bcs  0x000073b6",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 7,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 39,
+      "fallthrough": 8,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x73ce",
+    "instruction": "000073ce  bcs  0x000073d6",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 6,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 38,
+      "fallthrough": 8,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x73ee",
+    "instruction": "000073ee  bcs  0x000073f6",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 7,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 39,
+      "fallthrough": 8,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x740e",
+    "instruction": "0000740e  bcs  0x00007416",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 6,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 38,
+      "fallthrough": 8,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x742e",
+    "instruction": "0000742e  bcs  0x00007436",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 6,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 38,
+      "fallthrough": 8,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x74f4",
+    "instruction": "000074f4  bne  0x00007562",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 182,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 1128,
+      "fallthrough": 2,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x7568",
+    "instruction": "00007568  bne  0x00007584",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 182,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 1128,
+      "fallthrough": 2,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x7804",
+    "instruction": "00007804  bne  0x00007812",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 161,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 913,
+      "fallthrough": 4,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x7840",
+    "instruction": "00007840  cbnz  r0, 0x00007850",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 165,
+      "other": 0
+    },
+    "after": {
+      "taken": 26,
+      "fallthrough": 895,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x78e6",
+    "instruction": "000078e6  bne  0x000078f6",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 165,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 931,
+      "fallthrough": 2,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x7926",
+    "instruction": "00007926  cbnz  r0, 0x00007936",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 169,
+      "other": 0
+    },
+    "after": {
+      "taken": 52,
+      "fallthrough": 885,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x79ee",
+    "instruction": "000079ee  cbnz  r0, 0x000079fe",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 169,
+      "other": 0
+    },
+    "after": {
+      "taken": 52,
+      "fallthrough": 873,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x7ab4",
+    "instruction": "00007ab4  bcc  0x00007ac6",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 8,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 16,
+      "fallthrough": 12,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x7ae4",
+    "instruction": "00007ae4  bcc  0x00007af6",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 8,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 32,
+      "fallthrough": 14,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x7ec0",
+    "instruction": "00007ec0  ble  0x00007ec6",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 7,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 47,
+      "fallthrough": 16,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x7ede",
+    "instruction": "00007ede  ble  0x00007ee4",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 7,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 47,
+      "fallthrough": 16,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x7efc",
+    "instruction": "00007efc  ble  0x00007f02",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 4,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 44,
+      "fallthrough": 16,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x7f1a",
+    "instruction": "00007f1a  ble  0x00007f20",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 4,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 44,
+      "fallthrough": 16,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x7f38",
+    "instruction": "00007f38  ble  0x00007f3e",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 6,
+      "other": 0
+    },
+    "after": {
+      "taken": 8,
+      "fallthrough": 54,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x7f56",
+    "instruction": "00007f56  ble  0x00007f5c",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 6,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 34,
+      "fallthrough": 28,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x7faa",
+    "instruction": "00007faa  bls  0x00007fb4",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 2,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 28,
+      "fallthrough": 14,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x7fd0",
+    "instruction": "00007fd0  bls  0x00007fda",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 2,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 30,
+      "fallthrough": 12,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x7ff6",
+    "instruction": "00007ff6  bls  0x00008000",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 2,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 30,
+      "fallthrough": 12,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x804a",
+    "instruction": "0000804a  bls  0x00008054",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 2,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 28,
+      "fallthrough": 14,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x8070",
+    "instruction": "00008070  bls  0x0000807a",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 2,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 28,
+      "fallthrough": 14,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x8096",
+    "instruction": "00008096  bls  0x000080a0",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 2,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 28,
+      "fallthrough": 14,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x80bc",
+    "instruction": "000080bc  ble  0x000080c8",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 7,
+      "other": 0
+    },
+    "after": {
+      "taken": 4,
+      "fallthrough": 59,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x80d6",
+    "instruction": "000080d6  ble  0x000080e2",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 7,
+      "other": 0
+    },
+    "after": {
+      "taken": 4,
+      "fallthrough": 59,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x80f0",
+    "instruction": "000080f0  ble  0x000080fc",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 4,
+      "other": 0
+    },
+    "after": {
+      "taken": 4,
+      "fallthrough": 56,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x810a",
+    "instruction": "0000810a  ble  0x00008116",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 4,
+      "other": 0
+    },
+    "after": {
+      "taken": 4,
+      "fallthrough": 56,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x8124",
+    "instruction": "00008124  ble  0x00008130",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 6,
+      "other": 0
+    },
+    "after": {
+      "taken": 4,
+      "fallthrough": 58,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x813e",
+    "instruction": "0000813e  ble  0x0000814a",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 6,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 30,
+      "fallthrough": 32,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x8176",
+    "instruction": "00008176  cbz  r0, 0x00008182",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 2,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 4,
+      "fallthrough": 38,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x818e",
+    "instruction": "0000818e  cbz  r0, 0x0000819a",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 2,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 4,
+      "fallthrough": 38,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x81a6",
+    "instruction": "000081a6  cbz  r0, 0x000081b2",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 2,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 4,
+      "fallthrough": 38,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x81e8",
+    "instruction": "000081e8  bcs  0x000081f0",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 2,
+      "other": 0
+    },
+    "after": {
+      "taken": 36,
+      "fallthrough": 6,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x8208",
+    "instruction": "00008208  bcs  0x00008210",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 2,
+      "other": 0
+    },
+    "after": {
+      "taken": 36,
+      "fallthrough": 6,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x8228",
+    "instruction": "00008228  bcs  0x00008230",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 2,
+      "other": 0
+    },
+    "after": {
+      "taken": 36,
+      "fallthrough": 6,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x8374",
+    "instruction": "00008374  cbz  r0, 0x00008394",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 151,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 1169,
+      "fallthrough": 114,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x84a4",
+    "instruction": "000084a4  cbz  r0, 0x000084c6",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 94,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 798,
+      "fallthrough": 76,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x853a",
+    "instruction": "0000853a  cbnz  r0, 0x0000854a",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 128,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 350,
+      "fallthrough": 2,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x8610",
+    "instruction": "00008610  cbz  r0, 0x00008622",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 9,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 10,
+      "fallthrough": 19,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x8698",
+    "instruction": "00008698  cbz  r0, 0x000086f0",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 9,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 10,
+      "fallthrough": 19,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x8766",
+    "instruction": "00008766  bcc  0x0000877c",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 854,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 4179,
+      "fallthrough": 36,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x88d6",
+    "instruction": "000088d6  blt  0x000088de",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 7,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 47,
+      "fallthrough": 16,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x88f6",
+    "instruction": "000088f6  bcc  0x000088fe",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 7,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 35,
+      "fallthrough": 12,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x8920",
+    "instruction": "00008920  ble  0x00008926",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 4,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 20,
+      "fallthrough": 40,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x894e",
+    "instruction": "0000894e  ble  0x0000895a",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 7,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 15,
+      "fallthrough": 48,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x8966",
+    "instruction": "00008966  cbz  r0, 0x00008972",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 7,
+      "other": 0
+    },
+    "after": {
+      "taken": 4,
+      "fallthrough": 43,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x8980",
+    "instruction": "00008980  ble  0x0000898c",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 4,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 8,
+      "fallthrough": 52,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x8c00",
+    "instruction": "00008c00  bcc  0x00008c16",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 760,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 1845,
+      "fallthrough": 36,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x8c74",
+    "instruction": "00008c74  bcc  0x00008c62",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 80074,
+      "other": 0
+    },
+    "after": {
+      "taken": 1000,
+      "fallthrough": 90074,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x8d2c",
+    "instruction": "00008d2c  bcc  0x00008d1a",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 20001,
+      "other": 0
+    },
+    "after": {
+      "taken": 1000,
+      "fallthrough": 30001,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x8d76",
+    "instruction": "00008d76  bcc  0x00008d64",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 20001,
+      "other": 0
+    },
+    "after": {
+      "taken": 1000,
+      "fallthrough": 30001,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x8dc0",
+    "instruction": "00008dc0  bcc  0x00008dae",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 20001,
+      "other": 0
+    },
+    "after": {
+      "taken": 1000,
+      "fallthrough": 30001,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x8e42",
+    "instruction": "00008e42  bcc  0x00008e30",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 80074,
+      "other": 0
+    },
+    "after": {
+      "taken": 1000,
+      "fallthrough": 90074,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x8ef8",
+    "instruction": "00008ef8  bcc  0x00008ee6",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 20001,
+      "other": 0
+    },
+    "after": {
+      "taken": 1000,
+      "fallthrough": 30001,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x8fc6",
+    "instruction": "00008fc6  bcc  0x00008fb4",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 20001,
+      "other": 0
+    },
+    "after": {
+      "taken": 1000,
+      "fallthrough": 30001,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9012",
+    "instruction": "00009012  bcc  0x00009000",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 20001,
+      "other": 0
+    },
+    "after": {
+      "taken": 1000,
+      "fallthrough": 30001,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x90f2",
+    "instruction": "000090f2  bcc  0x00009108",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 74,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 92,
+      "fallthrough": 36,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x91aa",
+    "instruction": "000091aa  bne  0x000091bc",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 74,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 572,
+      "fallthrough": 4,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x91c2",
+    "instruction": "000091c2  bne  0x000091d4",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 74,
+      "other": 0
+    },
+    "after": {
+      "taken": 444,
+      "fallthrough": 132,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x91da",
+    "instruction": "000091da  bne  0x000091ec",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 74,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 572,
+      "fallthrough": 4,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x91f2",
+    "instruction": "000091f2  bne  0x00009204",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 74,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 180,
+      "fallthrough": 396,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x921c",
+    "instruction": "0000921c  bne  0x0000931c",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 80,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 132,
+      "fallthrough": 396,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9226",
+    "instruction": "00009226  bne  0x0000923e",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 198,
+      "fallthrough": 198,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9238",
+    "instruction": "00009238  ble  0x0000923e",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 170,
+      "fallthrough": 28,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9240",
+    "instruction": "00009240  bne  0x00009254",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 198,
+      "fallthrough": 198,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9248",
+    "instruction": "00009248  ble  0x00009254",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 2,
+      "fallthrough": 196,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x925a",
+    "instruction": "0000925a  bge  0x00009292",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 252,
+      "fallthrough": 144,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x929c",
+    "instruction": "0000929c  blt  0x000092d6",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 144,
+      "fallthrough": 252,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x92a4",
+    "instruction": "000092a4  bge  0x000092d6",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 56,
+      "fallthrough": 196,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x92dc",
+    "instruction": "000092dc  blt  0x00009316",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 340,
+      "fallthrough": 56,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9358",
+    "instruction": "00009358  blt  0x0000935e",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 7,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 23,
+      "fallthrough": 40,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x936c",
+    "instruction": "0000936c  bne  0x00009380",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 7,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 7,
+      "fallthrough": 56,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9374",
+    "instruction": "00009374  ble  0x00009380",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 8,
+      "fallthrough": 48,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x938e",
+    "instruction": "0000938e  bne  0x000093a2",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 4,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 4,
+      "fallthrough": 56,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9396",
+    "instruction": "00009396  ble  0x000093a2",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 8,
+      "fallthrough": 48,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9476",
+    "instruction": "00009476  ble  0x00009482",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 4,
+      "other": 0
+    },
+    "after": {
+      "taken": 8,
+      "fallthrough": 52,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9490",
+    "instruction": "00009490  ble  0x0000949c",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 4,
+      "other": 0
+    },
+    "after": {
+      "taken": 8,
+      "fallthrough": 52,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x94aa",
+    "instruction": "000094aa  ble  0x000094b6",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 4,
+      "other": 0
+    },
+    "after": {
+      "taken": 8,
+      "fallthrough": 52,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x94c4",
+    "instruction": "000094c4  ble  0x000094d0",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 4,
+      "other": 0
+    },
+    "after": {
+      "taken": 8,
+      "fallthrough": 52,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x94de",
+    "instruction": "000094de  ble  0x000094ea",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 4,
+      "other": 0
+    },
+    "after": {
+      "taken": 8,
+      "fallthrough": 52,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9504",
+    "instruction": "00009504  ble  0x00009510",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 7,
+      "other": 0
+    },
+    "after": {
+      "taken": 8,
+      "fallthrough": 55,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x951e",
+    "instruction": "0000951e  bne  0x00009536",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 7,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 7,
+      "fallthrough": 56,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9530",
+    "instruction": "00009530  blt  0x00009536",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 28,
+      "fallthrough": 28,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9544",
+    "instruction": "00009544  bne  0x0000955c",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 4,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 4,
+      "fallthrough": 56,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9556",
+    "instruction": "00009556  blt  0x0000955c",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 28,
+      "fallthrough": 28,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9574",
+    "instruction": "00009574  blt  0x0000957a",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 4,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 48,
+      "fallthrough": 12,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9596",
+    "instruction": "00009596  ble  0x000095a0",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 4,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 32,
+      "fallthrough": 28,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x95b8",
+    "instruction": "000095b8  blt  0x000095be",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 4,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 48,
+      "fallthrough": 12,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x95da",
+    "instruction": "000095da  ble  0x000095e4",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 4,
+      "other": 0
+    },
+    "after": {
+      "taken": 28,
+      "fallthrough": 32,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9604",
+    "instruction": "00009604  ble  0x0000960e",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 4,
+      "other": 0
+    },
+    "after": {
+      "taken": 28,
+      "fallthrough": 32,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x967a",
+    "instruction": "0000967a  bne  0x000096e2",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 33,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 179,
+      "fallthrough": 78,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x96a6",
+    "instruction": "000096a6  bne  0x000096b6",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 92,
+      "other": 0
+    },
+    "after": {
+      "taken": 450,
+      "fallthrough": 92,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x96d2",
+    "instruction": "000096d2  bne  0x000096e2",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 92,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 92,
+      "fallthrough": 450,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9706",
+    "instruction": "00009706  bne  0x00009716",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 33,
+      "other": 0
+    },
+    "after": {
+      "taken": 198,
+      "fallthrough": 33,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9738",
+    "instruction": "00009738  bne  0x000097a2",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 33,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 33,
+      "fallthrough": 198,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9792",
+    "instruction": "00009792  bne  0x000097a2",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 92,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 238,
+      "fallthrough": 330,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x97c6",
+    "instruction": "000097c6  bne  0x000097d6",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 26,
+      "other": 0
+    },
+    "after": {
+      "taken": 196,
+      "fallthrough": 26,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x97f2",
+    "instruction": "000097f2  bne  0x0000985c",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 26,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 26,
+      "fallthrough": 196,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x984c",
+    "instruction": "0000984c  bne  0x0000985c",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 99,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 245,
+      "fallthrough": 332,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9a6a",
+    "instruction": "00009a6a  bcc  0x00009a80",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 716,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 2999,
+      "fallthrough": 12,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9ab2",
+    "instruction": "00009ab2  bls  0x00009aba",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 148,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 176,
+      "fallthrough": 8,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9adc",
+    "instruction": "00009adc  bcs  0x00009ae4",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 148,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 172,
+      "fallthrough": 12,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9b1a",
+    "instruction": "00009b1a  cbnz  r0, 0x00009b38",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 888,
+      "other": 0
+    },
+    "after": {
+      "taken": 72,
+      "fallthrough": 1122,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9b3e",
+    "instruction": "00009b3e  bne  0x00009b5c",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 888,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 1122,
+      "fallthrough": 72,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9be2",
+    "instruction": "00009be2  beq  0x00009c04",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 74,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 128,
+      "fallthrough": 18,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9c32",
+    "instruction": "00009c32  bcc  0x00009c58",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 814,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 1000,
+      "fallthrough": 48,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9d6c",
+    "instruction": "00009d6c  bcc  0x00009d82",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 814,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 850,
+      "fallthrough": 72,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9dfa",
+    "instruction": "00009dfa  bcc  0x00009e10",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 814,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 874,
+      "fallthrough": 48,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9e40",
+    "instruction": "00009e40  ble  0x00009e46",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 148,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 168,
+      "fallthrough": 8,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9e68",
+    "instruction": "00009e68  bge  0x00009e70",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 148,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 168,
+      "fallthrough": 8,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9ea0",
+    "instruction": "00009ea0  cbnz  r0, 0x00009ebe",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 888,
+      "other": 0
+    },
+    "after": {
+      "taken": 56,
+      "fallthrough": 1106,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9ec4",
+    "instruction": "00009ec4  bne  0x00009ee2",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 888,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 1106,
+      "fallthrough": 56,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9f5c",
+    "instruction": "00009f5c  beq  0x00009f70",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 74,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 128,
+      "fallthrough": 14,
+      "other": 0
+    }
+  },
+  {
+    "address": "0x9f96",
+    "instruction": "00009f96  bcc  0x00009fb4",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 814,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 972,
+      "fallthrough": 48,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa034",
+    "instruction": "0000a034  bcc  0x0000a04a",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 825,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 861,
+      "fallthrough": 72,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa08e",
+    "instruction": "0000a08e  cbnz  r0, 0x0000a0a0",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 748,
+      "other": 0
+    },
+    "after": {
+      "taken": 54,
+      "fallthrough": 859,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa0a8",
+    "instruction": "0000a0a8  beq  0x0000a0b6",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 45,
+      "fallthrough": 9,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa0be",
+    "instruction": "0000a0be  beq  0x0000a0cc",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 45,
+      "fallthrough": 9,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa0d4",
+    "instruction": "0000a0d4  beq  0x0000a0e2",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 45,
+      "fallthrough": 9,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa0ea",
+    "instruction": "0000a0ea  beq  0x0000a192",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 45,
+      "fallthrough": 9,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa19a",
+    "instruction": "0000a19a  beq  0x0000a1a8",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 45,
+      "fallthrough": 9,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa1b0",
+    "instruction": "0000a1b0  beq  0x0000a1be",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 45,
+      "fallthrough": 9,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa1c6",
+    "instruction": "0000a1c6  beq  0x0000a1d4",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 45,
+      "fallthrough": 9,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa1dc",
+    "instruction": "0000a1dc  beq  0x0000a1ea",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 45,
+      "fallthrough": 9,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa1f2",
+    "instruction": "0000a1f2  beq  0x0000a200",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 45,
+      "fallthrough": 9,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa208",
+    "instruction": "0000a208  beq  0x0000a216",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 45,
+      "fallthrough": 9,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa21e",
+    "instruction": "0000a21e  beq  0x0000a22c",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 45,
+      "fallthrough": 9,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa234",
+    "instruction": "0000a234  beq  0x0000a242",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 45,
+      "fallthrough": 9,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa24a",
+    "instruction": "0000a24a  beq  0x0000a258",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 45,
+      "fallthrough": 9,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa260",
+    "instruction": "0000a260  beq  0x0000a26e",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 45,
+      "fallthrough": 9,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa276",
+    "instruction": "0000a276  beq  0x0000a284",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 45,
+      "fallthrough": 9,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa28c",
+    "instruction": "0000a28c  beq  0x0000a29a",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 45,
+      "fallthrough": 9,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa3b0",
+    "instruction": "0000a3b0  cbnz  r0, 0x0000a3dc",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 1,
+      "other": 0
+    },
+    "after": {
+      "taken": 135,
+      "fallthrough": 46,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa3e2",
+    "instruction": "0000a3e2  bne  0x0000a40c",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 1,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 136,
+      "fallthrough": 45,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa412",
+    "instruction": "0000a412  bne  0x0000a43c",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 1,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 136,
+      "fallthrough": 45,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa9de",
+    "instruction": "0000a9de  beq  0x0000a9e4",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 862,
+      "other": 0
+    },
+    "after": {
+      "taken": 36,
+      "fallthrough": 1006,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa9e2",
+    "instruction": "0000a9e2  bne  0x0000aa1a",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 862,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 970,
+      "fallthrough": 36,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xa9f6",
+    "instruction": "0000a9f6  bcc  0x0000a9fe",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 48,
+      "fallthrough": 24,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xaa04",
+    "instruction": "0000aa04  bhi  0x0000aa0c",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 40,
+      "fallthrough": 32,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xaa1c",
+    "instruction": "0000aa1c  beq  0x0000aa22",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 862,
+      "other": 0
+    },
+    "after": {
+      "taken": 36,
+      "fallthrough": 1006,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xaa20",
+    "instruction": "0000aa20  bne  0x0000aa48",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 862,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 970,
+      "fallthrough": 36,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xaa28",
+    "instruction": "0000aa28  bhi  0x0000aa30",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 40,
+      "fallthrough": 32,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xaaae",
+    "instruction": "0000aaae  bcc  0x0000ab44",
+    "function_file": "0000458c_FUN_0000458c.txt",
+    "before": {
+      "taken": 5924,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 6194,
+      "fallthrough": 180,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xab52",
+    "instruction": "0000ab52  bne  0x0000ab80",
+    "function_file": "0000ab48_FUN_0000ab48.txt",
+    "before": {
+      "taken": 9,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 153,
+      "fallthrough": 144,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xab5e",
+    "instruction": "0000ab5e  beq  0x0000ab80",
+    "function_file": "0000ab48_FUN_0000ab48.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 72,
+      "fallthrough": 72,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xab82",
+    "instruction": "0000ab82  beq  0x0000ab88",
+    "function_file": "0000ab48_FUN_0000ab48.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 9,
+      "other": 0
+    },
+    "after": {
+      "taken": 36,
+      "fallthrough": 261,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xab86",
+    "instruction": "0000ab86  bne  0x0000abb0",
+    "function_file": "0000ab48_FUN_0000ab48.txt",
+    "before": {
+      "taken": 9,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 225,
+      "fallthrough": 36,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xab9a",
+    "instruction": "0000ab9a  bls  0x0000aba2",
+    "function_file": "0000ab48_FUN_0000ab48.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 56,
+      "fallthrough": 16,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xabb2",
+    "instruction": "0000abb2  beq  0x0000abb8",
+    "function_file": "0000ab48_FUN_0000ab48.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 9,
+      "other": 0
+    },
+    "after": {
+      "taken": 36,
+      "fallthrough": 261,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xabb6",
+    "instruction": "0000abb6  bne  0x0000abde",
+    "function_file": "0000ab48_FUN_0000ab48.txt",
+    "before": {
+      "taken": 9,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 225,
+      "fallthrough": 36,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xabbe",
+    "instruction": "0000abbe  bcs  0x0000abc6",
+    "function_file": "0000ab48_FUN_0000ab48.txt",
+    "before": {
+      "taken": 0,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 48,
+      "fallthrough": 24,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xabe0",
+    "instruction": "0000abe0  bne  0x0000abf4",
+    "function_file": "0000ab48_FUN_0000ab48.txt",
+    "before": {
+      "taken": 9,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 261,
+      "fallthrough": 36,
+      "other": 0
+    }
+  },
+  {
+    "address": "0xabf6",
+    "instruction": "0000abf6  bne  0x0000ac0a",
+    "function_file": "0000ab48_FUN_0000ab48.txt",
+    "before": {
+      "taken": 9,
+      "fallthrough": 0,
+      "other": 0
+    },
+    "after": {
+      "taken": 261,
+      "fallthrough": 36,
+      "other": 0
+    }
+  }
+]

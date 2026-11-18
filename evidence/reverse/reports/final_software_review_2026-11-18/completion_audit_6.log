@@ -1,0 +1,11 @@
+
+=== test_emulation_test_audit_fixes ===
+audit_modbus_single_write.py PASS_EQ正常返回；EXPECTED_NONRETURN复位命令 2
+audit_all_menu_states.py 所有有界菜单实际返回；原 BIN 差分无差异
+密码错误页 0xa 原 BIN/ELF 外层10000、内层1000、喂狗10000一致
+密码错误页 0x62 原 BIN/ELF 外层10000、内层1000、喂狗10000一致
+复位命令 0x25 响应/EEPROM顺序/自跳等待与原 BIN 一致
+复位命令 0x26 响应/EEPROM顺序/自跳等待与原 BIN 一致
+[run_tests] test_emulation_test_audit_fixes: OK
+
+[run_tests] 模块通过 1/1

@@ -1,0 +1,2 @@
+CALIBRATION_STATE_GAP_PROBE actual_AB_cases=2962 calibration+tuning+fault_display+manual_main+frequency_sync PASS
+BRANCH_GAP_BATCH {'candidate_branches': 1931, 'both': 1714, 'one': 169, 'unhit': 48} => {'candidate_branches': 1931, 'both': 1796, 'one': 118, 'unhit': 17} exit 0

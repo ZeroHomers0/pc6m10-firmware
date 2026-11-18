@@ -1,0 +1,2 @@
+REMAINING_PERIPHERAL_CONTRACT 1062 PASS
+BRANCH_GAP_BATCH {'candidate_branches': 1931, 'both': 1815, 'one': 107, 'unhit': 9} => {'candidate_branches': 1931, 'both': 1836, 'one': 91, 'unhit': 4} exit 0

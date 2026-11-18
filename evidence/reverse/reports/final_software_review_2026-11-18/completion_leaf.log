@@ -1,0 +1,2 @@
+COMPLETION_LEAF_CONTRACT 460 PASS
+BRANCH_GAP_BATCH {'candidate_branches': 1931, 'both': 1864, 'one': 63, 'unhit': 4} => {'candidate_branches': 1931, 'both': 1869, 'one': 58, 'unhit': 4} exit 0

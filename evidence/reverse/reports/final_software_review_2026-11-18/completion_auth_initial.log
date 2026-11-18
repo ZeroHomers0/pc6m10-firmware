@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "D:\code\LPC1765FBD100\PC6M-10\test\emulation\test_auth_response_device_contract.py", line 44, in <module>
+    if __name__=='__main__':raise SystemExit(main())
+                                             ~~~~^^
+  File "D:\code\LPC1765FBD100\PC6M-10\test\emulation\test_auth_response_device_contract.py", line 41, in main
+    assert a==b,('��֤��ʵ�豸����',kind,'parts',[i for i,(x,y) in enumerate(zip(a,b)) if x!=y], 'reads',a[2],b[2])
+           ^^^^
+AssertionError: ('��֤��ʵ�豸����', 'zero', 'parts', [2], 'reads', [(0, 1), (1, 0), (2, 1), (3, 0), (4, 0), (5, 1), (6, 0), (7, 1), (8, 0), (9, 0), (10, 0), (11, 0), (12, 0), (13, 0), (14, 0), (15, 0), (16, 0), (17, 0), (18, 0), (19, 0), (20, 0), (21, 0), (22, 0), (23, 0)], [(8, 0), (9, 0), (10, 0), (11, 0), (12, 0), (13, 0), (14, 0), (15, 0), (16, 0), (17, 0), (18, 0), (19, 0), (20, 0), (21, 0), (22, 0), (23, 0)])

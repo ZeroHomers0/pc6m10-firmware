@@ -1,0 +1,2 @@
+GPIO_READBACK_PROBE_CONTRACT schedules=156 original_GPIO_reads=1800 real_clear_leaf_cases=18 three_explicit_WO_read_patterns PASS
+BRANCH_GAP_BATCH {'candidate_branches': 1931, 'both': 1714, 'one': 169, 'unhit': 48} => {'candidate_branches': 1931, 'both': 1714, 'one': 169, 'unhit': 48} exit 0

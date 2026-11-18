@@ -1,0 +1,33 @@
+diff --git a/AGENTS.md b/AGENTS.md
+index 40f4994..7cfafa1 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -1,5 +1,7 @@
+ # AGENTS.md — LPC1765FBD100 固件逆向工程
+ 
++- **2026-11-18 最新6M固件已烧写**：用户确认断开市电/门极/负载、仅限流控制电。仓库J-Link（609799999，SWD 100kHz）完整256KiB备份及verifybin通过后，烧写当前构建60580字节，SHA-256 `3A5C87633F7BC2A5D96007EFE7A6A62E31ED236A806B793E79D3852F6D458580`（text 60020/data 0/bss 2188）。烧前回归66/66、完整原BIN A/B通过；烧后verifybin与整片读回逐字节核对通过，其余Flash全FF，CRP=FFFFFFFF。备份、固定固件、日志与manifest在 `backup/flash_2026-11-18_latest/`（不提交备份）。未驱动nRESET运行重启，等待用户物理断电上电及实机冒烟确认。
++
+ - **2026-11-18 状态机/故障复位第五批**：新增108条连续启停链（28728拍）、72例故障复位/禁用复位（启用者真实执行两段3000轮及6000份AA/55喂狗后确切自跳）、100组运行统计/落盘、320组缺相恢复及1248拍模式切换；受控SET/CLR/W1C/NVIC模型下52组真实ISR调度通过。修复公共运行器每次调用遗留临时钩子的问题，旧运行器反测及缺失喂狗写序注入均被检出。回归65/65、完整原BIN A/B、菜单/背光专项通过；未发现新业务差异，业务源码与BIN未变。报告`docs/analysis/STATE_LIFECYCLE_AUDIT_2026-11-18.md`，证据`evidence/reverse/reports/state_lifecycle_audit_2026-11-18/`。全程序分支出口、逐条干预契约、FIOCLR只写寄存器读行为及更广中断交错仍保留，S0–S7未整体关闭；未烧写/实机。
+ 
+ > 本文件是 AI 接手项目的唯一权威上下文。文档导航见 `DOCUMENTATION_INDEX.md`。
+@@ -18,7 +20,7 @@
+ - GCC 可编译工程：`firmware/`，Arm GNU Toolchain 14.2.Rel1。
+ - 当前构建：`text 60020 / data 0 / bss 2188`（2026-11-17 菜单/通信第四批复核恢复通信工作槽后）。
+ - 当前 `firmware.bin` SHA-256：`3A5C87633F7BC2A5D96007EFE7A6A62E31ED236A806B793E79D3852F6D458580`（60580 B）。
+-- 板上已烧写镜像为上一版 `E843035C88D1B5AE52A516072F09FC551BC90720CFF23EA4EEF6623FF19022B2`（60368 B，text 59808，含闭环反馈复制修复；本次功能码修复未烧写）。
++- 此前板上已烧写镜像为上一版 `E843035C88D1B5AE52A516072F09FC551BC90720CFF23EA4EEF6623FF19022B2`（60368 B，text 59808，含闭环反馈复制修复；本次功能码修复未烧写）。
+ - 自编译固件已于 2026-08-26 完成 CRP 布局修复（`0x2FC` 显式保留 `0xFFFFFFFF`，见
+   `firmware/lpc1765.ld`、`firmware/startup.s`、`firmware/build.sh`）并经 J-Link SWD 烧写入板、
+   全镜像校验通过；过程见 `docs/w8/W8_POST_FLASH_2026-08-26.md`。
+diff --git a/DOCUMENTATION_INDEX.md b/DOCUMENTATION_INDEX.md
+index d1cfe54..cb2fff5 100644
+--- a/DOCUMENTATION_INDEX.md
++++ b/DOCUMENTATION_INDEX.md
+@@ -1,5 +1,7 @@
+ # 文档索引
+ 
++> **2026-11-18 最新6M固件已烧写**：用户确认断开市电/门极/负载、仅限流控制电。仓库J-Link（609799999，SWD 100kHz）完整256KiB备份及verifybin通过后，烧写当前构建60580字节，SHA-256 `3A5C87633F7BC2A5D96007EFE7A6A62E31ED236A806B793E79D3852F6D458580`（text 60020/data 0/bss 2188）。烧前回归66/66、完整原BIN A/B通过；烧后verifybin与整片读回逐字节核对通过，其余Flash全FF，CRP=FFFFFFFF。备份、固定固件、日志与manifest在 `backup/flash_2026-11-18_latest/`（不提交备份）。未驱动nRESET运行重启，等待用户物理断电上电及实机冒烟确认。
++
+ > **2026-11-18 状态机/故障复位第五批**：[连续启停、复位喂狗与受控外设模型](docs/analysis/STATE_LIFECYCLE_AUDIT_2026-11-18.md)。108链28728拍、72例故障复位/禁用、运行统计与同步恢复、52组ISR调度；修复验证器钩子泄漏。回归65/65、完整原BIN A/B及定制专项通过，业务源码/BIN未变，未烧写；全方案剩余边界见报告与manifest。
+ 
+ > **2026-11-17 菜单/通信第四批**：[通信状态副作用修复与最终验证](docs/analysis/MENU_MODBUS_AUDIT_2026-11-17.md)。菜单14688例、通信5002例、回归61/61与完整原BIN A/B通过；未烧写/实机，全部软件验收仍未完成。

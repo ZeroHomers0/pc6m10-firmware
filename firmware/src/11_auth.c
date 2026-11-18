@@ -94,6 +94,8 @@ void auth_challenge(void)
     FIO2->CLR = FIO2->CLR | 8;  /* FIO2CLR P2.3=时钟拉低 */
     for (delay_counter = 0; delay_counter < 1000; delay_counter++) {             /* 时钟低延时 */
     }
+    /* 原BIN 0x10786..0x10792：前8拍也读PIN，返回位不参与最终16位应答。 */
+    if (bit_index < 8) { (void)FIO2->PIN; }
     if ((7 < bit_index) && (response_bits = response_bits * 2, (FIO2->PIN & 4) != 0)) {
       response_bits = response_bits + 1;                                                  /* bit8 起读 FIO2PIN P2.2 */
     }
